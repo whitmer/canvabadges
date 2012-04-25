@@ -1,3 +1,3 @@
 #\ -p 4567
-require(File.expand_path("../lti_example", __FILE__))
+require(File.expand_path("../canvabadges", __FILE__))
 run Sinatra::Application
