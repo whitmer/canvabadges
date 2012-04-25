@@ -39,7 +39,7 @@ class ExternalConfig
   property :id, Serial
   property :config_type, String
   property :value, String
-  property :secret, String
+  property :shared_secret, String, :length => 256
 end
 
 class UserConfig
@@ -67,11 +67,12 @@ get "/" do
   redirect to('/index.html')
 end
 
+# https://canvabadges.heroku.com/badge_check?oauth_consumer_key=1234&custom_canvas_user_id=2&custom_canvas_course_id=2&tool_consumer_instance_guid=bob.canvas.instructure.com
 # tool launch, makes sure we're oauth-good and then redirects to the magic page
 get "/badge_check" do
   key = params['oauth_consumer_key']
   tool_config = ExternalConfig.first(:config_type => 'lti', :value => key)
-  secret = tool_config.secret
+  secret = tool_config.shared_secret
   provider = IMS::LTI::ToolProvider.new(key, secret, params)
   if !params['custom_canvas_user_id'] || !params['custom_canvas_course_id']
     return "Course must be a Canvas course, and launched with public permission settings"
@@ -102,7 +103,7 @@ end
 get "/oauth_success" do
   return_url = "https://#{request.host_with_port}/oauth_success"
   code = params['code']
-  url = "https://#{session['api_host']}/login/oauth2/token?client_id=#{@@oauth_config.value}&code=#{params['code']}&client_secret=#{@@oauth_config.secret}&redirect_uri=#{CGI.escape(return_url)}"
+  url = "https://#{session['api_host']}/login/oauth2/token?client_id=#{@@oauth_config.value}&code=#{params['code']}&client_secret=#{@@oauth_config.shared_secret}&redirect_uri=#{CGI.escape(return_url)}"
   json = JSON.parse(Net::HTTP.Post(URI.parse(url)))
   user_config = UserConfig.new
   user_config.user_id = session['user_id']
