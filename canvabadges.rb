@@ -67,7 +67,7 @@ get "/" do
   redirect to('/index.html')
 end
 
-# https://canvabadges.heroku.com/badge_check?oauth_consumer_key=1234&custom_canvas_user_id=2&custom_canvas_course_id=2&tool_consumer_instance_guid=bob.canvas.instructure.com
+# example: https://canvabadges.heroku.com/badge_check?oauth_consumer_key=1234&custom_canvas_user_id=2&custom_canvas_course_id=2&tool_consumer_instance_guid=bob.canvas.instructure.com
 # tool launch, makes sure we're oauth-good and then redirects to the magic page
 get "/badge_check" do
   key = params['oauth_consumer_key']
