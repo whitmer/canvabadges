@@ -8,4 +8,8 @@ gem "nokogiri"
 gem 'dm-core'
 gem 'dm-migrations'
 gem 'dm-postgres-adapter'
-gem 'dm-sqlite-adapter'
+
+group :development do
+    gem 'dm-sqlite-adapter'
+end
+
