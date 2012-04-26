@@ -101,9 +101,9 @@ get "/badge_check" do
 end
 
 get "/oauth_success" do
-  return_url = "https://#{request.host_with_port}/oauth_success"
+  return_url = "https://canvabadges.herokuapp.com/oauth_success"
   code = params['code']
-  url = "https://#{session['api_host']}/login/oauth2/token"
+  url = "https://canvas.instructure.com/login/oauth2/token"
   uri = URI.parse(url)
   
   http = Net::HTTP.new(uri.host, uri.port)
