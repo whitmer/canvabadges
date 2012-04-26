@@ -103,8 +103,21 @@ end
 get "/oauth_success" do
   return_url = "https://#{request.host_with_port}/oauth_success"
   code = params['code']
-  url = "https://#{session['api_host']}/login/oauth2/token?client_id=#{@@oauth_config.value}&code=#{params['code']}&client_secret=#{@@oauth_config.shared_secret}&redirect_uri=#{CGI.escape(return_url)}"
-  json = JSON.parse(Net::HTTP.Post(URI.parse(url)))
+  url = "https://#{session['api_host']}/login/oauth2/token"
+  uri = URI.parse(url)
+  
+  http = Net::HTTP.new(uri.host, uri.port)
+  http.use_ssl = true
+  request = Net::HTTP::Post.new(uri.request_uri)
+  request.set_form_data({
+    :client_id => @@oauth_config.value,
+    :code => params['code'],
+    :client_secret => @@oauth_config.shared_secret,
+    :redirect_uri => CGI.escape(return_url)
+  })
+  response = http.request(request)
+  json = JSON.parse(response.body)
+  
   user_config = UserConfig.new
   user_config.user_id = session['user_id']
   user_config.token = json['access_token']
