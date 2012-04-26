@@ -111,19 +111,23 @@ get "/oauth_success" do
   request = Net::HTTP::Post.new(uri.request_uri)
   request.set_form_data({
     :client_id => @@oauth_config.value,
-    :code => params['code'],
+    :code => code,
     :client_secret => @@oauth_config.shared_secret,
     :redirect_uri => CGI.escape(return_url)
   })
   response = http.request(request)
   json = JSON.parse(response.body)
   
-  user_config = UserConfig.new
-  user_config.user_id = session['user_id']
-  user_config.token = json['access_token']
-  user_config.host = session['api_host']
-  user_config.save
-  redirect to("/badge_check/#{session['course_id']}/#{session['user_id']}")
+  if json && json['access_token']
+    user_config = UserConfig.new
+    user_config.user_id = session['user_id']
+    user_config.token = json['access_token']
+    user_config.host = session['api_host']
+    user_config.save
+    redirect to("/badge_check/#{session['course_id']}/#{session['user_id']}")
+  else
+    return "Error retrieving access token"
+  end
 end
 
 
