@@ -101,9 +101,10 @@ get "/badge_check" do
 end
 
 get "/oauth_success" do
-  return_url = "https://canvabadges.herokuapp.com/oauth_success"
+  session['api_host'] ||= 'canvas.instructure.com'
+  return_url = "https://#{request.host_with_port}/oauth_success"
   code = params['code']
-  url = "https://canvas.instructure.com/login/oauth2/token"
+  url = "https://#{session['api_host']}/login/oauth2/token"
   uri = URI.parse(url)
   
   http = Net::HTTP.new(uri.host, uri.port)
@@ -134,13 +135,16 @@ end
 # the magic page, APIs it up to make sure the user has done what they need to,
 # shows the results and lets them add the badge if they're done
 get "/badge_check/:course_id/:user_id" do
+  session['api_host'] ||= 'canvas.instructure.com'
   user_config = UserConfig.first(:user_id => params['user_id'])
   if user_config
     course_config = CourseConfig.first(:course_id => params['course_id'])
     settings = course_config && JSON.parse(course_config.settings || "{}")
-    if course_config && settings && settings['icon_url']
+    if true #course_config && settings && settings['badge_url']
       # check for mastery, teacher edit view
-      return "Now checking on your coolness..."
+      url = "https://#{session['api_host']}/api/v1/courses/#{params['course_id']}?include[]=total_scores&access_token=#{user_config.token}"
+      json = JSON.parse(Net::HTTP.get(url))
+      return json.to_json
     else
       if session['edit_privileges']
         # teacher create view
@@ -160,7 +164,7 @@ post "/badge_check/:course_id/settings" do
     course_config = CourseConfig.first(:course_id => params['course_id'])
     course_config ||= CourseConfig.new(:course_id => params['course_id'])
     settings = JSON.parse(course_config.settings || "{}")
-    settings[:icon_url] = ""
+    settings[:badge_url] = ""
     settings[:min_percent] = ""
     course_config.settings = settings.to_json
     course_config.save
