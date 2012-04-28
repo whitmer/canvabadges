@@ -143,7 +143,7 @@ get "/oauth_success" do
 end
 
 # badge details permalink
-get "/badges/:course_id/:user_id/:code" do
+get "/badges/:course_id/:user_id/:code.json" do
   badge = Badge.first(:course_id => params[:course_id], :user_id => params[:user_id], :nonce => params[:code])
   if badge
     return {
@@ -265,7 +265,7 @@ get "/badge_check/:course_id/:user_id" do
             html += "To earn this badge you needed #{settings['min_percent']}%, and you have #{student['computed_final_score'].to_f}% in this course right now."
             html += "<div class='progress progress-success progress-striped progress-big'><div class='tick' style='left: " + (3 * settings['min_percent']).to_i.to_s + "px;'></div><div class='bar' style='width: " + student['computed_final_score'].to_i.to_s + "%;'></div></div>"
           end
-          url = "https://#{request.host_with_port}/badges/#{params['course_id']}/#{params['user_id']}/#{badge.nonce}"
+          url = "https://#{request.host_with_port}/badges/#{params['course_id']}/#{params['user_id']}/#{badge.nonce}.json"
           html += "<button class='btn btn-primary btn-large' id='redeem' rel='#{url}'><span class='icon-plus icon-white'></span> Add this Badge to your Backpack</button>"
         else
           html += "<h3>You haven't earn this badge yet</h3>"
