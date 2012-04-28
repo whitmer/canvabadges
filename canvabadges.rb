@@ -58,13 +58,14 @@ class Badge
   property :id, Serial
   property :course_id, String
   property :user_id, String
-  property :badge_url, String
+  property :badge_url, String, :length => 256
   property :nonce, String
   property :name, String, :length => 256
   property :description, String, :length => 256
   property :recipient, String, :length => 512
   property :salt, String, :length => 256
   property :issued, DateTime
+  property :email, String
   property :manual_approval, Boolean
 end
 
@@ -157,7 +158,7 @@ def badge_data(params)
       :badge => {
         :version => "0.5.0",
         :name => badge.name,
-        :image => badge.badge_url,
+        :image => "https://#{request.host_with_port}#{badge.badge_url}",
         :description => badge.description,
         :issuer => {
           :origin => "https://#{request.host_with_port}",
@@ -186,7 +187,7 @@ post "/badge_check/:course_id/:user_id/settings" do
     course_config = CourseConfig.first(:course_id => params['course_id'])
     course_config ||= CourseConfig.new(:course_id => params['course_id'])
     settings = JSON.parse(course_config.settings || "{}")
-    settings[:badge_url] = "https://canvabadges.herokuapp.com/badges/instructure.png"
+    settings[:badge_url] = "/badges/instructure.png"
     settings[:badge_name] = params['badge_name']
     settings[:badge_description] = params['badge_description']
     settings[:min_percent] = params['min_percent'].to_f
@@ -220,6 +221,7 @@ post "/badges/:course_id/:user_id" do
       badge.badge_url = settings['badge_url']
       badge.issued = DateTime.now
       badge.salt = Time.now.to_i.to_s
+      badge.email = student['email']
       sha = Digest::SHA256.hexdigest(student['email'] + badge.salt)
       badge.recipient = "sha256$#{sha}"
       badge.nonce = Digest::MD5.hexdigest(badge.salt + rand.to_s)
@@ -259,6 +261,7 @@ get "/badge_check/:course_id/:user_id" do
         if !badge && student['computed_final_score'] >= settings['min_percent']
           badge = Badge.new(:user_id => params['user_id'], :course_id => params['course_id'])
           badge.name = settings['badge_name']
+          badge.email = session['email']
           badge.description = settings['badge_description']
           badge.badge_url = settings['badge_url']
           badge.issued = DateTime.now
