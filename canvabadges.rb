@@ -211,7 +211,7 @@ get "/badge_check/:course_id/:user_id" do
       html = header
       html += "<img src='" + settings['badge_url'] + "' style='float: left; margin-right: 20px;' class='thumbnail'/>"
       html += "<h2>#{settings['badge_name'] || "Unnamed Badge"}</h2>"
-      html += "<p>#{settings['badge_description']}</p>"
+      html += "<p>#{settings['badge_description']}</p><div style='clear: left;'></div>"
       if student
         badge = Badge.first(:user_id => params['user_id'], :course_id => params['course_id'])
         if !badge && student['computed_final_score'] >= settings['min_percent']
@@ -280,7 +280,7 @@ def student_list_html(user_config, course_config)
     if json.is_a?(Array) && json.length > 0
       badges = Badge.all(:course_id => course_config.course_id)
       html = <<-HTML
-        <table class="table table-bordered table-striped">
+        <table class="table table-bordered table-striped" style='margin: 15px 0;'>
           <thead>
             <tr>
               <th>Student</th>
