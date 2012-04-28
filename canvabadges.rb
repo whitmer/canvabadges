@@ -278,7 +278,7 @@ def student_list_html(user_config, course_config)
     if json.is_a?(Array) && json.length > 0
       badges = Badge.all(:course_id => course_config.course_id)
       html = <<-HTML
-        <table>
+        <table class="table table-bordered table-striped">
           <thead>
             <tr>
               <th>Student</th>
@@ -288,12 +288,12 @@ def student_list_html(user_config, course_config)
           <tbody>
       HTML
       json.each do |student|
-        badge = badges.detect{|b| b.user_id == student['id'] }
+        badge = badges.detect{|b| b.user_id == student['id'].to_i }
         html += <<-HTML
           <tr>
             <td>#{student['name']}</td>
             <td>#{badge ? "earned" : "not earned"}</td>
-            <td>#{badge && badge.issued}</td>
+            <td>#{badge && badge.issued.strftime('%m %d, %Y')}</td>
           </tr>
         HTML
       end
