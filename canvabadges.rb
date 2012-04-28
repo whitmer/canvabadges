@@ -210,7 +210,8 @@ get "/badge_check/:course_id/:user_id" do
       response = http.request(request)
       json = JSON.parse(response.body)
       
-      student = json['enrollments'].detect{|e| e['type'] == 'student' && e['calculated_final_score'] }
+      student = json['enrollments'].detect{|e| e['type'] == 'student' }
+      student['calculated_final_score'] ||= 0 if student
       html = header
       html += json.to_json
       if student
