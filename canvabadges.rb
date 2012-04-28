@@ -46,7 +46,7 @@ class UserConfig
   include DataMapper::Resource
   property :id, Serial
   property :user_id, String
-  property :token, String
+  property :access_token, String, :length => 256
   property :host, String
 end
 
@@ -136,9 +136,8 @@ get "/oauth_success" do
   if json && json['access_token']
     user_config = UserConfig.first(:user_id => session['user_id'])
     user_config ||= UserConfig.new(:user_id => session['user_id'])
-    user_config.token = json['access_token']
+    user_config.access_token = json['access_token']
     user_config.host = session['api_host']
-    return json.to_json
     user_config.save
     redirect to("/badge_check/#{session['course_id']}/#{session['user_id']}")
   else
@@ -203,7 +202,7 @@ get "/badge_check/:course_id/:user_id" do
     course_config = CourseConfig.first(:course_id => params['course_id'])
     settings = course_config && JSON.parse(course_config.settings || "{}")
     if course_config && settings && settings['badge_url'] && settings['min_percent']
-      url = "https://#{user_config.host}/api/v1/courses/#{params['course_id']}?include[]=total_scores&access_token=#{user_config.token}"
+      url = "https://#{user_config.host}/api/v1/courses/#{params['course_id']}?include[]=total_scores&access_token=#{user_config.access_token}"
       json = JSON.parse(Net::HTTP.get(URI.parse(url)))
       student = json['enrollments'].detect{|e| e['type'] == 'student' && e['calculated_final_score'] }
       html = header
