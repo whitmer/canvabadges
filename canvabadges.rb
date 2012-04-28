@@ -213,6 +213,7 @@ get "/badge_check/:course_id/:user_id" do
       student = json['enrollments'].detect{|e| e['type'] == 'student' }
       student['calculated_final_score'] ||= 0 if student
       html = header
+      html += json.to_json
       if student
         badge = Badge.first(:user_id => params['user_id'], :course_id => params['course_id'])
         if !badge && student['calculated_final_score'] >= settings['min_percent']
