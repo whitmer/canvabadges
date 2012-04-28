@@ -64,6 +64,8 @@ class Badge
   property :user_id, String
   property :badge_url, String
   property :nonce, String
+  property :name, String, :length => 256
+  property :description, String, :length => 256
   property :recipient, String, :length => 512
   property :salt, String, :length => 256
   property :issued, DateTime
@@ -217,6 +219,8 @@ get "/badge_check/:course_id/:user_id" do
         badge = Badge.first(:user_id => params['user_id'], :course_id => params['course_id'])
         if !badge && student['computed_final_score'] >= settings['min_percent']
           badge = Badge.new(:user_id => params['user_id'], :course_id => params['course_id'])
+          badge.name = settings['badge_name']
+          badge.description = settings['badge_description']
           badge.issued = DateTime.now
           badge.salt = Time.now.to_i.to_s
           sha = Digest::SHA256.hexdigest(session['email'] + badge.salt)
@@ -227,10 +231,10 @@ get "/badge_check/:course_id/:user_id" do
         html += "<img src='" + settings['badge_url'] + "' style='float: left; margin-right: 20px;' class='thumbnail'/>"
         if badge
           html += "<h2>You've earned this badge!</h2>"
+          html += "To earn this badge you needed #{settings['min_percent']}%, and you have #{student['computed_final_score'].to_f}% in this course right now."
           html += "<div class='progress progress-success progress-striped progress-big'><div class='tick' style='left: " + (3 * settings['min_percent']).to_i.to_s + "px;'></div><div class='bar' style='width: " + student['computed_final_score'].to_i.to_s + "%;'></div></div>"
           url = "https:///#{request.host_with_port}/badges/#{params['course_id']}/#{params['user_id']}/#{badge.nonce}"
-          html += url
-          html += "<script>OpenBadges.issue([\"#{url}\"]);</script>"
+          html += "<button class='btn btn-primary' id='redeem' rel='#{url}'>Add this Badge to your Backpack</button>"
         else
           html += "<h2>You haven't earn this badge yet</h2>"
           html += "To earn this badge you need #{settings['min_percent']}%, but you only have #{student['computed_final_score'].to_f}% in this course right now."
@@ -343,7 +347,6 @@ def header
       padding-top: 40px;
     }
     </style>
-    <script src="http://beta.openbadges.org/issuer.js"></script>
   </head>
   <body>
     <div class="container" id="content">
@@ -356,6 +359,12 @@ def footer
     </div>
   </div>
   <script src="jquery.min.js"></script>
+  <script src="http://beta.openbadges.org/issuer.js"></script>
+  <script>
+  $("#redeem").click(function() {
+    OpenBadges.issue([$(this).attr('rel')]);
+  });
+  </script>
 </body>
 </html>
   HTML
