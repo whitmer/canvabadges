@@ -224,17 +224,17 @@ get "/badge_check/:course_id/:user_id" do
           badge.recipint = "sha512$#{sha}"
           badge.sig = Digest::MD5.hexdigest(badge.salt + rand.to_s)
         end
-        html += "<img src='" + settings['badge_url'] + "' style='float: left;' class='thumbnail'/>"
+        html += "<img src='" + settings['badge_url'] + "' style='float: left; margin-right: 20px;' class='thumbnail'/>"
         if badge
           html += "<h2>You've earned this badge!</h2>"
-          html += "<div class='progress progress-success progress-striped progress-big'><div class='tick' style='left: " + (300 * settings['min_percent']).to_i.to_s + "px;'></div><div class='bar' style='width: " + student['calculated_final_score'].to_i.to_s + "%;'></div></div>"
+          html += "<div class='progress progress-success progress-striped progress-big'><div class='tick' style='left: " + (3 * settings['min_percent']).to_i.to_s + "px;'></div><div class='bar' style='width: " + student['calculated_final_score'].to_i.to_s + "%;'></div></div>"
           url = "https:///#{request.host_with_port}/badges/#{params['course_id']}/#{params['user_id']}/#{badge.nonce}"
           html += url
           html += "<script>OpenBadges.issue([\"#{url}\"]);</script>"
         else
           html += "<h2>You haven't earn this badge yet</h2>"
-          html += "To earn this badge you need #{settings['min_percent']}%, but you only have #{student['calculated_final_score']}% in this course right now."
-          html += "<div class='progress progress-danger progress-striped progress-big'><div class='tick' style='left: " + (300 * settings['min_percent']).to_i.to_s + "px;'></div><div class='bar' style='width: " + student['calculated_final_score'].to_i.to_s + "%;'></div></div>"
+          html += "To earn this badge you need #{settings['min_percent']}%, but you only have #{student['calculated_final_score'].to_f}% in this course right now."
+          html += "<div class='progress progress-danger progress-striped progress-big'><div class='tick' style='left: " + (3 * settings['min_percent']).to_i.to_s + "px;'></div><div class='bar' style='width: " + student['calculated_final_score'].to_i.to_s + "%;'></div></div>"
         end
       else
         html += "<h2>You are not a student in this course</h2>"
