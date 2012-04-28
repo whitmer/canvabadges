@@ -186,7 +186,7 @@ post "/badge_check/:course_id/:user_id/settings" do
     course_config = CourseConfig.first(:course_id => params['course_id'])
     course_config ||= CourseConfig.new(:course_id => params['course_id'])
     settings = JSON.parse(course_config.settings || "{}")
-    settings[:badge_url] = "/badges/instructure.png"
+    settings[:badge_url] = "https://canvabadges.herokuapp.com/badges/instructure.png"
     settings[:badge_name] = params['badge_name']
     settings[:badge_description] = params['badge_description']
     settings[:min_percent] = params['min_percent'].to_f
