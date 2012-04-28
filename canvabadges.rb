@@ -134,6 +134,7 @@ get "/oauth_success" do
   })
   puts "configured..."
   response = http.request(request)
+  return response.body
   puts "response retrieved!"
   json = JSON.parse(response.body)
   
