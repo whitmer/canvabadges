@@ -64,8 +64,8 @@ class Badge
   property :user_id, String
   property :badge_url, String
   property :nonce, String
-  property :recipient, String
-  property :salt, String
+  property :recipient, String, :length => 512
+  property :salt, String, :length => 256
   property :issued, DateTime
 end
 
@@ -206,8 +206,8 @@ get "/badge_check/:course_id/:user_id" do
       uri = URI.parse(url)
       http = Net::HTTP.new(uri.host, uri.port)
       http.use_ssl = true
-      request = Net::HTTP::Get.new(uri.request_uri)
-      response = http.request(request)
+      req = Net::HTTP::Get.new(uri.request_uri)
+      response = http.request(req)
       json = JSON.parse(response.body)
       
       student = json['enrollments'].detect{|e| e['type'] == 'student' }
@@ -219,8 +219,8 @@ get "/badge_check/:course_id/:user_id" do
           badge = Badge.new(:user_id => params['user_id'], :course_id => params['course_id'])
           badge.issued = DateTime.now
           badge.salt = Time.now.to_i.to_s
-          sha = Digest::SHA512.hexdigest(session['email'] + badge.salt)
-          badge.recipient = "sha512$#{sha}"
+          sha = Digest::SHA256.hexdigest(session['email'] + badge.salt)
+          badge.recipient = "sha256$#{sha}"
           badge.nonce = Digest::MD5.hexdigest(badge.salt + rand.to_s)
           badge.save
         end
