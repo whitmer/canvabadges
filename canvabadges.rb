@@ -148,6 +148,7 @@ end
 
 def badge_data(params)
   badge = Badge.first(:course_id => params[:course_id], :user_id => params[:user_id], :nonce => params[:code])
+  headers 'Content-Type' => 'application/json'
   if badge
     return {
       :recipient => badge.recipient,
