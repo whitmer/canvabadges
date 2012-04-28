@@ -193,6 +193,42 @@ post "/badge_check/:course_id/:user_id/settings" do
   end
 end
 
+post "/badges/:course_id/:user_id" do
+  if params['course_id'] != session['course_id']
+    return error("Invalid tool load")
+  end
+  course_config = CourseConfig.first(:course_id => params['course_id'])
+  user_config = UserConfig.first(:user_id => session['user_id'])
+  settings = course_config && JSON.parse(course_config.settings || "{}")
+  if course_config && settings && settings['badge_url'] && settings['min_percent']
+    if !session['edit_privileges']
+      return error("You don't have permission to award this badge")
+    end
+    json = api_call("/api/v1/courses/#{params['course_id']}/users?enrollment_type=student&include[]=email", user_config)
+    
+    student = json['enrollments'].detect{|e| e['id'] == params['user_id'].to_i }
+    if student
+      badge = Badge.first(:user_id => params['user_id'], :course_id => params['course_id'])
+      badge ||= Badge.new(:user_id => params['user_id'], :course_id => params['course_id'])
+      badge.name = settings['badge_name']
+      badge.description = settings['badge_description']
+      badge.badge_url = settings['badge_url']
+      badge.issued = DateTime.now
+      badge.salt = Time.now.to_i.to_s
+      sha = Digest::SHA256.hexdigest(student['email'] + badge.salt)
+      badge.recipient = "sha256$#{sha}"
+      badge.nonce = Digest::MD5.hexdigest(badge.salt + rand.to_s)
+      badge.save
+      
+      redirect to("/badge_check/#{params['course_id']}/#{session['user_id']}")
+    else
+      return error("That user is not a student in this course")
+    end
+  else
+    return error("This badge has not been configured yet")
+  end
+end
+
 # the magic page, APIs it up to make sure the user has done what they need to,
 # shows the results and lets them add the badge if they're done
 get "/badge_check/:course_id/:user_id" do
@@ -211,7 +247,7 @@ get "/badge_check/:course_id/:user_id" do
       html = header
       html += "<img src='" + settings['badge_url'] + "' style='float: left; margin-right: 20px;' class='thumbnail'/>"
       html += "<h2>#{settings['badge_name'] || "Unnamed Badge"}</h2>"
-      html += "<p>#{settings['badge_description']}</p><div style='clear: left;'></div>"
+      html += "<p>#{settings['badge_description']}</p><div style='clear: left; margin-bottom: 10px;'></div>"
       if student
         badge = Badge.first(:user_id => params['user_id'], :course_id => params['course_id'])
         if !badge && student['computed_final_score'] >= settings['min_percent']
@@ -280,7 +316,7 @@ def student_list_html(user_config, course_config)
     if json.is_a?(Array) && json.length > 0
       badges = Badge.all(:course_id => course_config.course_id)
       html = <<-HTML
-        <table class="table table-bordered table-striped" style='margin: 15px 0;'>
+        <table class="table table-bordered table-striped" style='margin: 25px 0 15px 0;'>
           <thead>
             <tr>
               <th>Student</th>
@@ -294,7 +330,19 @@ def student_list_html(user_config, course_config)
         html += <<-HTML
           <tr>
             <td>#{student['name']}</td>
-            <td>#{badge ? "<img src='/check.gif' alt='earned'/>" : "<img src='/redx.png' alt='not earned'/>"}</td>
+            <td>
+        HTML
+        if badge
+          html += "<img src='/check.gif' alt='earned'/>"
+        else
+          html += <<-HTML
+            <img src='/redx.png' alt='not earned' class='earn_badge'/>
+            <form class='form form-inline' method='POST' action='/badges/#{course_config.course_id}/#{course_config.user_id}' style='display: none;'>
+              <button class='btn btn-primary' type='submit'>Award Badge</button>
+            </form>
+          HTML
+        end
+        HTML += <<-HTML
             <td>#{(badge && badge.issued.strftime('%b %e, %Y')) || "&nbsp;"}</td>
           </tr>
         HTML
@@ -394,6 +442,9 @@ def header
     body {
       padding-top: 40px;
     }
+    .earn_badge {
+      cursor: pointer;
+    }
     </style>
   </head>
   <body>
@@ -411,6 +462,9 @@ def footer
   <script>
   $("#redeem").click(function() {
     OpenBadges.issue([$(this).attr('rel')]);
+  });
+  $(".earn_badge").live('click', function() {
+    $(this).parent().find("form").show();
   });
   </script>
 </body>
