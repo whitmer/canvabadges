@@ -160,7 +160,7 @@ def badge_data(params)
         :name => badge.name,
         :image => "https://#{request.host_with_port}#{badge.badge_url}",
         :description => badge.description,
-        :criteria => "#{badge.badge_url}",
+        :criteria => "/badges/#{params['course_id']/criteria",
         :issuer => {
           :origin => "https://#{request.host_with_port}",
           :name => "Canvabadges",
@@ -236,6 +236,10 @@ post "/badges/:course_id/:user_id" do
   else
     return error("This badge has not been configured yet")
   end
+end
+
+get "/badges/:course_id/criteria" do
+  return message("This will show publicly available criteria for earning this badge")
 end
 
 # the magic page, APIs it up to make sure the user has done what they need to,
