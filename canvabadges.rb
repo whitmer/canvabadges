@@ -97,8 +97,7 @@ post "/badge_check" do
     session['user_id'] = user_id
     session['email'] = params['lis_person_contact_email_primary']
     # check if they're a teacher or not
-    return provider.roles.to_json
-    session['edit_privileges'] = true
+    session['edit_privileges'] = provider.roles.include?('instructor') || provider.roles.include?('ContentDeveloper') || provider.roles.include?('urn:lti:instrole:ims/lis/Administrator')
     
     # if we already have an oauth token then we're good
     if user_config
