@@ -207,7 +207,6 @@ post "/badges/:course_id/:user_id" do
     end
     json = api_call("/api/v1/courses/#{params['course_id']}/users?enrollment_type=student&include[]=email", user_config)
     student = json.detect{|e| e['id'] == params['user_id'].to_i }
-    return json.to_json + student.to_json
     if student
       badge = Badge.first(:user_id => params['user_id'], :course_id => params['course_id'])
       badge ||= Badge.new(:user_id => params['user_id'], :course_id => params['course_id'])
@@ -343,7 +342,7 @@ def student_list_html(user_config, course_config)
         else
           html += <<-HTML
             <img src='/redx.png' alt='not earned' class='earn_badge' title='not earned. click to manually award'/>
-            <form class='form form-inline' method='POST' action='/badges/#{course_config.course_id}/#{user_config.user_id}' style='visibility: hidden; display: inline; margin-left: 10px;'>
+            <form class='form form-inline' method='POST' action='/badges/#{course_config.course_id}/#{student['id']}' style='visibility: hidden; display: inline; margin-left: 10px;'>
               <button class='btn btn-primary' type='submit'><span class='icon-check icon-white'></span> Award Badge</button>
             </form>
           HTML
