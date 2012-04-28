@@ -377,7 +377,7 @@ def edit_course_html(course_id, user_id, course_config)
     <div class="control-group">
       <label class="control-label" for="badge_description">Badge description: </label>
       <div class="controls">
-        <input type="text" class="span2" placeholder="description" id="badge_description" name="badge_description" value="#{CGI.escapeHTML(settings['badge_description'] || "")}"/>
+        <textarea class='input-xlarge' rows='3' name='badge_description' id='badge_description'>#{CGI.escapeHTML(settings['badge_description'] || "")}</textarea>
       </div>
     </div>
     <div class="control-group">
