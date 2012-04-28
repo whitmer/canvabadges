@@ -117,8 +117,10 @@ end
 get "/oauth_success" do
   session['api_host'] ||= 'canvas.instructure.com'
   return_url = "https://#{request.host_with_port}/oauth_success"
+  puts return_url
   code = params['code']
   url = "https://#{session['api_host']}/login/oauth2/token"
+  puts url
   uri = URI.parse(url)
   
   http = Net::HTTP.new(uri.host, uri.port)
@@ -130,15 +132,19 @@ get "/oauth_success" do
     :client_secret => @@oauth_config.shared_secret,
     :redirect_uri => CGI.escape(return_url)
   })
+  puts "configured..."
   response = http.request(request)
+  puts "response retrieved!"
   json = JSON.parse(response.body)
   
   if json && json['access_token']
+    puts "making config"
     user_config = UserConfig.new
     user_config.user_id = session['user_id']
     user_config.token = json['access_token']
     user_config.host = session['api_host']
     user_config.save
+    puts "config saved"
     redirect to("/badge_check/#{session['course_id']}/#{session['user_id']}")
   else
     return error("Error retrieving access token")
