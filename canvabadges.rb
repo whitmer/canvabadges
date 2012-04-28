@@ -76,7 +76,7 @@ configure do
 end
 
 get "/" do
-  redirect to('/index.html')
+  return message("Canvabadges are cool")
 end
 
 # tool launch, makes sure we're oauth-good and then redirects to the magic page
