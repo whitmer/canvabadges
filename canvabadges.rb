@@ -204,7 +204,7 @@ get "/badge_check/:course_id/:user_id" do
     course_config = CourseConfig.first(:course_id => params['course_id'])
     settings = course_config && JSON.parse(course_config.settings || "{}")
     if course_config && settings && settings['badge_url'] && settings['min_percent']
-      json = api_call(user_config, "/api/v1/courses/#{params['course_id']}?include[]=total_scores")
+      json = api_call("/api/v1/courses/#{params['course_id']}?include[]=total_scores", user_config)
       
       student = json['enrollments'].detect{|e| e['type'] == 'student' }
       student['computed_final_score'] ||= 0 if student
@@ -260,7 +260,7 @@ get "/badge_check/:course_id/:user_id" do
   end
 end
 
-def api_call(user_config, path, post_params=nil)
+def api_call(path, user_config, post_params=nil)
   url = "https://#{user_config.host}/" + path
   url += (url.match(/\?/) ? "&" : "?") + "access_token=#{user_config.access_token}"
   uri = URI.parse(url)
