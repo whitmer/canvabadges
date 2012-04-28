@@ -221,7 +221,8 @@ get "/badge_check/:course_id/:user_id" do
           badge.salt = Time.now.to_i.to_s
           sha = Digest::SHA512.hexdigest(session['email'] + badge.salt)
           badge.recipient = "sha512$#{sha}"
-          badge.sig = Digest::MD5.hexdigest(badge.salt + rand.to_s)
+          badge.nonce = Digest::MD5.hexdigest(badge.salt + rand.to_s)
+          badge.save
         end
         html += "<img src='" + settings['badge_url'] + "' style='float: left; margin-right: 20px;' class='thumbnail'/>"
         if badge
