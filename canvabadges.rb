@@ -336,13 +336,15 @@ def student_list_html(user_config, course_config)
             <td>#{student['name']}</td>
             <td>
         HTML
-        if badge
-          html += "<img src='/check.gif' alt='earned'/>"
+        if badge && badge.manual_approval
+          html += "<img src='/add.png' alt='manually awarded' title='manually awarded'/>"
+        elsif badge
+          html += "<img src='/check.gif' alt='earned' title='earned'/>"
         else
           html += <<-HTML
-            <img src='/redx.png' alt='not earned' class='earn_badge'/>
-            <form class='form form-inline' method='POST' action='/badges/#{course_config.course_id}/#{user_config.user_id}' style='display: none;'>
-              <button class='btn btn-primary' type='submit'>Award Badge</button>
+            <img src='/redx.png' alt='not earned' class='earn_badge' title='not earned. click to manually award'/>
+            <form class='form form-inline' method='POST' action='/badges/#{course_config.course_id}/#{user_config.user_id}' style='visibility: hidden; display: inline; margin-left: 10px;'>
+              <button class='btn btn-primary' type='submit'><span class='icon-check icon-white'></span> Award Badge</button>
             </form>
           HTML
         end
