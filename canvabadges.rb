@@ -69,6 +69,7 @@ class Badge
   property :recipient, String, :length => 512
   property :salt, String, :length => 256
   property :issued, DateTime
+  property :manual_approval, Boolean
 end
 
 configure do
@@ -218,6 +219,7 @@ post "/badges/:course_id/:user_id" do
       sha = Digest::SHA256.hexdigest(student['email'] + badge.salt)
       badge.recipient = "sha256$#{sha}"
       badge.nonce = Digest::MD5.hexdigest(badge.salt + rand.to_s)
+      badge.manual_approval = true
       badge.save
       
       redirect to("/badge_check/#{params['course_id']}/#{session['user_id']}")
@@ -264,8 +266,10 @@ get "/badge_check/:course_id/:user_id" do
         end
         if badge
           html += "<h3>You've earned this badge!</h3>"
-          html += "To earn this badge you needed #{settings['min_percent']}%, and you have #{student['computed_final_score'].to_f}% in this course right now."
-          html += "<div class='progress progress-success progress-striped progress-big'><div class='tick' style='left: " + (3 * settings['min_percent']).to_i.to_s + "px;'></div><div class='bar' style='width: " + student['computed_final_score'].to_i.to_s + "%;'></div></div>"
+          if !badge.manual_approval
+            html += "To earn this badge you needed #{settings['min_percent']}%, and you have #{student['computed_final_score'].to_f}% in this course right now."
+            html += "<div class='progress progress-success progress-striped progress-big'><div class='tick' style='left: " + (3 * settings['min_percent']).to_i.to_s + "px;'></div><div class='bar' style='width: " + student['computed_final_score'].to_i.to_s + "%;'></div></div>"
+          end
           url = "https:///#{request.host_with_port}/badges/#{params['course_id']}/#{params['user_id']}/#{badge.nonce}"
           html += "<button class='btn btn-primary btn-large' id='redeem' rel='#{url}'><span class='icon-plus icon-white'></span> Add this Badge to your Backpack</button>"
         else
@@ -342,7 +346,7 @@ def student_list_html(user_config, course_config)
             </form>
           HTML
         end
-        HTML += <<-HTML
+        html += <<-HTML
             <td>#{(badge && badge.issued.strftime('%b %e, %Y')) || "&nbsp;"}</td>
           </tr>
         HTML
