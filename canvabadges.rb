@@ -204,13 +204,7 @@ get "/badge_check/:course_id/:user_id" do
     course_config = CourseConfig.first(:course_id => params['course_id'])
     settings = course_config && JSON.parse(course_config.settings || "{}")
     if course_config && settings && settings['badge_url'] && settings['min_percent']
-      url = "https://#{user_config.host}/api/v1/courses/#{params['course_id']}?include[]=total_scores&access_token=#{user_config.access_token}"
-      uri = URI.parse(url)
-      http = Net::HTTP.new(uri.host, uri.port)
-      http.use_ssl = true
-      req = Net::HTTP::Get.new(uri.request_uri)
-      response = http.request(req)
-      json = JSON.parse(response.body)
+      json = api_call(user_config, "/api/v1/courses/#{params['course_id']}?include[]=total_scores")
       
       student = json['enrollments'].detect{|e| e['type'] == 'student' }
       student['computed_final_score'] ||= 0 if student
@@ -245,13 +239,18 @@ get "/badge_check/:course_id/:user_id" do
         html += "<h2>You are not a student in this course</h2>"
       end
       if session['edit_privileges']
+        html += student_list_html(user_config, course_config)
         html += edit_course_html(params['course_id'], params['user_id'], course_config)
       end
       html += footer
       return html
     else
       if session['edit_privileges']
-        return header + edit_course_html(params['course_id'], params['user_id'], course_config) + footer
+        html = header
+        html += student_list_html(user_config, course_config)
+        html += edit_course_html(params['course_id'], params['user_id'], course_config)
+        html += footer
+        return html
       else
         return message("Your teacher hasn't set up this badge yet")
       end
@@ -259,6 +258,52 @@ get "/badge_check/:course_id/:user_id" do
   else
     return error("Invalid user session")
   end
+end
+
+def api_call(user_config, path, post_params=nil)
+  url = "https://#{user_config.host}/" + path
+  url += (url.match(/\?/) ? "&" : "?") + "access_token=#{user_config.access_token}"
+  uri = URI.parse(url)
+  http = Net::HTTP.new(uri.host, uri.port)
+  http.use_ssl = true
+  req = Net::HTTP::Get.new(uri.request_uri)
+  response = http.request(req)
+  json = JSON.parse(response.body)
+end
+
+def student_list_html(user_config, course_config)
+  settings = JSON.parse((course_config && course_config.settings) || "{}")
+  if settings['min_percent']
+    json = api_call("/api/v1/courses/#{course_config.course_id}/students", user_config)
+    if json.is_a?(Array) && json.length > 0
+      badges = Badge.all(:course_id => course_config.course_id)
+      html = <<-HTML
+        <table>
+          <thead>
+            <tr>
+              <th>Student</th>
+              <th>Earned</th>
+              <th>Issued</th>
+          </thead>
+          <tbody>
+      HTML
+      json.each do |student|
+        badge = badges.detect{|b| b.user_id == student['id'] }
+        html += <<-HTML
+          <tr>
+            <td>#{student['name']}</td>
+            <td>#{badge ? "earned" : "not earned"}</td>
+            <td>#{badge && badge.issued}</td>
+          </tr>
+        HTML
+      end
+      html += "</tbody></table>"
+      return html
+    else
+      return "No students are enrolled in this course"
+    end
+  end
+  return ""
 end
 
 def edit_course_html(course_id, user_id, course_config)
