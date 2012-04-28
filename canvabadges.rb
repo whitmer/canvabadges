@@ -341,7 +341,7 @@ def student_list_html(user_config, course_config)
         else
           html += <<-HTML
             <img src='/redx.png' alt='not earned' class='earn_badge'/>
-            <form class='form form-inline' method='POST' action='/badges/#{course_config.course_id}/#{course_config.user_id}' style='display: none;'>
+            <form class='form form-inline' method='POST' action='/badges/#{course_config.course_id}/#{user_config.user_id}' style='display: none;'>
               <button class='btn btn-primary' type='submit'>Award Badge</button>
             </form>
           HTML
