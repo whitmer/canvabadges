@@ -206,7 +206,7 @@ post "/badges/:course_id/:user_id" do
       return error("You don't have permission to award this badge")
     end
     json = api_call("/api/v1/courses/#{params['course_id']}/users?enrollment_type=student&include[]=email", user_config)
-    
+    return json.to_json
     student = json['enrollments'].detect{|e| e['id'] == params['user_id'].to_i }
     if student
       badge = Badge.first(:user_id => params['user_id'], :course_id => params['course_id'])
@@ -334,7 +334,7 @@ def student_list_html(user_config, course_config)
         html += <<-HTML
           <tr>
             <td>#{student['name']}</td>
-            <td>
+            <td style='width: 200px;'>
         HTML
         if badge && badge.manual_approval
           html += "<img src='/add.png' alt='manually awarded' title='manually awarded'/>"
@@ -470,7 +470,7 @@ def footer
     OpenBadges.issue([$(this).attr('rel')]);
   });
   $(".earn_badge").live('click', function() {
-    $(this).parent().find("form").show();
+    $(this).parent().find("form").css('visibility', 'visible');
   });
   </script>
 </body>
