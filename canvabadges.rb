@@ -358,7 +358,7 @@ def footer
   <<-HTML
     </div>
   </div>
-  <script src="jquery.min.js"></script>
+  <script src="/jquery.min.js"></script>
   <script src="http://beta.openbadges.org/issuer.js"></script>
   <script>
   $("#redeem").click(function() {
