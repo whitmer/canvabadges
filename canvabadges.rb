@@ -292,8 +292,8 @@ def student_list_html(user_config, course_config)
         html += <<-HTML
           <tr>
             <td>#{student['name']}</td>
-            <td>#{badge ? "earned" : "not earned"}</td>
-            <td>#{(badge && badge.issued.strftime('%m %d, %Y')) || "&nbsp;"}</td>
+            <td>#{badge ? "<img src='/check.gif' alt='earned'/>" : "<img src='/redx.png' alt='not earned'/>"}</td>
+            <td>#{(badge && badge.issued.strftime('%b %e, %Y')) || "&nbsp;"}</td>
           </tr>
         HTML
       end
