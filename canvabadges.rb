@@ -207,6 +207,7 @@ post "/badges/:course_id/:user_id" do
     end
     json = api_call("/api/v1/courses/#{params['course_id']}/users?enrollment_type=student&include[]=email", user_config)
     student = json.detect{|e| e['id'] == params['user_id'].to_i }
+    return json.to_json + student.to_json
     if student
       badge = Badge.first(:user_id => params['user_id'], :course_id => params['course_id'])
       badge ||= Badge.new(:user_id => params['user_id'], :course_id => params['course_id'])
