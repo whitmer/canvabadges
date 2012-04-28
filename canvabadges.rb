@@ -142,8 +142,11 @@ get "/oauth_success" do
   end
 end
 
-# badge details permalink
-get "/badges/:course_id/:user_id/:code.json" do
+head "/badges/:course_id/:user_id/:code.json" do
+  badge_data(params)
+end
+
+def badge_data(params)
   badge = Badge.first(:course_id => params[:course_id], :user_id => params[:user_id], :nonce => params[:code])
   if badge
     return {
@@ -166,6 +169,11 @@ get "/badges/:course_id/:user_id/:code.json" do
   else
     return "Not Found"
   end
+end
+
+# badge details permalink
+get "/badges/:course_id/:user_id/:code.json" do
+  badge_data(params)
 end
 
 # eventually the teacher will use this to configure badge acceptance criteria
