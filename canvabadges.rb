@@ -288,12 +288,12 @@ def student_list_html(user_config, course_config)
           <tbody>
       HTML
       json.each do |student|
-        badge = badges.detect{|b| b.user_id == student['id'].to_i }
+        badge = badges.detect{|b| b.user_id.to_i == student['id'] }
         html += <<-HTML
           <tr>
             <td>#{student['name']}</td>
             <td>#{badge ? "earned" : "not earned"}</td>
-            <td>#{badge && badge.issued.strftime('%m %d, %Y')}</td>
+            <td>#{(badge && badge.issued.strftime('%m %d, %Y')) || "&nbsp;"}</td>
           </tr>
         HTML
       end
