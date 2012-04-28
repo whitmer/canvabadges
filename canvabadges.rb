@@ -24,10 +24,6 @@ require 'oauth/request_proxy/rack_request'
 require 'ims/lti'
 require 'digest/md5'
 
-# hard-coded oauth information for testing convenience
-$oauth_key = "test"
-$oauth_secret = "secret"
-
 # sinatra wants to set x-frame-options by default, disable it
 disable :protection
 # enable sessions so we can remember the launch info between http requests, as
@@ -82,8 +78,6 @@ get "/" do
   redirect to('/index.html')
 end
 
-# example: https://canvabadges.heroku.com/badge_check?oauth_consumer_key=1234&custom_canvas_user_id=2&custom_canvas_course_id=2&tool_consumer_instance_guid=bob.canvas.instructure.com
-# example: http://localhost:4567/badge_check?oauth_consumer_key=1234&custom_canvas_user_id=1&custom_canvas_course_id=1&tool_consumer_instance_guid=bob.localhost:3000
 # tool launch, makes sure we're oauth-good and then redirects to the magic page
 post "/badge_check" do
   key = params['oauth_consumer_key']
@@ -148,6 +142,7 @@ get "/oauth_success" do
   end
 end
 
+# badge details permalink
 get "/badges/:course_id/:user_id/:code" do
   badge = Badge.first(:course_id => params[:course_id], :user_id => params[:user_id], :nonce => params[:code])
   if badge
@@ -194,6 +189,7 @@ post "/badge_check/:course_id/:user_id/settings" do
   end
 end
 
+# manually award a user with the course's badge
 post "/badges/:course_id/:user_id" do
   if params['course_id'] != session['course_id']
     return error("Invalid tool load")
@@ -498,14 +494,26 @@ def config_wrap(xml)
   XML
 end
 
-
-
-post "/tool_redirect" do
-  url = params['url']
-  args = []
-  params.each do |key, val|
-    args << "#{CGI.escape(key)}=#{CGI.escape(val)}" if key.match(/^custom_/) || ['launch_presentation_return_url', 'selection_directive'].include?(key)
+get "/config.xml" do
+  host = "https://" + request.host_with_port
+  headers 'Content-Type' => 'text/xml'
+  xml =  <<-XML
+    <blti:title>Mozilla Open Badges</blti:title>
+    <blti:description>Award open badges to students based on their course accomplishments</blti:description>
+    <blti:launch_url>#{host}/badge_check</blti:launch_url>
+    <blti:extensions platform="canvas.instructure.com">
+      <lticm:property name="privacy_level">public</lticm:property>
+  XML
+  if params['course_nav']
+    xml +=  <<-XML
+      <lticm:options name="user_navigation">
+        <lticm:property name="url">#{host}/badge_check</lticm:property>
+        <lticm:property name="text">Badge</lticm:property>
+      </lticm:options>
+    XML
   end
-  url = url + (url.match(/\?/) ? "&" : "?") + args.join('&')
-  redirect to(url)
+  xml +=  <<-XML
+    </blti:extensions>
+  XML
+  config_wrap(xml)
 end
