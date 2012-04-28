@@ -213,7 +213,6 @@ get "/badge_check/:course_id/:user_id" do
       student = json['enrollments'].detect{|e| e['type'] == 'student' }
       student['computed_final_score'] ||= 0 if student
       html = header
-      html += json.to_json
       if student
         badge = Badge.first(:user_id => params['user_id'], :course_id => params['course_id'])
         if !badge && student['computed_final_score'] >= settings['min_percent']
@@ -221,7 +220,7 @@ get "/badge_check/:course_id/:user_id" do
           badge.issued = DateTime.now
           badge.salt = Time.now.to_i.to_s
           sha = Digest::SHA512.hexdigest(session['email'] + badge.salt)
-          badge.recipint = "sha512$#{sha}"
+          badge.recipient = "sha512$#{sha}"
           badge.sig = Digest::MD5.hexdigest(badge.salt + rand.to_s)
         end
         html += "<img src='" + settings['badge_url'] + "' style='float: left; margin-right: 20px;' class='thumbnail'/>"
@@ -340,7 +339,7 @@ def header
       position: absolute;
     }
     body {
-      padding-top: 20px;
+      padding-top: 40px;
     }
     </style>
     <script src="http://beta.openbadges.org/issuer.js"></script>
