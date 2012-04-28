@@ -248,7 +248,7 @@ get "/badge_check/:course_id/:user_id" do
       html = header
       html += "<img src='" + settings['badge_url'] + "' style='float: left; margin-right: 20px;' class='thumbnail'/>"
       html += "<h2>#{settings['badge_name'] || "Unnamed Badge"}</h2>"
-      html += "<p>#{settings['badge_description']}</p><div style='clear: left; margin-bottom: 10px;'></div>"
+      html += "<p>#{settings['badge_description']}</p><div style='clear: left; padding-bottom: 10px;'></div>"
       if student
         badge = Badge.first(:user_id => params['user_id'], :course_id => params['course_id'])
         if !badge && student['computed_final_score'] >= settings['min_percent']
