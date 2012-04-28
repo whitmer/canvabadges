@@ -211,12 +211,12 @@ get "/badge_check/:course_id/:user_id" do
       json = JSON.parse(response.body)
       
       student = json['enrollments'].detect{|e| e['type'] == 'student' }
-      student['calculated_final_score'] ||= 0 if student
+      student['computed_final_score'] ||= 0 if student
       html = header
       html += json.to_json
       if student
         badge = Badge.first(:user_id => params['user_id'], :course_id => params['course_id'])
-        if !badge && student['calculated_final_score'] >= settings['min_percent']
+        if !badge && student['computed_final_score'] >= settings['min_percent']
           badge = Badge.new(:user_id => params['user_id'], :course_id => params['course_id'])
           badge.issued = DateTime.now
           badge.salt = Time.now.to_i.to_s
@@ -227,14 +227,14 @@ get "/badge_check/:course_id/:user_id" do
         html += "<img src='" + settings['badge_url'] + "' style='float: left; margin-right: 20px;' class='thumbnail'/>"
         if badge
           html += "<h2>You've earned this badge!</h2>"
-          html += "<div class='progress progress-success progress-striped progress-big'><div class='tick' style='left: " + (3 * settings['min_percent']).to_i.to_s + "px;'></div><div class='bar' style='width: " + student['calculated_final_score'].to_i.to_s + "%;'></div></div>"
+          html += "<div class='progress progress-success progress-striped progress-big'><div class='tick' style='left: " + (3 * settings['min_percent']).to_i.to_s + "px;'></div><div class='bar' style='width: " + student['computed_final_score'].to_i.to_s + "%;'></div></div>"
           url = "https:///#{request.host_with_port}/badges/#{params['course_id']}/#{params['user_id']}/#{badge.nonce}"
           html += url
           html += "<script>OpenBadges.issue([\"#{url}\"]);</script>"
         else
           html += "<h2>You haven't earn this badge yet</h2>"
-          html += "To earn this badge you need #{settings['min_percent']}%, but you only have #{student['calculated_final_score'].to_f}% in this course right now."
-          html += "<div class='progress progress-danger progress-striped progress-big'><div class='tick' style='left: " + (3 * settings['min_percent']).to_i.to_s + "px;'></div><div class='bar' style='width: " + student['calculated_final_score'].to_i.to_s + "%;'></div></div>"
+          html += "To earn this badge you need #{settings['min_percent']}%, but you only have #{student['computed_final_score'].to_f}% in this course right now."
+          html += "<div class='progress progress-danger progress-striped progress-big'><div class='tick' style='left: " + (3 * settings['min_percent']).to_i.to_s + "px;'></div><div class='bar' style='width: " + student['computed_final_score'].to_i.to_s + "%;'></div></div>"
         end
       else
         html += "<h2>You are not a student in this course</h2>"
@@ -338,6 +338,9 @@ def header
       height: 44px;
       top: -2px;
       position: absolute;
+    }
+    body {
+      padding-top: 20px;
     }
     </style>
     <script src="http://beta.openbadges.org/issuer.js"></script>
