@@ -203,7 +203,13 @@ get "/badge_check/:course_id/:user_id" do
     settings = course_config && JSON.parse(course_config.settings || "{}")
     if course_config && settings && settings['badge_url'] && settings['min_percent']
       url = "https://#{user_config.host}/api/v1/courses/#{params['course_id']}?include[]=total_scores&access_token=#{user_config.access_token}"
-      json = JSON.parse(Net::HTTP.get(URI.parse(url)))
+      uri = URI.parse(url)
+      http = Net::HTTP.new(uri.host, uri.port)
+      http.use_ssl = true
+      request = Net::HTTP::Get.new(uri.request_uri)
+      response = http.request(request)
+      json = JSON.parse(response.body)
+      
       student = json['enrollments'].detect{|e| e['type'] == 'student' && e['calculated_final_score'] }
       html = header
       if student
