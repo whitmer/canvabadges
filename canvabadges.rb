@@ -234,7 +234,7 @@ get "/badge_check/:course_id/:user_id" do
           html += "To earn this badge you needed #{settings['min_percent']}%, and you have #{student['computed_final_score'].to_f}% in this course right now."
           html += "<div class='progress progress-success progress-striped progress-big'><div class='tick' style='left: " + (3 * settings['min_percent']).to_i.to_s + "px;'></div><div class='bar' style='width: " + student['computed_final_score'].to_i.to_s + "%;'></div></div>"
           url = "https:///#{request.host_with_port}/badges/#{params['course_id']}/#{params['user_id']}/#{badge.nonce}"
-          html += "<button class='btn btn-primary' id='redeem' rel='#{url}'>Add this Badge to your Backpack</button>"
+          html += "<button class='btn btn-primary btn-large' id='redeem' rel='#{url}'><span class='icon-plus icon-white'></span> Add this Badge to your Backpack</button>"
         else
           html += "<h2>You haven't earn this badge yet</h2>"
           html += "To earn this badge you need #{settings['min_percent']}%, but you only have #{student['computed_final_score'].to_f}% in this course right now."
