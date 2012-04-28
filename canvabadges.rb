@@ -209,6 +209,9 @@ get "/badge_check/:course_id/:user_id" do
       student = json['enrollments'].detect{|e| e['type'] == 'student' }
       student['computed_final_score'] ||= 0 if student
       html = header
+      html += "<img src='" + settings['badge_url'] + "' style='float: left; margin-right: 20px;' class='thumbnail'/>"
+      html += "<h2>#{settings['badge_name'] || "Unnamed Badge"}</h2>"
+      html += "<p>#{settings['badge_description']}</p>"
       if student
         badge = Badge.first(:user_id => params['user_id'], :course_id => params['course_id'])
         if !badge && student['computed_final_score'] >= settings['min_percent']
@@ -223,20 +226,19 @@ get "/badge_check/:course_id/:user_id" do
           badge.nonce = Digest::MD5.hexdigest(badge.salt + rand.to_s)
           badge.save
         end
-        html += "<img src='" + settings['badge_url'] + "' style='float: left; margin-right: 20px;' class='thumbnail'/>"
         if badge
-          html += "<h2>You've earned this badge!</h2>"
+          html += "<h3>You've earned this badge!</h3>"
           html += "To earn this badge you needed #{settings['min_percent']}%, and you have #{student['computed_final_score'].to_f}% in this course right now."
           html += "<div class='progress progress-success progress-striped progress-big'><div class='tick' style='left: " + (3 * settings['min_percent']).to_i.to_s + "px;'></div><div class='bar' style='width: " + student['computed_final_score'].to_i.to_s + "%;'></div></div>"
           url = "https:///#{request.host_with_port}/badges/#{params['course_id']}/#{params['user_id']}/#{badge.nonce}"
           html += "<button class='btn btn-primary btn-large' id='redeem' rel='#{url}'><span class='icon-plus icon-white'></span> Add this Badge to your Backpack</button>"
         else
-          html += "<h2>You haven't earn this badge yet</h2>"
+          html += "<h3>You haven't earn this badge yet</h3>"
           html += "To earn this badge you need #{settings['min_percent']}%, but you only have #{student['computed_final_score'].to_f}% in this course right now."
           html += "<div class='progress progress-danger progress-striped progress-big'><div class='tick' style='left: " + (3 * settings['min_percent']).to_i.to_s + "px;'></div><div class='bar' style='width: " + student['computed_final_score'].to_i.to_s + "%;'></div></div>"
         end
       else
-        html += "<h2>You are not a student in this course</h2>"
+        html += "<h3>You are not a student in this course, so you can't earn this badge</h3>"
       end
       if session['edit_privileges']
         html += student_list_html(user_config, course_config)
