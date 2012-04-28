@@ -221,6 +221,7 @@ get "/badge_check/:course_id/:user_id" do
           badge = Badge.new(:user_id => params['user_id'], :course_id => params['course_id'])
           badge.name = settings['badge_name']
           badge.description = settings['badge_description']
+          badge.badge_url = settings['badge_url']
           badge.issued = DateTime.now
           badge.salt = Time.now.to_i.to_s
           sha = Digest::SHA256.hexdigest(session['email'] + badge.salt)
