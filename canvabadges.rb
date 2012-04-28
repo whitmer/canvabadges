@@ -134,12 +134,12 @@ get "/oauth_success" do
   json = JSON.parse(response.body)
   
   if json && json['access_token']
-    user_config = UserConfig.new
-    user_config.user_id = session['user_id']
+    user_config = UserConfig.first(:user_id => session['user_id'])
+    user_config ||= UserConfig.new(:user_id => session['user_id'])
     user_config.token = json['access_token']
     user_config.host = session['api_host']
-    user_config.save
     return json.to_json
+    user_config.save
     redirect to("/badge_check/#{session['course_id']}/#{session['user_id']}")
   else
     return error("Error retrieving access token")
