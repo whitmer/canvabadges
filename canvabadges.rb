@@ -90,13 +90,14 @@ post "/badge_check" do
   if !params['custom_canvas_user_id'] || !params['custom_canvas_course_id']
     return error("Course must be a Canvas course, and launched with public permission settings")
   end
-  if true #provider.valid_request?(request)
+  if provider.valid_request?(request)
     user_id = params['custom_canvas_user_id']
     user_config = UserConfig.first(:user_id => user_id)
     session['course_id'] = params['custom_canvas_course_id']
     session['user_id'] = user_id
     session['email'] = params['lis_person_contact_email_primary']
     # check if they're a teacher or not
+    return provider.roles
     session['edit_privileges'] = true
     
     # if we already have an oauth token then we're good
@@ -212,6 +213,7 @@ get "/badge_check/:course_id/:user_id" do
       
       student = json['enrollments'].detect{|e| e['type'] == 'student' && e['calculated_final_score'] }
       html = header
+      html += json.to_json
       if student
         badge = Badge.first(:user_id => params['user_id'], :course_id => params['course_id'])
         if !badge && student['calculated_final_score'] >= settings['min_percent']
