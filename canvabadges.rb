@@ -164,7 +164,7 @@ def badge_data(params)
         :name => badge.name,
         :image => "https://#{request.host_with_port}#{badge.badge_url}",
         :description => badge.description,
-        :criteria => "/badges/#{params['course_id']}/criteria",
+        :criteria => "/badges/#{badge.id}/criteria",
         :issuer => {
           :origin => "https://#{request.host_with_port}",
           :name => "Canvabadges",
