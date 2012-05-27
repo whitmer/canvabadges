@@ -254,6 +254,9 @@ get "/badge_check/:course_id/:user_id" do
     settings = course_config && JSON.parse(course_config.settings || "{}")
     if course_config && settings && settings['badge_url'] && settings['min_percent']
       json = api_call("/api/v1/courses/#{params['course_id']}?include[]=total_scores", user_config)
+      if !json['enrollments']
+        return json.to_json
+      end
       
       student = json['enrollments'].detect{|e| e['type'] == 'student' }
       student['computed_final_score'] ||= 0 if student
