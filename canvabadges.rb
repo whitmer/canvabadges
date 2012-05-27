@@ -104,12 +104,16 @@ post "/badge_check" do
     else
       host = params['tool_consumer_instance_guid'].split(/\./)[1..-1].join(".")
       session['api_host'] = host
-      return_url = "https://#{request.host_with_port}/oauth_success"
-      redirect to("https://#{host}/login/oauth2/auth?client_id=#{@@oauth_config.value}&response_type=code&redirect_uri=#{CGI.escape(return_url)}")
+      oauth_dance(host)
     end
   else
     return error("Invalid tool launch")
   end
+end
+
+def oauth_dance(host)
+  return_url = "https://#{request.host_with_port}/oauth_success"
+  redirect to("https://#{host}/login/oauth2/auth?client_id=#{@@oauth_config.value}&response_type=code&redirect_uri=#{CGI.escape(return_url)}")
 end
 
 get "/oauth_success" do
@@ -254,9 +258,7 @@ get "/badge_check/:course_id/:user_id" do
     settings = course_config && JSON.parse(course_config.settings || "{}")
     if course_config && settings && settings['badge_url'] && settings['min_percent']
       json = api_call("/api/v1/courses/#{params['course_id']}?include[]=total_scores", user_config)
-      if !json['enrollments']
-        return json.to_json
-      end
+      return unless json
       
       student = json['enrollments'].detect{|e| e['type'] == 'student' }
       student['computed_final_score'] ||= 0 if student
@@ -326,6 +328,13 @@ def api_call(path, user_config, post_params=nil)
   req = Net::HTTP::Get.new(uri.request_uri)
   response = http.request(req)
   json = JSON.parse(response.body)
+  return response.code
+  if json['message']
+    oauth_dance(user_config.host)
+    false
+  else
+    json
+  end
 end
 
 def student_list_html(user_config, course_config)
