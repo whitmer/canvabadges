@@ -328,8 +328,7 @@ def api_call(path, user_config, post_params=nil)
   req = Net::HTTP::Get.new(uri.request_uri)
   response = http.request(req)
   json = JSON.parse(response.body)
-  return response.code
-  if json['message']
+  if response.code != "200"
     oauth_dance(user_config.host)
     false
   else
