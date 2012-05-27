@@ -244,7 +244,7 @@ post "/badges/:course_id/:user_id" do
 end
 
 get "/badges/:badge_id/criteria" do
-  badge = Badge.first(:id => params['badge_id')
+  badge = Badge.first(:id => params['badge_id'])
   if !badge
     return "Badge not found"
   end
