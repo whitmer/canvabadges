@@ -192,7 +192,8 @@ post "/badge_check/:course_id/:user_id/settings" do
     course_config = CourseConfig.first(:course_id => params['course_id'])
     course_config ||= CourseConfig.new(:course_id => params['course_id'])
     settings = JSON.parse(course_config.settings || "{}")
-    settings[:badge_url] = "/badges/instructure.png"
+    settings[:badge_url] = params['badge_url']
+    settings[:badge_url] = "/badges/default.png" if !settings[:badge_url] || settings[:badge_url].empty?
     settings[:badge_name] = params['badge_name']
     settings[:badge_description] = params['badge_description']
     settings[:min_percent] = params['min_percent'].to_f
@@ -242,8 +243,18 @@ post "/badges/:course_id/:user_id" do
   end
 end
 
-get "/badges/:course_id/criteria" do
-  return message("This will show publicly available criteria for earning this badge")
+get "/badges/:badge_id/criteria" do
+  badge = Badge.first(:id => params['badge_id')
+  if !badge
+    return "Badge not found"
+  end
+  course_config = CourseConfig.first(:course_id => badge.course_id)
+  settings = course_config && JSON.page(course_config.settings || "{}")
+  html = header
+  html += badge_description(settings)
+  html += "<p><img src='/check.gif'/> This user completed the requirements necessary to receive this badge</p>"
+  html += footer
+  html
 end
 
 # the magic page, APIs it up to make sure the user has done what they need to,
@@ -263,9 +274,7 @@ get "/badge_check/:course_id/:user_id" do
       student = json['enrollments'].detect{|e| e['type'] == 'student' }
       student['computed_final_score'] ||= 0 if student
       html = header
-      html += "<img src='" + settings['badge_url'] + "' style='float: left; margin-right: 20px;' class='thumbnail'/>"
-      html += "<h2>#{settings['badge_name'] || "Unnamed Badge"}</h2>"
-      html += "<p>#{settings['badge_description']}</p><div style='clear: left; padding-bottom: 10px;'></div>"
+      html += badge_description(settings)
       if student
         badge = Badge.first(:user_id => params['user_id'], :course_id => params['course_id'])
         if !badge && student['computed_final_score'] >= settings['min_percent']
@@ -317,6 +326,14 @@ get "/badge_check/:course_id/:user_id" do
   else
     return error("Invalid user session")
   end
+end
+
+def badge_description(settings)
+  html = ""
+  html += "<img src='" + settings['badge_url'] + "' style='float: left; margin-right: 20px;' class='thumbnail'/>"
+  html += "<h2>#{settings['badge_name'] || "Unnamed Badge"}</h2>"
+  html += "<p>#{settings['badge_description']}</p><div style='clear: left; padding-bottom: 10px;'></div>"
+  html
 end
 
 def api_call(path, user_config, post_params=nil)
@@ -390,12 +407,18 @@ def edit_course_html(course_id, user_id, course_config)
   <<-HTML
     <form class='well form-horizontal' style="margin-top: 15px;" method="post" action="/badge_check/#{course_id}/#{user_id}/settings">
     <h2>Badge Settings</h2>
-    <img src='/badges/instructure.png' style='float: left; margin-right: 10px;' class='thumbnail'/>
+    <img src='<%= settings['badge_url'] || '/badges/default.png' %>' style='float: left; margin-right: 10px;' class='thumbnail'/>
     <fieldset>
     <div class="control-group">
       <label class="control-label" for="badge_name">Badge name: </label>
       <div class="controls">
         <input type="text" class="span2" placeholder="name" id="badge_name" name="badge_name" value="#{CGI.escapeHTML(settings['badge_name'] || "")}"/>
+      </div>
+    </div>
+    <div class="control-group">
+      <label class="control-label" for="badge_url">Badge icon: </label>
+      <div class="controls">
+        <input type="text" class="span2" placeholder="http://" id="badge_url" name="badge_url" value="#{CGI.escapeHTML(settings['badge_url'] || "")}"/>
       </div>
     </div>
     <div class="control-group">
