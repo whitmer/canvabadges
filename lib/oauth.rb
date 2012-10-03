@@ -36,7 +36,7 @@ module Sinatra
 
     def oauth_dance(request, host)
       return_url = "https://#{request.host_with_port}/oauth_success"
-      redirect to("https://#{host}/login/oauth2/auth?client_id=#{@@oauth_config.value}&response_type=code&redirect_uri=#{CGI.escape(return_url)}")
+      redirect to("https://#{host}/login/oauth2/auth?client_id=#{oauth_config.value}&response_type=code&redirect_uri=#{CGI.escape(return_url)}")
     end
     
     get "/oauth_success" do
@@ -50,9 +50,9 @@ module Sinatra
       http.use_ssl = true
       request = Net::HTTP::Post.new(uri.request_uri)
       request.set_form_data({
-        :client_id => @@oauth_config.value,
+        :client_id => oauth_config.value,
         :code => code,
-        :client_secret => @@oauth_config.shared_secret,
+        :client_secret => oauth_config.shared_secret,
         :redirect_uri => CGI.escape(return_url)
       })
       response = http.request(request)

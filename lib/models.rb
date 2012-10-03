@@ -49,6 +49,10 @@ module Sinatra
       DataMapper.auto_upgrade!
       @@oauth_config = ExternalConfig.first(:config_type => 'canvas_oauth')
     end
+    
+    def oauth_config
+      @@oauth_config
+    end
   end
   
   register Models
