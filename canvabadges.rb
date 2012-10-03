@@ -51,7 +51,7 @@ def oauth_dance(request, host)
 end 
 
 def api_call(path, user_config, post_params=nil)
-  url = "#{protocol}://#{user_config.host}/" + path
+  url = "#{protocol}://#{user_config.host}" + path
   url += (url.match(/\?/) ? "&" : "?") + "access_token=#{user_config.access_token}"
   uri = URI.parse(url)
   http = Net::HTTP.new(uri.host, uri.port)

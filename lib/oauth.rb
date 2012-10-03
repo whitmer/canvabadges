@@ -54,6 +54,8 @@ module Sinatra
       })
       response = http.request(request)
       json = JSON.parse(response.body)
+      puts "retrieving token from #{url}..."
+      puts response.body
       
       if json && json['access_token']
         user_config = UserConfig.first(:user_id => session['user_id'])
