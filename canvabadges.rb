@@ -298,7 +298,7 @@ def edit_course_html(course_id, user_id, course_config)
   <<-HTML
     <form class='well form-horizontal' style="margin-top: 15px;" method="post" action="/badge_check/#{course_id}/#{user_id}/settings">
     <h2>Badge Settings</h2>
-    <img src='<%= settings['badge_url'] || '/badges/default.png' %>' style='float: left; margin-right: 10px;' class='thumbnail'/>
+    <img src="<%= settings['badge_url'] || '/badges/default.png' %>" style='float: left; margin-right: 10px;' class='thumbnail'/>
     <fieldset>
     <div class="control-group">
       <label class="control-label" for="badge_name">Badge name: </label>

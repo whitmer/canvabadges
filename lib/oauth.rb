@@ -27,14 +27,14 @@ module Sinatra
         else
           host = params['tool_consumer_instance_guid'].split(/\./)[1..-1].join(".")
           session['api_host'] = host
-          oauth_dance(host)
+          oauth_dance(request, host)
         end
       else
         return error("Invalid tool launch")
       end
     end
 
-    def oauth_dance(host)
+    def oauth_dance(request, host)
       return_url = "https://#{request.host_with_port}/oauth_success"
       redirect to("https://#{host}/login/oauth2/auth?client_id=#{@@oauth_config.value}&response_type=code&redirect_uri=#{CGI.escape(return_url)}")
     end
