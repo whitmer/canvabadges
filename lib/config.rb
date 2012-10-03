@@ -24,7 +24,7 @@ module Sinatra
     end
     
     get "/config.xml" do
-      host = "https://" + request.host_with_port
+      host = "#{protocol}://" + request.host_with_port
       headers 'Content-Type' => 'text/xml'
       xml =  <<-XML
         <blti:title>Mozilla Open Badges</blti:title>

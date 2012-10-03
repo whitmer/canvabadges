@@ -4,12 +4,12 @@ module Sinatra
   module Views
     # public page that shows requirements for badge completion
     get "/badges/:badge_id/criteria" do
-      badge = Badge.first(:id => params['badge_id'])
+      badge = Badge.first(:nonce => params['badge_id'])
       if !badge
         return "Badge not found"
       end
       course_config = CourseConfig.first(:course_id => badge.course_id)
-      settings = course_config && JSON.page(course_config.settings || "{}")
+      settings = course_config && JSON.parse(course_config.settings || "{}")
       html = header
       html += badge_description(settings)
       html += "<p><img src='/check.gif'/> This user completed the requirements necessary to receive this badge</p>"
@@ -56,7 +56,7 @@ module Sinatra
                 html += "To earn this badge you needed #{settings['min_percent']}%, and you have #{student['computed_final_score'].to_f}% in this course right now."
                 html += "<div class='progress progress-success progress-striped progress-big'><div class='tick' style='left: " + (3 * settings['min_percent']).to_i.to_s + "px;'></div><div class='bar' style='width: " + student['computed_final_score'].to_i.to_s + "%;'></div></div>"
               end
-              url = "https://#{request.host_with_port}/badges/#{params['course_id']}/#{params['user_id']}/#{badge.nonce}.json"
+              url = "#{protocol}://#{request.host_with_port}/badges/#{params['course_id']}/#{params['user_id']}/#{badge.nonce}.json"
               html += "<button class='btn btn-primary btn-large' id='redeem' rel='#{url}'><span class='icon-plus icon-white'></span> Add this Badge to your Backpack</button>"
             else
               html += "<h3>You haven't earn this badge yet</h3>"
@@ -150,7 +150,7 @@ module Sinatra
       <<-HTML
         <form class='well form-horizontal' style="margin-top: 15px;" method="post" action="/badge_check/#{course_id}/#{user_id}/settings">
         <h2>Badge Settings</h2>
-        <img src="<%= settings['badge_url'] || '/badges/default.png' %>" style='float: left; margin-right: 10px;' class='thumbnail'/>
+        <img src="#{ settings['badge_url'] || '/badges/default.png' }" style='float: left; margin-right: 10px;' class='thumbnail'/>
         <fieldset>
         <div class="control-group">
           <label class="control-label" for="badge_name">Badge name: </label>

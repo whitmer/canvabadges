@@ -39,6 +39,7 @@ class Badge
   property :issued, DateTime
   property :email, String
   property :manual_approval, Boolean
+  property :public, Boolean
 end
 
 module Sinatra

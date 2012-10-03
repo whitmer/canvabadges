@@ -23,6 +23,7 @@ module Sinatra
         
         # if we already have an oauth token then we're good
         if user_config
+          session['api_host'] = user_config.host
           redirect to("/badge_check/#{params['custom_canvas_course_id']}/#{session['user_id']}")
         # otherwise we need to do the oauth dance for this user
         else
@@ -37,13 +38,13 @@ module Sinatra
 
     get "/oauth_success" do
       session['api_host'] ||= 'canvas.instructure.com'
-      return_url = "https://#{request.host_with_port}/oauth_success"
+      return_url = "#{protocol}://#{request.host_with_port}/oauth_success"
       code = params['code']
-      url = "https://#{session['api_host']}/login/oauth2/token"
+      url = "#{protocol}://#{session['api_host']}/login/oauth2/token"
       uri = URI.parse(url)
       
       http = Net::HTTP.new(uri.host, uri.port)
-      http.use_ssl = true
+      http.use_ssl = protocol == "https"
       request = Net::HTTP::Post.new(uri.request_uri)
       request.set_form_data({
         :client_id => oauth_config.value,
@@ -61,6 +62,9 @@ module Sinatra
         user_config.host = session['api_host']
         user_config.save
         redirect to("/badge_check/#{session['launch_course_id']}/#{session['user_id']}")
+        user_id = session['user_id']
+        session.destroy
+        session['user_id'] = user_id
       else
         return error("Error retrieving access token")
       end

@@ -9,7 +9,7 @@ module Sinatra
     def badge_data(params)
       badge = Badge.first(:course_id => params[:course_id], :user_id => params[:user_id], :nonce => params[:code])
       headers 'Content-Type' => 'application/json'
-      badge.badge_url = "https://#{request.host_with_port}" + badge.badge_url if badge.badge_url.match(/^\//)
+      badge.badge_url = "#{protocol}://#{request.host_with_port}" + badge.badge_url if badge.badge_url.match(/^\//)
       if badge
         return {
           :recipient => badge.recipient,
@@ -20,9 +20,9 @@ module Sinatra
             :name => badge.name,
             :image => badge.badge_url,
             :description => badge.description,
-            :criteria => "/badges/#{badge.id}/criteria",
+            :criteria => "/badges/#{badge.nonce}/criteria",
             :issuer => {
-              :origin => "https://#{request.host_with_port}",
+              :origin => "#{protocol}://#{request.host_with_port}",
               :name => "Canvabadges",
               :org => "Instructure, Inc.",
               :contact => "support@instructure.com"

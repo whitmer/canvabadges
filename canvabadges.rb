@@ -41,18 +41,22 @@ get "/" do
   return message("Canvabadges are cool")
 end
 
-def oauth_dance(request, host)
-  return_url = "https://#{request.host_with_port}/oauth_success"
-  redirect to("https://#{host}/login/oauth2/auth?client_id=#{oauth_config.value}&response_type=code&redirect_uri=#{CGI.escape(return_url)}")
+def protocol
+  (ENV['RACK_ENV'] || settings.environment).to_s == "development" ? "http" : "https"
 end
-    
+
+def oauth_dance(request, host)
+  return_url = "#{protocol}://#{request.host_with_port}/oauth_success"
+  redirect to("#{protocol}://#{host}/login/oauth2/auth?client_id=#{oauth_config.value}&response_type=code&redirect_uri=#{CGI.escape(return_url)}")
+end 
 
 def api_call(path, user_config, post_params=nil)
-  url = "https://#{user_config.host}/" + path
+  url = "#{protocol}://#{user_config.host}/" + path
   url += (url.match(/\?/) ? "&" : "?") + "access_token=#{user_config.access_token}"
   uri = URI.parse(url)
   http = Net::HTTP.new(uri.host, uri.port)
-  http.use_ssl = true
+  puts url
+  http.use_ssl = protocol == "https"
   req = Net::HTTP::Get.new(uri.request_uri)
   response = http.request(req)
   json = JSON.parse(response.body)
