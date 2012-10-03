@@ -34,11 +34,6 @@ module Sinatra
       end
     end
 
-    def oauth_dance(request, host)
-      return_url = "https://#{request.host_with_port}/oauth_success"
-      redirect to("https://#{host}/login/oauth2/auth?client_id=#{oauth_config.value}&response_type=code&redirect_uri=#{CGI.escape(return_url)}")
-    end
-    
     get "/oauth_success" do
       session['api_host'] ||= 'canvas.instructure.com'
       return_url = "https://#{request.host_with_port}/oauth_success"

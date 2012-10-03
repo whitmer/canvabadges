@@ -37,6 +37,12 @@ get "/" do
   return message("Canvabadges are cool")
 end
 
+def oauth_dance(request, host)
+  return_url = "https://#{request.host_with_port}/oauth_success"
+  redirect to("https://#{host}/login/oauth2/auth?client_id=#{oauth_config.value}&response_type=code&redirect_uri=#{CGI.escape(return_url)}")
+end
+    
+
 head "/badges/:course_id/:user_id/:code.json" do
   badge_data(params)
 end
@@ -459,3 +465,4 @@ get "/config.xml" do
   XML
   config_wrap(xml)
 end
+
