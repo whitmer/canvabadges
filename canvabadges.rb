@@ -61,7 +61,7 @@ def api_call(path, user_config, post_params=nil)
   response = http.request(req)
   json = JSON.parse(response.body)
   if response.code != "200"
-    raise "asdf"
+    puts "bad response"
     puts response.body
     oauth_dance(request, user_config.host)
     false
