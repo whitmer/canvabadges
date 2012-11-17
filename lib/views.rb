@@ -325,7 +325,7 @@ module Sinatra
           </div>
         </div>
         <script src="/jquery.min.js"></script>
-        <script src="http://beta.openbadges.org/issuer.js"></script>
+        <script src="https://beta.openbadges.org/issuer.js"></script>
         <script src="/badges.js"></script>
       </body>
       </html>
