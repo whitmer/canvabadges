@@ -118,7 +118,7 @@ module Sinatra
         }
       end
       def badge_hash(user_id, user_name, badge, root_nonce=nil)
-        abs_url = badge.badge_url || "/badges/default.png"
+        abs_url = (badge && badge.badge_url) || "/badges/default.png"
         abs_url = "#{protocol}://#{request.host_with_port}" + abs_url unless abs_url.match(/\:\/\//)
         {
           :id => user_id,
