@@ -118,18 +118,31 @@ module Sinatra
         }
       end
       def badge_hash(user_id, user_name, badge, root_nonce=nil)
-        abs_url = (badge && badge.badge_url) || "/badges/default.png"
-        abs_url = "#{protocol}://#{request.host_with_port}" + abs_url unless abs_url.match(/\:\/\//)
-        {
-          :id => user_id,
-          :name => user_name,
-          :manual => badge.manual_approval,
-          :public => badge.public,
-          :image_url => abs_url,
-          :issued => badge && badge.issued.strftime('%b %e, %Y'),
-          :nonce => badge && badge.nonce,
-          :course_nonce => root_nonce || badge.course_nonce
-        }
+        if badge
+          abs_url = badge.badge_url || "/badges/default.png"
+          abs_url = "#{protocol}://#{request.host_with_port}" + abs_url unless abs_url.match(/\:\/\//)
+          {
+            :id => user_id,
+            :name => user_name,
+            :manual => badge.manual_approval,
+            :public => badge.public,
+            :image_url => abs_url,
+            :issued => badge && badge.issued.strftime('%b %e, %Y'),
+            :nonce => badge && badge.nonce,
+            :course_nonce => root_nonce || badge.course_nonce
+          }
+        else
+          {
+            :id => user_id,
+            :name => user_name,
+            :manual => nil,
+            :public => nil,
+            :image_url => nil,
+            :issued => nil,
+            :nonce => nil,
+            :course_nonce => root_nonce
+          }
+        end
       end
     end
   end
