@@ -1,0 +1,43 @@
+$(function() {
+  var protocol_and_host = null;
+  var $scripts = $("script");
+  $("script").each(function() {
+    var src = $(this).attr('src');
+    if(src && src.match(/canvas_profile_badges/)) {
+      var splits = src.split(/\//);
+      protocol_and_host = splits[0] + "//" + splits[2];
+    }
+  });
+  var match = location.href.match(/\/users\/(\d+)$/);
+  if(match && protocol_and_host) {
+    var user_id = match[1];
+    var domain = location.host;
+    var url = protocol_and_host + "/api/v1/badges/public/" + user_id + "/" + encodeURIComponent(domain) + ".json";
+    $.ajax({
+      type: 'GET',
+      dataType: 'jsonp',
+      url: url,
+      success: function(data) {
+        if(data.objects && data.objects.length > 0) {
+          var $box = $("<div/>");
+          $box.append("<h2 class='border border-b'>Badges</h2>");
+          for(idx in data.objects) {
+            var badge = data.objects[idx];
+            var $badge = $("<div/>", {style: 'float: left;'});
+            var link = protocol_and_host + "/badges/criteria/" + badge.course_nonce + "?user=" + badge.nonce;
+            var $a = $("<a/>", {href: link});
+            $a.append($("<img/>", {src: badge.image_url, style: 'width: 72px; height: 72px;'}));
+            $badge.append($a);
+            $box.append($badge);
+          }
+          $box.append($("<div/>", {style: 'clear: left'}));
+          $("#edit_profile_form").after($box);
+        }
+      },
+      error: function() {
+        console.log("badges failed to load");
+      },
+      timeout: 5000
+    });
+  }
+});

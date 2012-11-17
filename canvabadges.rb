@@ -26,7 +26,7 @@ require 'digest/md5'
 
 require './lib/models.rb'
 require './lib/oauth.rb'
-require './lib/badge_data.rb'
+require './lib/api.rb'
 require './lib/badge_config.rb'
 require './lib/views.rb'
 require './lib/config.rb'
@@ -36,10 +36,6 @@ disable :protection
 # enable sessions so we can remember the launch info between http requests, as
 # the user takes the assessment
 enable :sessions
-
-get "/" do
-  return message("Canvabadges are cool")
-end
 
 def protocol
   (ENV['RACK_ENV'] || settings.environment).to_s == "development" ? "http" : "https"
@@ -60,6 +56,8 @@ def api_call(path, user_config, post_params=nil)
   req = Net::HTTP::Get.new(uri.request_uri)
   response = http.request(req)
   json = JSON.parse(response.body)
+  puts response.body
+  json.instance_variable_set('@has_more', (response['Link'] || '').match(/rel=\"next\"/))
   if response.code != "200"
     puts "bad response"
     puts response.body

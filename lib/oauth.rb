@@ -7,28 +7,37 @@ module Sinatra
       key = params['oauth_consumer_key']
       tool_config = ExternalConfig.first(:config_type => 'lti', :value => key)
       secret = tool_config.shared_secret
+      host = params['tool_consumer_instance_guid'].split(/\./)[1..-1].join(".")
+      domain = Domain.first(:host => host)
+      domain ||= Domain.new(:host => host)
+      domain.name = params['tool_consumer_instance_name']
+      domain.save
       provider = IMS::LTI::ToolProvider.new(key, secret, params)
       if !params['custom_canvas_user_id'] || !params['custom_canvas_course_id']
         return error("Course must be a Canvas course, and launched with public permission settings")
       end
       if provider.valid_request?(request)
         user_id = params['custom_canvas_user_id']
-        user_config = UserConfig.first(:user_id => user_id)
+        user_config = UserConfig.first(:user_id => user_id, :domain_id => domain.id)
+        session["user_id"] = user_id
         session["launch_course_id"] = params['custom_canvas_course_id']
         session["permission_for_#{params['custom_canvas_course_id']}"] = 'view'
-        session['user_id'] = user_id
         session['email'] = params['lis_person_contact_email_primary']
+        session['name'] = params['lis_person_name_full']
         # check if they're a teacher or not
         session["permission_for_#{params['custom_canvas_course_id']}"] = 'edit' if provider.roles.include?('instructor') || provider.roles.include?('contentdeveloper') || provider.roles.include?('urn:lti:instrole:ims/lis/administrator') || provider.roles.include?('administrator')
+        session['domain_id'] = domain.id
         
         # if we already have an oauth token then we're good
         if user_config
-          session['api_host'] = user_config.host
-          redirect to("/badge_check/#{params['custom_canvas_course_id']}/#{session['user_id']}")
+          session['user_id'] = user_config.user_id
+          if params['custom_show_all']
+            redirect to("/badges/all/#{domain.id}/#{user_config.user_id}")
+          else
+            redirect to("/badges/check/#{domain.id}/#{params['custom_canvas_course_id']}/#{user_config.user_id}")
+          end
         # otherwise we need to do the oauth dance for this user
         else
-          host = params['tool_consumer_instance_guid'].split(/\./)[1..-1].join(".")
-          session['api_host'] = host
           oauth_dance(request, host)
         end
       else
@@ -37,10 +46,13 @@ module Sinatra
     end
 
     get "/oauth_success" do
-      session['api_host'] ||= 'canvas.instructure.com'
+      if !session['domain_id'] || !session['user_id']
+        return "Launch parameters lost"
+      end
+      domain = Domain.first(:id => session['domain_id'])
       return_url = "#{protocol}://#{request.host_with_port}/oauth_success"
       code = params['code']
-      url = "#{protocol}://#{session['api_host']}/login/oauth2/token"
+      url = "#{protocol}://#{domain.host}/login/oauth2/token"
       uri = URI.parse(url)
       
       http = Net::HTTP.new(uri.host, uri.port)
@@ -58,15 +70,17 @@ module Sinatra
       puts response.body
       
       if json && json['access_token']
-        user_config = UserConfig.first(:user_id => session['user_id'])
-        user_config ||= UserConfig.new(:user_id => session['user_id'])
+        user_config = UserConfig.first(:user_id => session['user_id'], :domain_id => domain.id)
+        user_config ||= UserConfig.new(:user_id => session['user_id'], :domain_id => domain.id)
         user_config.access_token = json['access_token']
-        user_config.host = session['api_host']
+        user_config.name = session['name']
+        user_config.global_user_id = json['user']['id']
         user_config.save
-        redirect to("/badge_check/#{session['launch_course_id']}/#{session['user_id']}")
-        user_id = session['user_id']
+        redirect to("/badges/check/#{domain.id}/#{session['launch_course_id']}/#{user_config.user_id}")
         session.destroy
-        session['user_id'] = user_id
+        puts user_config.to_json
+        session['user_id'] = user_config.user_id
+        session['domain_id'] = user_config.domain_id
       else
         return error("Error retrieving access token")
       end
