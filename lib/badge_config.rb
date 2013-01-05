@@ -15,6 +15,14 @@ module Sinatra
         settings['reference_code'] = params['reference_code']
         settings['badge_description'] = params['badge_description']
         settings['min_percent'] = params['min_percent'].to_f
+        modules = []
+        params.each do |k, v|
+          if k.match(/module_/)
+            modules << [k.sub(/module_/, ''), CGI.unescape(v)]
+          end
+        end
+        settings['modules'] = modules.length > 0 ? modules : nil
+        
         course_config.settings = settings.to_json
         course_config.set_root_from_reference_code(params['reference_code'])
         course_config.save

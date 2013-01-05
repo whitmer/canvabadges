@@ -26,8 +26,7 @@ module Sinatra
         session['name'] = params['lis_person_name_full']
         # check if they're a teacher or not
         session["permission_for_#{params['custom_canvas_course_id']}"] = 'edit' if provider.roles.include?('instructor') || provider.roles.include?('contentdeveloper') || provider.roles.include?('urn:lti:instrole:ims/lis/administrator') || provider.roles.include?('administrator')
-        session['domain_id'] = domain.id
-        
+        session['domain_id'] = domain.id.to_s
         # if we already have an oauth token then we're good
         if user_config
           session['user_id'] = user_config.user_id
@@ -78,9 +77,8 @@ module Sinatra
         user_config.save
         redirect to("/badges/check/#{domain.id}/#{session['launch_course_id']}/#{user_config.user_id}")
         session.destroy
-        puts user_config.to_json
-        session['user_id'] = user_config.user_id
-        session['domain_id'] = user_config.domain_id
+        session['user_id'] = user_config.user_id.to_s
+        session['domain_id'] = user_config.domain_id.to_s
       else
         return error("Error retrieving access token")
       end

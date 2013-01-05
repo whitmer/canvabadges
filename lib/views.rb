@@ -26,6 +26,7 @@ module Sinatra
       html
     end
     
+    # show all public badges for the specified user
     get "/badges/all/:domain_id/:user_id" do
       for_current_user = session['user_id'] == params['user_id'] && session['domain_id'] == params['domain_id']
       badges = Badge.all(:user_id => params['user_id'], :domain_id => params['domain_id'])
@@ -42,7 +43,7 @@ module Sinatra
         if for_current_user
           return "No data available"
         else
-          html += "<p>No Badges Earned</p>"
+          html += "<p>No Badges Earned or Shared</p>"
         end
       end
       html += "<table>"
@@ -76,16 +77,27 @@ module Sinatra
         course_config = CourseConfig.first(:course_id => params['course_id'], :domain_id => params['domain_id'])
         settings = course_config && JSON.parse(course_config.settings || "{}")
         if course_config && settings && settings['badge_url'] && settings['min_percent']
-          json = api_call("/api/v1/courses/#{params['course_id']}?include[]=total_scores", user_config)
-          return unless json
+          scores_json = api_call("/api/v1/courses/#{params['course_id']}?include[]=total_scores", user_config)
+          modules_json = api_call("/api/v1/courses/#{params['course_id']}/modules", user_config) if settings['modules']
+          moduels_json ||= []
+          completed_module_ids = modules_json.select{|m| m['completed_at'] }.map{|m| m['id'] }.compact
+          return unless scores_json
           
-          student = json['enrollments'].detect{|e| e['type'] == 'student' }
+          student = scores_json['enrollments'].detect{|e| e['type'] == 'student' }
           student['computed_final_score'] ||= 0 if student
           html = header
           html += badge_description(settings)
           if student
             badge = Badge.first(:user_id => params['user_id'], :course_id => params['course_id'], :domain_id => params['domain_id'])
-            if !badge && student['computed_final_score'] >= settings['min_percent']
+            completed_score = student['computed_final_score'] >= settings['min_percent']
+            required_module_ids = (settings['modules'] || []).map(&:first).map(&:to_i)
+            puts required_module_ids.to_json
+            puts completed_module_ids.to_json
+            incomplete_module_ids = required_module_ids - completed_module_ids
+            puts incomplete_module_ids.to_json
+            completed_modules = true
+            completed_modules = false if incomplete_module_ids.length > 0
+            if !badge && completed_score && completed_modules
               badge = Badge.new(:user_id => params['user_id'], :course_id => params['course_id'], :domain_id => params['domain_id'])
               badge.name = settings['badge_name']
               badge.email = session['email']
@@ -97,8 +109,13 @@ module Sinatra
             if badge
               html += "<h3>You've earned this badge!</h3>"
               if !badge.manual_approval
-                html += "To earn this badge you needed #{settings['min_percent']}%, and you have #{student['computed_final_score'].to_f}% in this course right now."
-                html += "<div class='progress progress-success progress-striped progress-big'><div class='tick' style='left: " + (3 * settings['min_percent']).to_i.to_s + "px;'></div><div class='bar' style='width: " + student['computed_final_score'].to_i.to_s + "%;'></div></div>"
+                if settings['modules']
+                  html += "To earn this badge you needed #{settings['min_percent']}%, and to complete the required modules. You have #{student['computed_final_score'].to_f}% in this course right now and have completed the required modules."
+                  html += "<div class='progress progress-success progress-striped progress-big'><div class='bar' style='width: " + student['computed_final_score'].to_i.to_s + "%;'></div></div>"
+                else
+                  html += "To earn this badge you needed #{settings['min_percent']}%, and you have #{student['computed_final_score'].to_f}% in this course right now."
+                  html += "<div class='progress progress-success progress-striped progress-big'><div class='tick' style='left: " + (3 * settings['min_percent']).to_i.to_s + "px;'></div><div class='bar' style='width: " + student['computed_final_score'].to_i.to_s + "%;'></div></div>"
+                end
               end
               url = "#{protocol}://#{request.host_with_port}/badges/data/#{params['course_id']}/#{params['user_id']}/#{badge.nonce}.json"
               html += "<form class='form-inline' action='/badges/#{badge.nonce}'><label><input class='public_badge' #{'checked' if badge.public} type='checkbox'/> Let others see this badge</label><br/>"
@@ -107,8 +124,24 @@ module Sinatra
               html += "</form>"
             else
               html += "<h3>You haven't earn this badge yet</h3>"
-              html += "To earn this badge you need #{settings['min_percent']}%, but you only have #{student['computed_final_score'].to_f}% in this course right now."
-              html += "<div class='progress progress-danger progress-striped progress-big'><div class='tick' style='left: " + (3 * settings['min_percent']).to_i.to_s + "px;'></div><div class='bar' style='width: " + student['computed_final_score'].to_i.to_s + "%;'></div></div>"
+              if settings['modules']
+                html += "To earn this badge you need to achieve the following:"
+                total = settings['modules'].length + 1
+                achieved = completed_score ? 1 : 0
+                html += "<ul style='list-style-type: none;'><li><img src='#{completed_score ? '/check.gif' : '/redx.png'}'/> Total score of at least #{settings['min_percent']}% (currently #{student['computed_final_score'].to_f}%)</li>"
+                settings['modules'].each do |mod|
+                  complete = completed_module_ids.include?(mod[0].to_i)
+                  achieved +=1 if complete
+                  html += "<li><img src='#{complete ? '/check.gif' : '/redx.png'}'/> Complete the module #{mod[1]} (#{complete ? 'completed' : 'not completed'})</li>"
+                end
+                puts achieved
+                puts total
+                html += "</ul>"
+                html += "<div class='progress progress-danger progress-striped progress-big'><div class='bar' style='width: " + [(100.0 * achieved.to_f / total.to_f).to_i, 1].max.to_s + "%;'></div></div>"
+              else
+                html += "To earn this badge you need #{settings['min_percent']}%, but you only have #{student['computed_final_score'].to_f}% in this course right now."
+                html += "<div class='progress progress-danger progress-striped progress-big'><div class='tick' style='left: " + (3 * settings['min_percent']).to_i.to_s + "px;'></div><div class='bar' style='width: " + student['computed_final_score'].to_i.to_s + "%;'></div></div>"
+              end
               html += "<a class='btn btn-primary btn-large' href='/badges/all/#{params['domain_id']}/#{session['user_id']}'>See All Your Badges</a>"
             end
           else
@@ -116,7 +149,7 @@ module Sinatra
           end
           if session["permission_for_#{params['course_id']}"] == 'edit'
             html += student_list_html(params['domain_id'], user_config, course_config)
-            html += edit_course_html(params['domain_id'], params['course_id'], params['user_id'], course_config)
+            html += edit_course_html(params['domain_id'], params['course_id'], params['user_id'], user_config, course_config)
           end
           html += footer
           return html
@@ -124,7 +157,7 @@ module Sinatra
           if session["permission_for_#{params['course_id']}"] == 'edit'
             html = header
             html += student_list_html(params['domain_id'], user_config, course_config)
-            html += edit_course_html(params['domain_id'], params['course_id'], params['user_id'], course_config)
+            html += edit_course_html(params['domain_id'], params['course_id'], params['user_id'], user_config, course_config)
             html += footer
             return html
           else
@@ -196,9 +229,12 @@ module Sinatra
         return ""
       end
       
-      def edit_course_html(domain_id, course_id, user_id, course_config)
+      def edit_course_html(domain_id, course_id, user_id, user_config, course_config)
         settings = JSON.parse((course_config && course_config.root_settings) || "{}")
         ref_code = JSON.parse((course_config && course_config.settings) || "{}")['reference_code']
+        modules_json = api_call("/api/v1/courses/#{course_id}/modules", user_config)
+        
+        scores_json = api_call("/api/v1/courses/#{params['course_id']}?include[]=total_scores", user_config)
         disabled = course_config && course_config.root_id
         html = <<-HTML
           <form class='well form-horizontal' style="margin-top: 15px;" method="post" action="/badges/settings/#{domain_id}/#{course_id}">
@@ -247,6 +283,31 @@ module Sinatra
               </div>
             </div>
           </div>
+        HTML
+        if modules_json && modules_json.length > 0
+          html += <<-HTML
+            <div class="control-group">
+              <label class="control-label">Modules requiring completion:</label>
+              <div class="controls">
+          HTML
+          modules_json.each do |mod|
+            puts "MOD: " + mod.to_json
+            checked = settings['modules'].map(&:first).include?(mod['id'].to_s)
+            html += <<-HTML
+                <div>
+                  <label>
+                    <input type="checkbox" #{'checked' if checked} name="module_#{mod['id']}" value="#{CGI.escape(mod['name'])}"/>
+                    #{mod['name']}
+                  </label>
+                </div>
+            HTML
+          end
+          html += <<-HTML
+              </div>
+            </div>
+          HTML
+        end
+        html + <<-HTML
           <div class="form-actions" style="border: 0; background: transparent;">
             <button type="submit" class='btn btn-primary'>Save Badge Settings</button>
           </div>

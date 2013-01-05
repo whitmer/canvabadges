@@ -7,6 +7,7 @@ gem "ims-lti"
 gem "nokogiri"
 gem 'dm-core'
 gem 'dm-migrations'
+gem 'dm-aggregates'
 gem 'dm-postgres-adapter'
 
 group :development do
