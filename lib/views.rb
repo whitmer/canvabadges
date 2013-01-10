@@ -5,6 +5,11 @@ module Sinatra
     get "/" do
       erubis :index
     end
+    
+    get "/canvabadges.xml" do
+      response.headers['Content-Type'] = "text/xml"
+      erubis :config_xml, :layout => false
+    end
 
     # public page that shows requirements for badge completion
     get "/badges/criteria/:course_nonce" do
