@@ -127,6 +127,7 @@ class Badge
   property :manual_approval, Boolean
   property :public, Boolean
   property :state, String
+  property :global_user_id, String, :length => 256
   
   belongs_to :course_config
   before :save, :generate_defaults
@@ -140,6 +141,9 @@ class Badge
       self.recipient = "sha256$#{sha}"
     end
     self.course_config ||= CourseConfig.first(:course_id => self.course_id, :domain_id => self.domain_id)
+    user_config = UserConfig.first(:user_id => self.user_id, :domain_id => self.domain_id)
+    self.global_user_id = user_config.global_user_id if user_config
+    true
   end
   
   def user_name

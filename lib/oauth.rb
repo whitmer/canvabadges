@@ -23,6 +23,11 @@ module Sinatra
         session["launch_course_id"] = params['custom_canvas_course_id']
         session["permission_for_#{params['custom_canvas_course_id']}"] = 'view'
         session['email'] = params['lis_person_contact_email_primary']
+        # TODO: something akin to this parameter needs to be sent in order to
+        # tell the difference between Canvas Cloud and Canvas CV instances.
+        # Otherwise I can't tell the difference between global_user_id 5 from
+        # Cloud as opposed to from CV.
+        session['source_id'] = params['custom_canvas_system_id'] || 'cloud'
         session['name'] = params['lis_person_name_full']
         # check if they're a teacher or not
         session["permission_for_#{params['custom_canvas_course_id']}"] = 'edit' if provider.roles.include?('instructor') || provider.roles.include?('contentdeveloper') || provider.roles.include?('urn:lti:instrole:ims/lis/administrator') || provider.roles.include?('administrator')
@@ -73,7 +78,7 @@ module Sinatra
         user_config ||= UserConfig.new(:user_id => session['user_id'], :domain_id => domain.id)
         user_config.access_token = json['access_token']
         user_config.name = session['name']
-        user_config.global_user_id = json['user']['id']
+        user_config.global_user_id = session['source_id'] + "_" + json['user']['id']
         user_config.save
         redirect to("/badges/check/#{domain.id}/#{session['launch_course_id']}/#{user_config.user_id}")
         session.destroy
