@@ -1,0 +1,19 @@
+<% if @course_config.configured? %>
+  <ul class='nav nav-pills' style='margin-bottom: 5px; margin-top: 25px;'>
+    <li id='current_students'>
+      <a href="#">Current Students</a>
+    </li><li id='awarded_students'>
+      <a href="#">Awarded Students</a>
+    </li>
+  </ul>
+  <table id="badges" class="table table-bordered table-striped" style='margin: 0 0 15px 0;' data-course_id="<%= @course_config.course_id %>" data-domain_id="<%= @course_config.domain_id %>">
+    <thead>
+      <tr>
+        <th>Student</th>
+        <th>Earned</th>
+        <th>Issued</th>
+    </thead>
+    <tbody>
+    </tbody>
+  </table>
+<% end %>

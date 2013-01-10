@@ -1,0 +1,80 @@
+<% settings = @course_config.settings_hash
+   ref_code = settings['reference_code']
+   advanced = ref_code || settings['modules'] || settings['manual_approval']
+   disabled = @course_config && @course_config.root_id 
+%>
+  <form class='well form-horizontal' style="margin-top: 15px;" method="post" action="/badges/settings/<%= @domain_id %>/<%= @course_id %>">
+    <h2>Badge Settings</h2>
+    <img src="<%= settings['badge_url'] || '/badges/default.png' %>" style='float: left; margin-right: 10px;' class='thumbnail'/>
+    <fieldset>
+      <div class="control-group">
+        <label class="control-label" for="badge_name">Badge name: </label>
+        <div class="controls">
+          <input type="text" <%= "disabled='true'" if disabled %> class="span2" placeholder="name" id="badge_name" name="badge_name" value="<%= CGI.escapeHTML(settings['badge_name'] || "") %>"/>
+        </div>
+      </div>
+      <div class="control-group">
+        <label class="control-label" for="badge_url">Badge icon: </label>
+        <div class="controls">
+          <input type="text" <%= "disabled='true'" if disabled %> class="span2" placeholder="http://" id="badge_url" name="badge_url" value="<%= CGI.escapeHTML(settings['badge_url'] || "") %>"/>
+          must be 72x72 pixels
+        </div>
+      </div>
+      <div class="control-group">
+        <label class="control-label" for="badge_description">Badge description: </label>
+        <div class="controls">
+          <textarea <%= "disabled='true'" if disabled %> class='input-xlarge' rows='3' name='badge_description' id='badge_description'><%= CGI.escapeHTML(settings['badge_description'] || "") %></textarea>
+        </div>
+      </div>
+      <div class="control-group">
+        <label class="control-label" for="min_percent">Final grade cutoff: </label>
+        <div class="controls">
+          <div class="input-append">
+            <input <%= "disabled='true'" if disabled %> type="text" class="span1" placeholder="##" id="min_percent" name="min_percent" value="<%= settings['min_percent'] %>"/><span class='add-on'> % </span>
+          </div>
+        </div>
+      </div>
+      <div class="control-group advanced">
+        <label class="control-label" for="reference_code">Badge reference code: </label>
+        <div class="controls">
+          <input type="text" placeholder="set to assign" class="span5" id="reference_code" name="reference_code" value="<%= CGI.escapeHTML(ref_code || "") %>"/>
+          <br/>
+          Set this value to reuse an existing badge. Clear to unlink from an existing badge. Remember: linking and unlinking will cause problems if any users have already exported badges.
+          <% if @course_config %>
+            To use this badge's settings for a different course, the code is <%= @course_config.reference_code %>. 
+          <% end %>
+        </div>
+      </div>
+      <div class="control-group advanced">
+        <label class="control-label">Manual approval: </label>
+        <div class="controls">
+          <div class="input-append">
+            <label>
+              <input type="checkbox" <%= 'checked' if settings['manual_approval'] %> name="manual_approval" value="1"/>
+              Require manual approval before awarding
+            </label>
+          </div>
+        </div>
+      </div>
+        <% if @modules_json && @modules_json.length > 0 %>
+        <div class="control-group advanced">
+          <label class="control-label">Modules requiring completion:</label>
+          <div class="controls">
+            <% @modules_json.each do |mod| %>
+              <% checked = settings['modules'].map(&:first).include?(mod['id'].to_s) %>
+              <div>
+                <label>
+                  <input type="checkbox" <%= 'checked' if checked %> name="module_<%= mod['id'] %>" value="<%= CGI.escape(mod['name']) %>"/>
+                  <%= mod['name'] %>
+                </label>
+              </div>
+            <% end %>
+          </div>
+        </div>
+        </div>
+      <%  end %>
+      <div class="form-actions" style="border: 0; background: transparent;">
+        <button type="submit" class='btn btn-primary'>Save Badge Settings</button>
+      </div>
+    </fieldset>
+  </form> 

@@ -51,6 +51,7 @@ def api_call(path, user_config, post_params=nil)
   url += (url.match(/\?/) ? "&" : "?") + "access_token=#{user_config.access_token}"
   uri = URI.parse(url)
   http = Net::HTTP.new(uri.host, uri.port)
+  puts "API"
   puts url
   http.use_ssl = protocol == "https"
   req = Net::HTTP::Get.new(uri.request_uri)

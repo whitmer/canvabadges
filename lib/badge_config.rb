@@ -14,6 +14,7 @@ module Sinatra
         settings['badge_name'] = params['badge_name']
         settings['reference_code'] = params['reference_code']
         settings['badge_description'] = params['badge_description']
+        settings['manual_approval'] = params['manual_approval'] == '1'
         settings['min_percent'] = params['min_percent'].to_f
         modules = []
         params.each do |k, v|
@@ -56,16 +57,7 @@ module Sinatra
         json = api_call("/api/v1/courses/#{params['course_id']}/users?enrollment_type=student&include[]=email&user_id=#{params['user_id']}", user_config)
         student = json.detect{|e| e['id'] == params['user_id'].to_i }
         if student
-          badge = Badge.first(:user_id => params['user_id'], :course_id => params['course_id'], :domain_id => params['domain_id'])
-          badge ||= Badge.new(:user_id => params['user_id'], :course_id => params['course_id'], :domain_id => params['domain_id'])
-          badge.name = settings['badge_name']
-          badge.user_full_name = params['user_name']
-          badge.description = settings['badge_description']
-          badge.badge_url = settings['badge_url']
-          badge.issued = DateTime.now
-          badge.email = student['email']
-          badge.manual_approval = true
-          badge.save
+          badge = Badge.manually_award(params, course_config, student['name'], student['email'])
           
           redirect to("/badges/check/#{params['domain_id']}/#{params['course_id']}/#{session['user_id']}")
         else

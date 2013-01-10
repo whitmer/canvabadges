@@ -73,6 +73,39 @@ class CourseConfig
       self.root_id = nil
     end
   end
+  
+  def settings_hash
+    @hash ||= JSON.parse(self.settings || "{}")
+  end
+  
+  def configured?
+    settings_hash && settings_hash['badge_url'] && settings_hash['min_percent']
+  end
+  
+  def modules_required?
+    settings_hash && settings_hash['modules']
+  end
+  
+  def required_modules
+    (settings_hash['modules'] || [])
+  end
+  
+  def required_module_ids
+    (settings_hash['modules'] || []).map(&:first).map(&:to_i)
+  end
+  
+  def required_modules_completed?(completed_module_ids)
+    incomplete_module_ids = self.required_module_ids - completed_module_ids
+    incomplete_module_ids.length == 0
+  end
+  
+  def required_score_met?(percent)
+    percent >= settings_hash['min_percent']
+  end
+  
+  def requirements_met?(percent, completed_module_ids)
+    required_modules_completed?(completed_module_ids) && required_score_met?(percent)
+  end
 end
 
 class Badge
@@ -93,6 +126,7 @@ class Badge
   property :email, String
   property :manual_approval, Boolean
   property :public, Boolean
+  property :state, String
   
   belongs_to :course_config
   before :save, :generate_defaults
@@ -100,6 +134,7 @@ class Badge
   def generate_defaults
     self.salt ||= Time.now.to_i.to_s
     self.nonce ||= Digest::MD5.hexdigest(self.salt + rand.to_s)
+    self.issued ||= DateTime.now if self.awarded?
     if !self.recipient
       sha = Digest::SHA256.hexdigest(self.email + self.salt)
       self.recipient = "sha256$#{sha}"
@@ -113,7 +148,53 @@ class Badge
   end
   
   def course_nonce
+    self.course_config ||= CourseConfig.first(:course_id => self.course_id, :domain_id => self.domain_id)
     self.course_config.root_nonce
+  end
+  
+  def awarded?
+    self.state == 'awarded'
+  end
+  
+  def pending?
+    self.state == 'pending'
+  end
+  
+  def revoke
+    self.state = 'revoked'
+    save
+  end
+  
+  def award
+    self.state = 'awarded'
+    save
+  end
+  
+  def self.generate_badge(params, course_config, name, email)
+    settings = course_config.settings_hash
+    badge = self.first_or_new(:user_id => params['user_id'], :course_id => params['course_id'], :domain_id => params['domain_id'])
+    badge.name = settings['badge_name']
+    badge.email = email
+    badge.user_full_name = name || params['user_name']
+    badge.description = settings['badge_description']
+    badge.badge_url = settings['badge_url']
+    badge
+  end
+  
+  def self.manually_award(params, course_config, name, email)
+    badge = generate_badge(params, course_config, name, email)
+    badge.manual_approval = true unless badge.pending?
+    badge.state = 'awarded'
+    badge.issued = DateTime.now
+    badge.save
+    badge
+  end
+  
+  def self.complete(params, course_config, name, email)
+    badge = generate_badge(params, course_config, name, email)
+    badge.state ||= settings['manual_approval'] ? 'pending' : 'awarded'
+    badge.save
+    badge
   end
 end
 

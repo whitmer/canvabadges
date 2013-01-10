@@ -1,0 +1,5 @@
+<% settings = @course_config.settings_hash %>
+<img src='<%= settings['badge_url'] %>' style='float: left; margin-right: 20px;' class='thumbnail'/>
+<h2><%= settings['badge_name'] || "Unnamed Badge" %></h2>
+<p class='desc'><%= settings['badge_description'] %></p>
+<div style='clear: left; padding-bottom: 10px;'></div>

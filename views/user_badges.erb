@@ -1,0 +1,31 @@
+<% if @for_current_user && @domain %>
+  <h2>Your Badges at <%= @domain.name %></h2>
+<% elsif @user && @domain %>
+  <h2>Badges for <%= @user.name || 'User' %> at <%= @domain.name %></h2>
+<% end %>
+<% if @badges.empty? %>
+  <% if @for_current_user %>
+    No Data available
+  <% else %>
+    <p>No Badges Earned or Shared</p>
+  <% end %>
+<% end %>
+<table>
+  <% @badges.each do |badge| %>
+    <% badge_url = for_current_user ? "/badges/check/#{badge.course_id}/#{badge.user_id}" : "/badges/criteria/#{badge.course_nonce}?user=#{badge.nonce}" %>
+    <tr>
+    <td style='padding: 0 5px;'><a href='#{badge_url}'><img src='<% badge.badge_url %>' class='thumbnail' alt='badge image'/></a></td>
+    <td style='padding: 0 5px;'><%= badge.name %>
+      <% if for_current_user %>
+        <form class='form-inline' action='/badges/<% badge.nonce %>' style='margin: 0 0 0 15px;'>
+        <label><input class='public_badge' <%= 'checked' if badge.public %> type='checkbox'/> public</label>
+        </form>
+      <% end %>
+    </td>
+    </tr>
+  <% end %>
+</table>
+<% if @for_current_user && !@badges.empty? %>
+  <% url = "#{protocol}://#{request.host_with_port}/badges/all/#{params['domain_id']}/#{params['user_id']}" %>
+  <br/><form class='form-inline'><label>Share this Page: <input type='text' value='<%= url %>'/></label></form>
+<% end %>

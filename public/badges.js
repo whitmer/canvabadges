@@ -37,17 +37,23 @@ function loadResults(url) {
         var badge = data['objects'][idx];
         html = "<tr>";
         html += "<td>";
-        if(badge.issued) {
+        if(badge.issued && badge.state == 'awarded') {
           html += "<a href='/badges/criteria/" + badge.course_nonce + "?user=" + badge.nonce + "'>" + badge.name + "</a>";
         } else {
           html += badge.name;
         }
         html += "</td>";
         html += "<td>";
-        if(badge.manual) {
+        if(badge.manual && badge.state == 'awarded') {
           html += "<img src='/add.png' alt='manually awarded' title='manually awarded'/>"
-        } else if(badge.issued) {
+        } else if(badge.issued && badge.state == 'awarded') {
           html += "<img src='/check.gif' alt='earned' title='earned'/>"
+        } else if(badge.state == 'pending') {
+          html += "<img src='/warning.png' alt='pending approval' class='earn_badge' title='earned, needs approval. click to manually award'/>";
+          html += "<form class='form form-inline' method='POST' action='/badges/award/" + domain_id + "/" + course_id + "/" + badge.id + "' style='visibility: hidden; display: inline; margin-left: 10px;'>";
+          html += "<input type='hidden' name='user_name' value='" + badge.name + "'/>";
+          html += "<button class='btn btn-primary' type='submit'><span class='icon-check icon-white'></span> Award Badge</button>";
+          html += "</form>";
         } else {
           html += "<img src='/redx.png' alt='not earned' class='earn_badge' title='not earned. click to manually award'/>";
           html += "<form class='form form-inline' method='POST' action='/badges/award/" + domain_id + "/" + course_id + "/" + badge.id + "' style='visibility: hidden; display: inline; margin-left: 10px;'>";

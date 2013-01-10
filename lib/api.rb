@@ -127,8 +127,9 @@ module Sinatra
             :manual => badge.manual_approval,
             :public => badge.public,
             :image_url => abs_url,
-            :issued => badge && badge.issued.strftime('%b %e, %Y'),
+            :issued => badge && badge.issued && badge.issued.strftime('%b %e, %Y'),
             :nonce => badge && badge.nonce,
+            :state => badge.state,
             :course_nonce => root_nonce || badge.course_nonce
           }
         else
@@ -140,6 +141,7 @@ module Sinatra
             :image_url => nil,
             :issued => nil,
             :nonce => nil,
+            :state => 'unissued',
             :course_nonce => root_nonce
           }
         end
