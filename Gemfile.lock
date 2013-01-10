@@ -24,6 +24,7 @@ GEM
       data_objects (= 0.10.9)
     do_sqlite3 (0.10.9)
       data_objects (= 0.10.9)
+    erubis (2.7.0)
     ims-lti (1.1.2)
       builder
       oauth (~> 0.4.5)
@@ -54,6 +55,7 @@ DEPENDENCIES
   dm-migrations
   dm-postgres-adapter
   dm-sqlite-adapter
+  erubis
   ims-lti
   json (= 1.5.1)
   nokogiri

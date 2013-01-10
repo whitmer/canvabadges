@@ -3,7 +3,7 @@ require 'sinatra/base'
 module Sinatra
   module Views
     get "/" do
-      erb :index
+      erubis :index
     end
 
     # public page that shows requirements for badge completion
@@ -14,7 +14,7 @@ module Sinatra
       end
       @badge = Badge.first(:nonce => params['user'])
       @earned = params['user'] && @badge && @badge.course_nonce == params['course_nonce']
-      erb :badge_completion
+      erubis :badge_completion
     end
     
     # show all public badges for the specified user
@@ -24,7 +24,7 @@ module Sinatra
       @badges = @badges.select{|b| b.public } unless @for_current_user
       @domain = Domain.first(:id => params['domain_id'])
       @user = UserConfig.first(:user_id => params['user_id'], :domain_id => params['domain_id'])
-      erb :user_badges
+      erubis :user_badges
     end
     
     # the magic page, APIs it up to make sure the user has done what they need to,
@@ -54,10 +54,10 @@ module Sinatra
               @badge = Badge.complete(params, @course_config, session['name'], session['email'])
             end
           end
-          erb :badge_check
+          erubis :badge_check
         else
           if session["permission_for_#{params['course_id']}"] == 'edit'
-            erb :manage_badge
+            erubis :manage_badge
           else
             return message("Your teacher hasn't set up this badge yet")
           end
@@ -74,7 +74,7 @@ module Sinatra
         @user_config = user_config
         @course_config = course_config
         @modules_json ||= api_call("/api/v1/courses/#{course_id}/modules", user_config)
-        erb :_badge_settings
+        erubis :_badge_settings
       end
       
       def error(text)
@@ -83,7 +83,7 @@ module Sinatra
       
       def message(text)
         @message = text
-        return erb :message
+        return erubis :message
       end
     end
   end

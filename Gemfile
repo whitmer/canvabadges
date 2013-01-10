@@ -9,6 +9,7 @@ gem 'dm-core'
 gem 'dm-migrations'
 gem 'dm-aggregates'
 gem 'dm-postgres-adapter'
+gem 'erubis'
 
 group :development do
     gem 'dm-sqlite-adapter'
