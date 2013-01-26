@@ -78,7 +78,7 @@ module Sinatra
         user_config ||= UserConfig.new(:user_id => session['user_id'], :domain_id => domain.id)
         user_config.access_token = json['access_token']
         user_config.name = session['name']
-        user_config.global_user_id = session['source_id'] + "_" + json['user']['id']
+        user_config.global_user_id = session['source_id'] + "_" + json['user']['id'].to_s
         user_config.save
         redirect to("/badges/check/#{domain.id}/#{session['launch_course_id']}/#{user_config.user_id}")
         session.destroy
