@@ -3,12 +3,12 @@ require 'sinatra/base'
 module Sinatra
   module Views
     get "/" do
-      erubis :index
+      erb :index
     end
     
     get "/canvabadges.xml" do
       response.headers['Content-Type'] = "text/xml"
-      erubis :config_xml, :layout => false
+      erb :config_xml, :layout => false
     end
 
     # public page that shows requirements for badge completion
@@ -19,7 +19,7 @@ module Sinatra
       end
       @badge = Badge.first(:nonce => params['user'])
       @earned = params['user'] && @badge && @badge.course_nonce == params['course_nonce']
-      erubis :badge_completion
+      erb :badge_completion
     end
     
     # show all public badges for the specified user
@@ -29,7 +29,7 @@ module Sinatra
       @badges = @badges.select{|b| b.public } unless @for_current_user
       @domain = Domain.first(:id => params['domain_id'])
       @user = UserConfig.first(:user_id => params['user_id'], :domain_id => params['domain_id'])
-      erubis :user_badges
+      erb :user_badges
     end
     
     # the magic page, APIs it up to make sure the user has done what they need to,
@@ -59,10 +59,10 @@ module Sinatra
               @badge = Badge.complete(params, @course_config, session['name'], session['email'])
             end
           end
-          erubis :badge_check
+          erb :badge_check
         else
           if session["permission_for_#{params['course_id']}"] == 'edit'
-            erubis :manage_badge
+            erb :manage_badge
           else
             return message("Your teacher hasn't set up this badge yet")
           end
@@ -79,7 +79,7 @@ module Sinatra
         @user_config = user_config
         @course_config = course_config
         @modules_json ||= api_call("/api/v1/courses/#{course_id}/modules", user_config)
-        erubis :_badge_settings
+        erb :_badge_settings
       end
       
       def error(text)
@@ -88,7 +88,7 @@ module Sinatra
       
       def message(text)
         @message = text
-        return erubis :message
+        return erb :message
       end
     end
   end
