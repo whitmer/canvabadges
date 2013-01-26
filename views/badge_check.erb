@@ -1,4 +1,4 @@
-<%= erubis :_badge_description %>
+<%= erb :_badge_description %>
 <% settings = @course_config.settings_hash %>
 <% if @student %>
   <% if @badge && @badge.awarded? %>
@@ -54,6 +54,6 @@
   <h3>You are not a student in this course, so you can't earn this badge</h3>
 <% end %>
 <% if session["permission_for_#{params['course_id']}"] == 'edit' %>
-  <%= erubis :_student_list %>
+  <%= erb :_student_list %>
   <%= edit_course_html(params['domain_id'], params['course_id'], params['user_id'], @user_config, @course_config) %>
 <% end %>
