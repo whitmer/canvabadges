@@ -1,4 +1,4 @@
-<% settings = @course_config.settings_hash
+<% settings = (@course_config && @course_config.settings_hash) || {}
    ref_code = settings['reference_code']
    advanced = ref_code || settings['modules'] || settings['manual_approval']
    disabled = @course_config && @course_config.root_id 
@@ -61,7 +61,7 @@
           <label class="control-label">Modules requiring completion:</label>
           <div class="controls">
             <% @modules_json.each do |mod| %>
-              <% checked = settings['modules'].map(&:first).include?(mod['id'].to_s) %>
+              <% checked = (settings['modules'] || []).map(&:first).include?(mod['id'].to_s) %>
               <div>
                 <label>
                   <input type="checkbox" <%= 'checked' if checked %> name="module_<%= mod['id'] %>" value="<%= CGI.escape(mod['name']) %>"/>
