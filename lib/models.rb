@@ -195,6 +195,7 @@ class Badge
   end
   
   def self.complete(params, course_config, name, email)
+    settings = course_config.settings_hash
     badge = generate_badge(params, course_config, name, email)
     badge.state ||= settings['manual_approval'] ? 'pending' : 'awarded'
     badge.save
