@@ -119,7 +119,7 @@ class Badge
   property :course_config_id, Integer
   property :name, String, :length => 256
   property :user_full_name, String, :length => 256
-  property :description, String, :length => 256
+  property :description, Text
   property :recipient, String, :length => 512
   property :salt, String, :length => 256
   property :issued, DateTime
