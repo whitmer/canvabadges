@@ -132,6 +132,27 @@ class Badge
   belongs_to :course_config
   before :save, :generate_defaults
   
+  def open_badge_json(host_with_port)
+    {
+      :recipient => self.recipient,
+      :salt => self.salt, 
+      :issued_on => self.issued.strftime("%Y-%m-%d"),
+      :badge => {
+        :version => "0.5.0",
+        :name => self.name,
+        :image => self.badge_url,
+        :description => self.description,
+        :criteria => "/badges/criteria/#{self.course_nonce}",
+        :issuer => {
+          :origin => "#{protocol}://#{host_with_port}",
+          :name => "Canvabadges",
+          :org => "Instructure, Inc.",
+          :contact => "support@instructure.com"
+        }
+      }
+    }
+  end
+  
   def generate_defaults
     self.salt ||= Time.now.to_i.to_s
     self.nonce ||= Digest::MD5.hexdigest(self.salt + rand.to_s)

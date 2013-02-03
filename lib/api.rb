@@ -62,31 +62,10 @@ module Sinatra
         headers 'Content-Type' => 'application/json'
         badge.badge_url = "#{protocol}://#{host_with_port}" + badge.badge_url if badge.badge_url.match(/^\//)
         if badge
-          return open_badge_json(badge)
+          return badge.open_badge_json(host_with_port)
         else
           return "Not Found"
         end
-      end
-      
-      def open_badge_json(badge, host_with_port)
-        {
-          :recipient => badge.recipient,
-          :salt => badge.salt, 
-          :issued_on => badge.issued.strftime("%Y-%m-%d"),
-          :badge => {
-            :version => "0.5.0",
-            :name => badge.name,
-            :image => badge.badge_url,
-            :description => badge.description,
-            :criteria => "/badges/criteria/#{badge.course_nonce}",
-            :issuer => {
-              :origin => "#{protocol}://#{host_with_port}",
-              :name => "Canvabadges",
-              :org => "Instructure, Inc.",
-              :contact => "support@instructure.com"
-            }
-          }
-        }
       end
       
       def badge_list(awarded, params, session)

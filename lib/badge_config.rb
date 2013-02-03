@@ -39,7 +39,7 @@ module Sinatra
       if badge.user_id == session['user_id']
         badge.public = params['public'] == 'true'
         badge.save
-        badge_json(badge, request.host_with_port)
+        badge.open_badge_json(request.host_with_port)
       else
         return {:error => "user mismatch"}.to_json
       end
