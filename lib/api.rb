@@ -5,9 +5,9 @@ module Sinatra
     # list of publicly available badges for the current user
     get "/api/v1/badges/public/:user_id/:host.json" do
       domain = Domain.first(:host => params['host'])
-      user = UserConfig.first(:host => params['host'], :user_id => params['user_id'])
-      badge_list = []
       return "bad domain: #{params['host']}" unless domain
+      user = UserConfig.first(:domain_id => domain, :user_id => params['user_id'])
+      badge_list = []
       if domain
         if user && user.global_user_id
           badges = Badge.all(:global_user_id => user.global_user_id, :public => true)
