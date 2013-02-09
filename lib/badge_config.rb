@@ -54,7 +54,7 @@ module Sinatra
         if session["permission_for_#{params['course_id']}"] != 'edit'
           return error("You don't have permission to award this badge")
         end
-        json = api_call("/api/v1/courses/#{params['course_id']}/users?enrollment_type=student&include[]=email&user_id=#{params['user_id']}", user_config)
+        json = BadgeHelpers.api_call("/api/v1/courses/#{params['course_id']}/users?enrollment_type=student&include[]=email&user_id=#{params['user_id']}", user_config)
         student = json.detect{|e| e['id'] == params['user_id'].to_i }
         if student
           badge = Badge.manually_award(params, course_config, student['name'], student['email'])

@@ -39,12 +39,12 @@ module Sinatra
     end
     
     # open badge details permalink
-    head "api/v1/badges/data/:course_id/:user_id/:code.json" do
-      api_response(badge_data(params))
+    head "/api/v1/badges/data/:course_id/:user_id/:code.json" do
+      api_response(badge_data(params, request.host_with_port))
     end
     
     # open badge details permalink
-    get "api/v1/badges/data/:course_id/:user_id/:code.json" do
+    get "/api/v1/badges/data/:course_id/:user_id/:code.json" do
       api_response(badge_data(params, request.host_with_port))
     end
     
@@ -60,40 +60,40 @@ module Sinatra
       def badge_data(params, host_with_port)
         badge = Badge.first(:course_id => params[:course_id], :user_id => params[:user_id], :nonce => params[:code])
         headers 'Content-Type' => 'application/json'
-        badge.badge_url = "#{protocol}://#{host_with_port}" + badge.badge_url if badge.badge_url.match(/^\//)
         if badge
+          badge.badge_url = "#{BadgeHelpers.protocol}://#{host_with_port}" + badge.badge_url if badge.badge_url.match(/^\//)
           return badge.open_badge_json(host_with_port)
         else
-          return "Not Found"
+          return {:error => "Not found"}
         end
       end
       
       def badge_list(awarded, params, session)
         user_config = UserConfig.first(:user_id => session['user_id'], :domain_id => params['domain_id'])
         course_config = CourseConfig.first(:course_id => params['course_id'], :domain_id => params['domain_id'])
-        if !session["permission_for_#{params['course_id']}"] || !user_config
-          return {:error => "Invalid permissions"}.to_json
+        if session["permission_for_#{params['course_id']}"] != 'edit' || !user_config
+          return {:error => "Invalid permissions"}
         end
         badges = Badge.all(:domain_id => params['domain_id'], :course_id => params['course_id'])
         result = []
         next_url = nil
         params['page'] = '1' if params['page'].to_i == 0
         if awarded
+          if badges.length > (params['page'].to_i * 50)
+            next_url = "/api/v1/badges/awarded/#{params['domain_id']}/#{params['course_id']}.json?page=#{params['page'].to_i + 1}"
+          end
+          badges = badges[((params['page'].to_i - 1) * 50), 50]
           badges.each do |badge|
             result << badge_hash(badge.user_id, badge.user_name, badge, course_config && course_config.root_nonce)
           end
-          badges = badges[params['page'].to_i, 50]
-          if badges.length > params['page'].to_i * 50
-            next_url = "/badges/awarded/#{params['domain_id']}/#{params['course_id']}.json?page=#{params['page'].to_i + 1}"
-          end
         else
-          json = api_call("/api/v1/courses/#{params['course_id']}/users?enrollment_type=student&per_page=50&page=#{params['page'].to_i}", user_config)
+          json = BadgeHelpers.api_call("/api/v1/courses/#{params['course_id']}/users?enrollment_type=student&per_page=50&page=#{params['page'].to_i}", user_config)
           json.each do |student|
             badge = badges.detect{|b| b.user_id.to_i == student['id'] }
             result << badge_hash(student['id'], student['name'], badge, course_config && course_config.root_nonce)
           end
           if json.instance_variable_get('@has_more')
-            next_url = "/badges/current/#{params['domain_id']}/#{params['course_id']}.json?page=#{params['page'].to_i + 1}"
+            next_url = "/api/v1/badges/current/#{params['domain_id']}/#{params['course_id']}.json?page=#{params['page'].to_i + 1}"
           end
         end
         return {
@@ -104,7 +104,7 @@ module Sinatra
       def badge_hash(user_id, user_name, badge, root_nonce=nil)
         if badge
           abs_url = badge.badge_url || "/badges/default.png"
-          abs_url = "#{protocol}://#{request.host_with_port}" + abs_url unless abs_url.match(/\:\/\//)
+          abs_url = "#{BadgeHelpers.protocol}://#{request.host_with_port}" + abs_url unless abs_url.match(/\:\/\//)
           {
             :id => user_id,
             :name => user_name,

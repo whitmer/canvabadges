@@ -42,7 +42,7 @@ module Sinatra
           end
         # otherwise we need to do the oauth dance for this user
         else
-          oauth_dance(request, host)
+          BadgeHelpers.oauth_dance(request, host)
         end
       else
         return error("Invalid tool launch")
@@ -54,13 +54,13 @@ module Sinatra
         return "Launch parameters lost"
       end
       domain = Domain.first(:id => session['domain_id'])
-      return_url = "#{protocol}://#{request.host_with_port}/oauth_success"
+      return_url = "#{BadgeHelpers.protocol}://#{request.host_with_port}/oauth_success"
       code = params['code']
-      url = "#{protocol}://#{domain.host}/login/oauth2/token"
+      url = "#{BadgeHelpers.protocol}://#{domain.host}/login/oauth2/token"
       uri = URI.parse(url)
       
       http = Net::HTTP.new(uri.host, uri.port)
-      http.use_ssl = protocol == "https"
+      http.use_ssl = BadgeHelpers.protocol == "https"
       request = Net::HTTP::Post.new(uri.request_uri)
       request.set_form_data({
         :client_id => oauth_config.value,

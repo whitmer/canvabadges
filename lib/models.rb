@@ -86,10 +86,6 @@ class CourseConfig
     settings_hash && settings_hash['modules']
   end
   
-  def required_modules
-    (settings_hash['modules'] || [])
-  end
-  
   def required_module_ids
     (settings_hash['modules'] || []).map(&:first).map(&:to_i)
   end
@@ -142,9 +138,9 @@ class Badge
         :name => self.name,
         :image => self.badge_url,
         :description => self.description,
-        :criteria => "/badges/criteria/#{self.course_nonce}",
+        :criteria => "#{BadgeHelpers.protocol}://#{host_with_port}/badges/criteria/#{self.course_nonce}",
         :issuer => {
-          :origin => "#{protocol}://#{host_with_port}",
+          :origin => "#{BadgeHelpers.protocol}://#{host_with_port}",
           :name => "Canvabadges",
           :org => "Instructure, Inc.",
           :contact => "support@instructure.com"

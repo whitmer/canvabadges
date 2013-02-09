@@ -42,8 +42,8 @@ module Sinatra
       if @user_config
         @course_config = CourseConfig.first(:course_id => params['course_id'], :domain_id => params['domain_id'])
         if @course_config && @course_config.configured?
-          scores_json = api_call("/api/v1/courses/#{params['course_id']}?include[]=total_scores", @user_config)
-          modules_json = api_call("/api/v1/courses/#{params['course_id']}/modules", @user_config) if @course_config.modules_required?
+          scores_json = BadgeHelpers.api_call("/api/v1/courses/#{params['course_id']}?include[]=total_scores", @user_config)
+          modules_json = BadgeHelpers.api_call("/api/v1/courses/#{params['course_id']}/modules", @user_config) if @course_config.modules_required?
           modules_json ||= []
           @completed_module_ids = modules_json.select{|m| m['completed_at'] }.map{|m| m['id'] }.compact
           unless scores_json
@@ -78,7 +78,7 @@ module Sinatra
         @course_id = course_id
         @user_config = user_config
         @course_config = course_config
-        @modules_json ||= api_call("/api/v1/courses/#{course_id}/modules", user_config)
+        @modules_json ||= BadgeHelpers.api_call("/api/v1/courses/#{course_id}/modules", user_config)
         erb :_badge_settings
       end
       

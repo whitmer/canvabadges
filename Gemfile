@@ -13,5 +13,9 @@ gem 'erubis'
 
 group :development do
     gem 'dm-sqlite-adapter'
+    gem 'rspec'
+    gem 'rack-test'
+    gem 'selenium-webdriver'
+    gem 'capybara'
 end
 

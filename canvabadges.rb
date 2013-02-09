@@ -23,13 +23,13 @@ require 'nokogiri'
 require 'oauth/request_proxy/rack_request'
 require 'ims/lti'
 require 'digest/md5'
+require 'net/http'
 
 require './lib/models.rb'
 require './lib/oauth.rb'
 require './lib/api.rb'
 require './lib/badge_config.rb'
 require './lib/views.rb'
-require './lib/config.rb'
 
 # sinatra wants to set x-frame-options by default, disable it
 disable :protection
@@ -37,35 +37,37 @@ disable :protection
 # the user takes the assessment
 enable :sessions
 
-def protocol
-  (ENV['RACK_ENV'] || settings.environment).to_s == "development" ? "http" : "https"
-end
-
-def oauth_dance(request, host)
-  return_url = "#{protocol}://#{request.host_with_port}/oauth_success"
-  redirect to("#{protocol}://#{host}/login/oauth2/auth?client_id=#{oauth_config.value}&response_type=code&redirect_uri=#{CGI.escape(return_url)}")
-end 
-
-def api_call(path, user_config, post_params=nil)
-  url = "#{protocol}://#{user_config.host}" + path
-  url += (url.match(/\?/) ? "&" : "?") + "access_token=#{user_config.access_token}"
-  uri = URI.parse(url)
-  http = Net::HTTP.new(uri.host, uri.port)
-  puts "API"
-  puts url
-  http.use_ssl = protocol == "https"
-  req = Net::HTTP::Get.new(uri.request_uri)
-  response = http.request(req)
-  json = JSON.parse(response.body)
-  puts response.body
-  json.instance_variable_set('@has_more', (response['Link'] || '').match(/rel=\"next\"/))
-  if response.code != "200"
-    puts "bad response"
-    puts response.body
-    oauth_dance(request, user_config.host)
-    false
-  else
-    json
+module BadgeHelpers
+  def self.protocol
+    (ENV['RACK_ENV'] || settings.environment).to_s == "development" ? "http" : "https"
   end
-end
+  
+  def self.oauth_dance(request, host)
+    return_url = "#{protocol}://#{request.host_with_port}/oauth_success"
+    redirect to("#{protocol}://#{host}/login/oauth2/auth?client_id=#{oauth_config.value}&response_type=code&redirect_uri=#{CGI.escape(return_url)}")
+  end 
+  
+  def self.api_call(path, user_config, post_params=nil)
+    url = "#{protocol}://#{user_config.host}" + path
+    url += (url.match(/\?/) ? "&" : "?") + "access_token=#{user_config.access_token}"
+    uri = URI.parse(url)
+    http = Net::HTTP.new(uri.host, uri.port)
+    puts "API"
+    puts url
+    http.use_ssl = protocol == "https"
+    req = Net::HTTP::Get.new(uri.request_uri)
+    response = http.request(req)
+    json = JSON.parse(response.body)
+    puts response.body
+    json.instance_variable_set('@has_more', (response['Link'] || '').match(/rel=\"next\"/))
+    if response.code != "200"
+      puts "bad response"
+      puts response.body
+      oauth_dance(request, user_config.host)
+      false
+    else
+      json
+    end
+  end
 
+end
