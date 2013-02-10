@@ -13,6 +13,10 @@ RSpec.configure do |config|
   }
 end
 
+def session
+  last_request.env['rack.session']
+end
+
 def user
   id = Time.now.to_i.to_s + "_" + rand.round(8).to_s
   @user = UserConfig.create!(:user_id => id, :name => id, :domain_id => @domain.id) 
@@ -26,11 +30,30 @@ def course
     :badge_description => "Badge for cool people",
     :badge_url => "http://example.com/badge"
   }.to_json
-  @course.save!
+  @course.save
+  @course.nonce.should_not be_nil
   @course
 end
 
-def add_user(user, course)
+def configured_course
+  course
+  hash = @course.settings_hash
+  hash['min_percent'] = 50
+  @course.settings = hash.to_json
+  @course.save
+  @course.should be_configured
+  @course
+end
+
+def module_configured_course
+  course
+  hash = @course.settings_hash
+  hash['min_percent'] = 50
+  hash['modules'] = {'1' => 'Module 1', '2' => 'Module 2'}
+  @course.settings = hash.to_json
+  @course.save
+  @course.should be_configured
+  @course
 end
 
 def award_badge(course, user)
@@ -40,6 +63,8 @@ def award_badge(course, user)
     'domain_id' => course.domain_id
   }
   @badge = Badge.manually_award(params, course, user.name, "email@bob.com")  
+  @badge.nonce.should_not be_nil
+  @badge
 end
 
 def badge_json(badge, user)
@@ -68,6 +93,10 @@ def fake_badge_json(course, user_id, user_name)
     :state => 'unissued',
     :course_nonce => course.nonce
   }
+end
+
+def assert_error_page(msg)
+  last_response.body.should match(msg)
 end
 
 def domain(host, name)

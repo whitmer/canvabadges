@@ -12,11 +12,11 @@
 <% end %>
 <table>
   <% @badges.each do |badge| %>
-    <% badge_url = for_current_user ? "/badges/check/#{badge.course_id}/#{badge.user_id}" : "/badges/criteria/#{badge.course_nonce}?user=#{badge.nonce}" %>
+    <% badge_url = @for_current_user ? "/badges/check/#{badge.course_id}/#{badge.user_id}" : "/badges/criteria/#{badge.course_nonce}?user=#{badge.nonce}" %>
     <tr>
     <td style='padding: 0 5px;'><a href='#{badge_url}'><img src='<% badge.badge_url %>' class='thumbnail' alt='badge image'/></a></td>
     <td style='padding: 0 5px;'><%= badge.name %>
-      <% if for_current_user %>
+      <% if @for_current_user %>
         <form class='form-inline' action='/badges/<% badge.nonce %>' style='margin: 0 0 0 15px;'>
         <label><input class='public_badge' <%= 'checked' if badge.public %> type='checkbox'/> public</label>
         </form>

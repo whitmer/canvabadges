@@ -6,8 +6,11 @@ module Sinatra
     post "/badge_check" do
       key = params['oauth_consumer_key']
       tool_config = ExternalConfig.first(:config_type => 'lti', :value => key)
+      if !tool_config
+        return error("Invalid tool launch - unknown tool consumer")
+      end
       secret = tool_config.shared_secret
-      host = params['tool_consumer_instance_guid'].split(/\./)[1..-1].join(".")
+      host = params['tool_consumer_instance_guid'].split(/\./)[1..-1].join(".") if params['tool_consumer_instance_guid'] && params['tool_consumer_instance_guid'].match(/\./)
       domain = Domain.first(:host => host)
       domain ||= Domain.new(:host => host)
       domain.name = params['tool_consumer_instance_name']
@@ -42,16 +45,16 @@ module Sinatra
           end
         # otherwise we need to do the oauth dance for this user
         else
-          BadgeHelpers.oauth_dance(request, host)
+          oauth_dance(request, host)
         end
       else
-        return error("Invalid tool launch")
+        return error("Invalid tool launch - invalid parameters")
       end
     end
 
     get "/oauth_success" do
       if !session['domain_id'] || !session['user_id']
-        return "Launch parameters lost"
+        return error("Launch parameters lost")
       end
       domain = Domain.first(:id => session['domain_id'])
       return_url = "#{BadgeHelpers.protocol}://#{request.host_with_port}/oauth_success"
@@ -63,9 +66,9 @@ module Sinatra
       http.use_ssl = BadgeHelpers.protocol == "https"
       request = Net::HTTP::Post.new(uri.request_uri)
       request.set_form_data({
-        :client_id => oauth_config.value,
+        :client_id => BadgeHelpers.oauth_config.value,
         :code => code,
-        :client_secret => oauth_config.shared_secret,
+        :client_secret => BadgeHelpers.oauth_config.shared_secret,
         :redirect_uri => CGI.escape(return_url)
       })
       response = http.request(request)

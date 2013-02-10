@@ -94,29 +94,31 @@ describe 'Badges API' do
       last_response.should be_ok
       last_response.body.should == {"error" => "Invalid permissions"}.to_json      
     end
+    
     it "should return nothing if no course" do
       user
       BadgeHelpers.stub!(:api_call).and_return([])
       get "/api/v1/badges/current/#{@domain.id}/123.json", {}, 'rack.session' => {"permission_for_123" => 'edit', 'user_id' => @user.user_id}
       last_response.should be_ok
       last_response.body.should == {:meta => {:next => nil}, :objects => []}.to_json      
-      1.should == 2
     end
+    
     it "should return active students if there are any" do
       course
       user
-      s1 = fake_badge_json(course, '123', 'bob')
-      s2 = fake_badge_json(course, '456', 'fred')
+      s1 = fake_badge_json(@course, '123', 'bob')
+      s2 = fake_badge_json(@course, '456', 'fred')
       BadgeHelpers.stub!(:api_call).and_return([{'id' => s1[:id], 'name' => s1[:name]}, {'id' => s2[:id], 'name' => s2[:name]}])
       get "/api/v1/badges/current/#{@domain.id}/#{@course.course_id}.json", {}, 'rack.session' => {"permission_for_#{@course.course_id}" => 'edit', 'user_id' => @user.user_id}
       last_response.should be_ok
       last_response.body.should == {:meta => {:next => nil}, :objects => [s1, s2]}.to_json      
     end
+    
     it "should return paginated results" do
       course
       user
-      s1 = fake_badge_json(course, '123', 'bob')
-      s2 = fake_badge_json(course, '456', 'fred')
+      s1 = fake_badge_json(@course, '123', 'bob')
+      s2 = fake_badge_json(@course, '456', 'fred')
       json = [{'id' => s1[:id], 'name' => s1[:name]}, {'id' => s2[:id], 'name' => s2[:name]}]
       json.instance_variable_set('@has_more', true)
       

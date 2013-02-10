@@ -86,6 +86,10 @@ class CourseConfig
     settings_hash && settings_hash['modules']
   end
   
+  def required_modules
+    (settings_hash['modules'] || [])
+  end
+  
   def required_module_ids
     (settings_hash['modules'] || []).map(&:first).map(&:to_i)
   end
@@ -226,12 +230,8 @@ module Sinatra
       env = ENV['RACK_ENV'] || settings.environment
       DataMapper.setup(:default, (ENV["DATABASE_URL"] || "sqlite3:///#{Dir.pwd}/#{env}.sqlite3"))
       DataMapper.auto_upgrade!
-      @@oauth_config = ExternalConfig.first(:config_type => 'canvas_oauth')
     end
     
-    def oauth_config
-      @@oauth_config
-    end
   end
   
   register Models

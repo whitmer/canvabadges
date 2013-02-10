@@ -36,7 +36,7 @@ module Sinatra
     # shows the results and lets them add the badge if they're done
     get "/badges/check/:domain_id/:course_id/:user_id" do
       if params['user_id'] != session['user_id'] || !session["permission_for_#{params['course_id']}"]
-        return error("Invalid tool load #{session.to_json}")
+        return error("Invalid tool load")
       end
       @user_config = UserConfig.first(:user_id => params['user_id'], :domain_id => params['domain_id'])
       if @user_config
@@ -90,6 +90,12 @@ module Sinatra
         @message = text
         return erb :message
       end
+      
+      def oauth_dance(request, host)
+        return_url = "#{BadgeHelpers.protocol}://#{request.host_with_port}/oauth_success"
+        redirect to("#{BadgeHelpers.protocol}://#{host}/login/oauth2/auth?client_id=#{BadgeHelpers.oauth_config.value}&response_type=code&redirect_uri=#{CGI.escape(return_url)}")
+      end 
+  
     end
   end
   

@@ -42,10 +42,9 @@ module BadgeHelpers
     (ENV['RACK_ENV'] || settings.environment).to_s == "development" ? "http" : "https"
   end
   
-  def self.oauth_dance(request, host)
-    return_url = "#{protocol}://#{request.host_with_port}/oauth_success"
-    redirect to("#{protocol}://#{host}/login/oauth2/auth?client_id=#{oauth_config.value}&response_type=code&redirect_uri=#{CGI.escape(return_url)}")
-  end 
+  def self.oauth_config
+    @oauth_config ||= ExternalConfig.first(:config_type => 'canvas_oauth')
+  end
   
   def self.api_call(path, user_config, post_params=nil)
     url = "#{protocol}://#{user_config.host}" + path
@@ -69,5 +68,5 @@ module BadgeHelpers
       json
     end
   end
-
 end
+
