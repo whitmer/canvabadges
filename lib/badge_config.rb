@@ -5,21 +5,25 @@ module Sinatra
     # configure badge settings.
     # eventually the teacher will also use this to configure badge acceptance criteria
     post "/badges/settings/:domain_id/:course_id" do
+      if !session['user_id']
+        return error("Session information lost")
+      end
       if session["permission_for_#{params['course_id']}"] == 'edit'
         course_config = CourseConfig.first(:course_id => params['course_id'], :domain_id => params['domain_id'])
         course_config ||= CourseConfig.new(:course_id => params['course_id'], :domain_id => params['domain_id'])
-        settings = JSON.parse(course_config.settings || "{}")
+        settings = course_config.settings_hash
         settings['badge_url'] = params['badge_url']
-        settings['badge_url'] = "/badges/default.png" if !settings[:badge_url] || settings[:badge_url].empty?
-        settings['badge_name'] = params['badge_name']
+        settings['badge_url'] = "/badges/default.png" if !settings['badge_url'] || settings['badge_url'].empty?
+        settings['badge_name'] = params['badge_name'] || "Badge"
         settings['reference_code'] = params['reference_code']
-        settings['badge_description'] = params['badge_description']
+        settings['badge_description'] = params['badge_description'] || "No description"
         settings['manual_approval'] = params['manual_approval'] == '1'
         settings['min_percent'] = params['min_percent'].to_f
         modules = []
         params.each do |k, v|
           if k.match(/module_/)
-            modules << [k.sub(/module_/, ''), CGI.unescape(v)]
+            id = k.sub(/module_/, '').to_i
+            modules << [id, CGI.unescape(v)] if id > 0
           end
         end
         settings['modules'] = modules.length > 0 ? modules : nil
@@ -36,24 +40,29 @@ module Sinatra
     # set a badge to public or private
     post "/badges/:badge_id" do
       badge = Badge.first(:nonce => params['badge_id'])
-      if badge.user_id == session['user_id']
-        badge.public = params['public'] == 'true'
+      if !badge
+        {:error => "invalid badge"}.to_json
+      elsif badge.user_id == session['user_id']
+        badge.public = (params['public'] == 'true')
         badge.save
-        badge.open_badge_json(request.host_with_port)
+        {:id => badge.id, :nonce => badge.nonce, :public => badge.public}.to_json
       else
-        return {:error => "user mismatch"}.to_json
+        {:error => "user mismatch"}.to_json
       end
     end
     
     # manually award a user with the course's badge
     post "/badges/award/:domain_id/:course_id/:user_id" do
+      if session["permission_for_#{params['course_id']}"] != 'edit'
+        return error("You don't have permission to award this badge")
+      end
+      if !session['user_id']
+        return error("Session information lost")
+      end
       course_config = CourseConfig.first(:course_id => params['course_id'], :domain_id => params['domain_id'])
       user_config = UserConfig.first(:user_id => session['user_id'], :domain_id => params['domain_id'])
       settings = course_config && JSON.parse(course_config.settings || "{}")
       if course_config && settings && settings['badge_url'] && settings['min_percent']
-        if session["permission_for_#{params['course_id']}"] != 'edit'
-          return error("You don't have permission to award this badge")
-        end
         json = BadgeHelpers.api_call("/api/v1/courses/#{params['course_id']}/users?enrollment_type=student&include[]=email&user_id=#{params['user_id']}", user_config)
         student = json.detect{|e| e['id'] == params['user_id'].to_i }
         if student

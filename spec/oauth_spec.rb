@@ -1,4 +1,5 @@
 require File.dirname(__FILE__) + '/spec_helper'
+require 'ostruct'
 
 describe 'Badging OAuth' do
   include Rack::Test::Methods
@@ -84,9 +85,49 @@ describe 'Badging OAuth' do
       assert_error_page("Launch parameters lost")
     end
       
-    it "should error if token cannot be properly exchanged"
-    it "should provision a new user if successful"
-    it "should update an existing user if successful"
-    it "should redirect to the badge check endpoint if successful"
+    it "should error if token cannot be properly exchanged" do
+      user
+      fake_response = OpenStruct.new(:body => {}.to_json)
+      Net::HTTP.any_instance.should_receive(:request).and_return(fake_response)
+      get "/oauth_success?code=asdfjkl", {}, 'rack.session' => {"domain_id" => @domain.id, 'user_id' => @user.user_id, 'source_id' => 'cloud', 'launch_course_id' => 'uiop'}
+      assert_error_page("Error retrieving access token")
+    end
+    
+    it "should provision a new user if successful" do
+      fake_response = OpenStruct.new(:body => {:access_token => '1234', 'user' => {'id' => 'zxcv'}}.to_json)
+      Net::HTTP.any_instance.should_receive(:request).and_return(fake_response)
+      get "/oauth_success?code=asdfjkl", {}, 'rack.session' => {"domain_id" => @domain.id, 'user_id' => 'fghj', 'source_id' => 'cloud', 'launch_course_id' => 'uiop'}
+      @user = UserConfig.last
+      @user.user_id.should == 'fghj'
+      @user.domain_id.should == @domain.id
+      @user.access_token.should == '1234'
+      session['user_id'].should == @user.user_id
+      session['domain_id'].should == @domain.id
+    end
+    
+    it "should update an existing user if successful" do
+      user
+      fake_response = OpenStruct.new(:body => {:access_token => '1234', 'user' => {'id' => 'zxcv'}}.to_json)
+      Net::HTTP.any_instance.should_receive(:request).and_return(fake_response)
+      get "/oauth_success?code=asdfjkl", {}, 'rack.session' => {"domain_id" => @domain.id, 'user_id' => @user.user_id, 'source_id' => 'cloud', 'launch_course_id' => 'uiop'}
+      @new_user = UserConfig.last
+      @new_user.id.should == @user.id
+      session['user_id'].should == @user.user_id
+      session['domain_id'].should == @domain.id
+    end
+    
+    it "should redirect to the badge check endpoint if successful" do
+      fake_response = OpenStruct.new(:body => {:access_token => '1234', 'user' => {'id' => 'zxcv'}}.to_json)
+      Net::HTTP.any_instance.should_receive(:request).and_return(fake_response)
+      get "/oauth_success?code=asdfjkl", {}, 'rack.session' => {"domain_id" => @domain.id, 'user_id' => 'fghj', 'source_id' => 'cloud', 'launch_course_id' => 'uiop'}
+      @user = UserConfig.last
+      @user.user_id.should == 'fghj'
+      @user.domain_id.should == @domain.id
+      @user.access_token.should == '1234'
+      session['user_id'].should == @user.user_id
+      session['domain_id'].should == @domain.id
+      last_response.should be_redirect
+      last_response.location.should == "http://example.org/badges/check/#{@domain.id}/uiop/#{@user.user_id}"
+    end
   end  
 end

@@ -28,7 +28,7 @@ class UserConfig
   belongs_to :domain
   
   def host
-    self.domain.host
+    self.domain && self.domain.host
   end
 end
 
@@ -136,7 +136,7 @@ class Badge
     {
       :recipient => self.recipient,
       :salt => self.salt, 
-      :issued_on => self.issued.strftime("%Y-%m-%d"),
+      :issued_on => (self.issued && self.issued.strftime("%Y-%m-%d")),
       :badge => {
         :version => "0.5.0",
         :name => self.name,
@@ -174,7 +174,7 @@ class Badge
   
   def course_nonce
     self.course_config ||= CourseConfig.first(:course_id => self.course_id, :domain_id => self.domain_id)
-    self.course_config.root_nonce
+    self.course_config && self.course_config.root_nonce
   end
   
   def awarded?

@@ -93,7 +93,7 @@ DEPENDENCIES
   dm-sqlite-adapter
   erubis
   ims-lti
-  json (= 1.5.1)
+  json
   nokogiri
   oauth (= 0.4.5)
   rack-test

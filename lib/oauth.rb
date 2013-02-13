@@ -53,7 +53,7 @@ module Sinatra
     end
 
     get "/oauth_success" do
-      if !session['domain_id'] || !session['user_id']
+      if !session['domain_id'] || !session['user_id'] || !session['launch_course_id'] || !session['source_id']
         return error("Launch parameters lost")
       end
       domain = Domain.first(:id => session['domain_id'])
