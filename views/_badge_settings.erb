@@ -61,7 +61,7 @@
           <label class="control-label">Modules requiring completion:</label>
           <div class="controls">
             <% @modules_json.each do |mod| %>
-              <% checked = (settings['modules'] || []).map(&:first).include?(mod['id'].to_s) %>
+              <% checked = (settings['modules'] || []).map(&:first).include?(mod['id']) %>
               <div>
                 <label>
                   <input type="checkbox" <%= 'checked' if checked %> name="module_<%= mod['id'] %>" value="<%= CGI.escape(mod['name']) %>"/>
