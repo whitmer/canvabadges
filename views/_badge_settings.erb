@@ -1,4 +1,4 @@
-<% settings = (@course_config && @course_config.settings_hash) || {}
+<% settings = (@course_config && @course_config.settings) || {}
    ref_code = settings['reference_code']
    advanced = ref_code || settings['modules'] || settings['manual_approval']
    disabled = @course_config && @course_config.root_id 

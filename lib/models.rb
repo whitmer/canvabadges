@@ -1,5 +1,6 @@
 require 'dm-core'
 require 'dm-migrations'
+require 'dm-types'
 require 'sinatra/base'
 
 class Domain
@@ -38,7 +39,7 @@ class CourseConfig
   property :course_id, String
   property :nonce, String
   property :domain_id, Integer
-  property :settings, Text
+  property :settings, Json
   property :root_id, Integer
   property :reference_code, String
   
@@ -49,7 +50,7 @@ class CourseConfig
     if self.root_id
       conf = CourseConfig.first(:id => self.root_id) || self
     end
-    conf.settings
+    conf.settings || {}
   end
   
   def root_nonce
@@ -74,24 +75,20 @@ class CourseConfig
     end
   end
   
-  def settings_hash
-    @hash ||= JSON.parse(self.settings || "{}")
-  end
-  
   def configured?
-    settings_hash && settings_hash['badge_url'] && settings_hash['min_percent']
+    settings && settings['badge_url'] && settings['min_percent']
   end
   
   def modules_required?
-    settings_hash && settings_hash['modules']
+    settings && settings['modules']
   end
   
   def required_modules
-    (settings_hash['modules'] || [])
+    (settings && settings['modules']) || []
   end
   
   def required_module_ids
-    (settings_hash['modules'] || []).map(&:first).map(&:to_i)
+    required_modules.map(&:first).map(&:to_i)
   end
   
   def required_modules_completed?(completed_module_ids)
@@ -100,7 +97,7 @@ class CourseConfig
   end
   
   def required_score_met?(percent)
-    percent >= settings_hash['min_percent']
+    settings && percent >= settings['min_percent']
   end
   
   def requirements_met?(percent, completed_module_ids)
@@ -196,7 +193,7 @@ class Badge
   end
   
   def self.generate_badge(params, course_config, name, email)
-    settings = course_config.settings_hash
+    settings = course_config.settings || {}
     badge = self.first_or_new(:user_id => params['user_id'], :course_id => params['course_id'], :domain_id => params['domain_id'])
     badge.name = settings['badge_name']
     badge.email = email
@@ -216,7 +213,7 @@ class Badge
   end
   
   def self.complete(params, course_config, name, email)
-    settings = course_config.settings_hash
+    settings = course_config.settings || {}
     badge = generate_badge(params, course_config, name, email)
     badge.state ||= settings['manual_approval'] ? 'pending' : 'awarded'
     badge.save

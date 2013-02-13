@@ -10,6 +10,7 @@ gem 'dm-migrations'
 gem 'dm-aggregates'
 gem 'dm-postgres-adapter'
 gem 'erubis'
+gem 'dm-types', "1.2.0"
 
 group :development do
     gem 'dm-sqlite-adapter'

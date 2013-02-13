@@ -35,7 +35,7 @@ describe 'Badging Models' do
       course
       get "/badges/criteria/#{@course.nonce}"
       last_response.should be_ok
-      last_response.body.should match(/#{@course.settings_hash['name']}/)
+      last_response.body.should match(/#{@course.settings['name']}/)
     end
     
     it "should return badge completion information if the user has earned the badge" do

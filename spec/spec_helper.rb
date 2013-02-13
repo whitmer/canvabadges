@@ -26,10 +26,10 @@ def course
   id = Time.now.to_i.to_s + rand.round(8).to_s
   @course = CourseConfig.new(:course_id => id, :domain_id => @domain.id)
   @course.settings = {
-    :badge_name => "Cool Badge",
-    :badge_description => "Badge for cool people",
-    :badge_url => "http://example.com/badge"
-  }.to_json
+    'badge_name' => "Cool Badge",
+    'badge_description' => "Badge for cool people",
+    'badge_url' => "http://example.com/badge"
+  }
   @course.save
   @course.nonce.should_not be_nil
   @course
@@ -37,9 +37,9 @@ end
 
 def configured_course
   course
-  hash = @course.settings_hash
+  hash = @course.settings
   hash['min_percent'] = 50
-  @course.settings = hash.to_json
+  @course.settings = hash
   @course.save
   @course.should be_configured
   @course
@@ -47,10 +47,10 @@ end
 
 def module_configured_course
   course
-  hash = @course.settings_hash
+  hash = @course.settings
   hash['min_percent'] = 50
   hash['modules'] = {'1' => 'Module 1', '2' => 'Module 2'}
-  @course.settings = hash.to_json
+  @course.settings = hash
   @course.save
   @course.should be_configured
   @course

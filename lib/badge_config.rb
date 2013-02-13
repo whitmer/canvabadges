@@ -11,7 +11,7 @@ module Sinatra
       if session["permission_for_#{params['course_id']}"] == 'edit'
         course_config = CourseConfig.first(:course_id => params['course_id'], :domain_id => params['domain_id'])
         course_config ||= CourseConfig.new(:course_id => params['course_id'], :domain_id => params['domain_id'])
-        settings = course_config.settings_hash
+        settings = course_config.settings || {}
         settings['badge_url'] = params['badge_url']
         settings['badge_url'] = "/badges/default.png" if !settings['badge_url'] || settings['badge_url'].empty?
         settings['badge_name'] = params['badge_name'] || "Badge"
@@ -28,7 +28,7 @@ module Sinatra
         end
         settings['modules'] = modules.length > 0 ? modules : nil
         
-        course_config.settings = settings.to_json
+        course_config.settings = settings
         course_config.set_root_from_reference_code(params['reference_code'])
         course_config.save
         redirect to("/badges/check/#{params['domain_id']}/#{params['course_id']}/#{session['user_id']}")
@@ -61,7 +61,7 @@ module Sinatra
       end
       course_config = CourseConfig.first(:course_id => params['course_id'], :domain_id => params['domain_id'])
       user_config = UserConfig.first(:user_id => session['user_id'], :domain_id => params['domain_id'])
-      settings = course_config && JSON.parse(course_config.settings || "{}")
+      settings = (course_config && course_config.settings) || {}
       if course_config && settings && settings['badge_url'] && settings['min_percent']
         json = BadgeHelpers.api_call("/api/v1/courses/#{params['course_id']}/users?enrollment_type=student&include[]=email&user_id=#{params['user_id']}", user_config)
         student = json.detect{|e| e['id'] == params['user_id'].to_i }

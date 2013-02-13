@@ -1,5 +1,5 @@
 <%= erb :_badge_description %>
-<% settings = @course_config.settings_hash %>
+<% settings = @course_config.settings || {} %>
 <% if @student %>
   <% if @badge && @badge.awarded? %>
     <h3>You've earned this badge!</h3>
