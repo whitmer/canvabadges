@@ -12,7 +12,7 @@
         <div class='progress progress-success progress-striped progress-big'><div class='tick' style='left: <%= (3 * settings['min_percent']).to_i.to_s %>px;'></div><div class='bar' style='width: <%= @student['computed_final_score'].to_i.to_s %>%;'></div></div>
       <% end %>
     <% end %>
-    <% url = "#{BadgeHelpers.protocol}://#{request.host_with_port}/badges/data/#{params['course_id']}/#{params['user_id']}/#{@badge.nonce}.json" %>
+    <% url = "#{BadgeHelpers.protocol}://#{request.host_with_port}/api/v1/badges/data/#{params['course_id']}/#{params['user_id']}/#{@badge.nonce}.json" %>
     <form class='form-inline' action='/badges/<%= @badge.nonce %>'><label><input class='public_badge' <%= 'checked' if @badge.public %> type='checkbox'/> Let others see this badge</label><br/>
       <a class='btn btn-primary btn-large' href='/badges/all/<%= params['domain_id'] %>/<%= session['user_id'] %>'>See All Your Badges</a>
       &nbsp;<a class='btn' style='background: #4a4842;' id='redeem' href='#' rel='<%= url %>'><span class='icon-plus icon-white'></span><img src='/mozilla-backpack.png' alt='Add this badge to your Mozilla backpack'/></a>
