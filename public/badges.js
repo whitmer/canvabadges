@@ -13,7 +13,7 @@ $(".public_badge").change(function() {
     },
     error: function() {
     }
-  })
+  });
 });
 $(".earn_badge").live('click', function() {
   $(this).parent().find("form").css('visibility', 'visible');
