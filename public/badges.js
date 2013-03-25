@@ -32,7 +32,7 @@ function loadResults(url) {
     success: function(data) {
       $("#badges tbody .loading").remove();
       var domain_id = $("#badges").attr('data-domain_id');
-      var course_id = $("#badges").attr('data-course_id');
+      var placement_id = $("#badges").attr('data-placement_id');
       for(var idx in data['objects']) {
         var badge = data['objects'][idx];
         html = "<tr>";
@@ -50,13 +50,13 @@ function loadResults(url) {
           html += "<img src='/check.gif' alt='earned' title='earned'/>"
         } else if(badge.state == 'pending') {
           html += "<img src='/warning.png' alt='pending approval' class='earn_badge' title='earned, needs approval. click to manually award'/>";
-          html += "<form class='form form-inline' method='POST' action='/badges/award/" + domain_id + "/" + course_id + "/" + badge.id + "' style='visibility: hidden; display: inline; margin-left: 10px;'>";
+          html += "<form class='form form-inline' method='POST' action='/badges/award/" + domain_id + "/" + placement_id + "/" + badge.id + "' style='visibility: hidden; display: inline; margin-left: 10px;'>";
           html += "<input type='hidden' name='user_name' value='" + badge.name + "'/>";
           html += "<button class='btn btn-primary' type='submit'><span class='icon-check icon-white'></span> Award Badge</button>";
           html += "</form>";
         } else {
           html += "<img src='/redx.png' alt='not earned' class='earn_badge' title='not earned. click to manually award'/>";
-          html += "<form class='form form-inline' method='POST' action='/badges/award/" + domain_id + "/" + course_id + "/" + badge.id + "' style='visibility: hidden; display: inline; margin-left: 10px;'>";
+          html += "<form class='form form-inline' method='POST' action='/badges/award/" + domain_id + "/" + placement_id + "/" + badge.id + "' style='visibility: hidden; display: inline; margin-left: 10px;'>";
           html += "<input type='hidden' name='user_name' value='" + badge.name + "'/>";
           html += "<button class='btn btn-primary' type='submit'><span class='icon-check icon-white'></span> Award Badge</button>";
           html += "</form>";
@@ -82,11 +82,11 @@ $(".nav-pills li").click(function(event) {
   $(this).addClass('active');
   $("#badges tbody").empty();
   var domain_id = $("#badges").attr('data-domain_id');
-  var course_id = $("#badges").attr('data-course_id');
+  var placement_id = $("#badges").attr('data-placement_id');
   if($(this).attr('id') == 'current_students') {
-    loadResults("/api/v1/badges/current/" + domain_id + "/" + course_id + ".json");          
+    loadResults("/api/v1/badges/current/" + domain_id + "/" + placement_id + ".json");          
   } else {
-    loadResults("/api/v1/badges/awarded/" + domain_id + "/" + course_id + ".json");          
+    loadResults("/api/v1/badges/awarded/" + domain_id + "/" + placement_id + ".json");          
   }
 });
 $("#current_students").click();
