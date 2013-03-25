@@ -1,9 +1,9 @@
-<% settings = (@course_config && @course_config.settings) || {}
+<% settings = (@badge_config && @badge_config.settings) || {}
    ref_code = settings['reference_code']
    advanced = ref_code || settings['modules'] || settings['manual_approval']
-   disabled = @course_config && @course_config.root_id 
+   disabled = @badge_config && @badge_config.root_id 
 %>
-  <form class='well form-horizontal' style="margin-top: 15px;" method="post" action="/badges/settings/<%= @domain_id %>/<%= @course_id %>">
+  <form class='well form-horizontal' style="margin-top: 15px;" method="post" action="/badges/settings/<%= @domain_id %>/<%= @placement_id %>">
     <h2>Badge Settings</h2>
     <img src="<%= settings['badge_url'] || '/badges/default.png' %>" style='float: left; margin-right: 10px;' class='thumbnail'/>
     <fieldset>
@@ -40,8 +40,8 @@
           <input type="text" placeholder="set to assign" class="span5" id="reference_code" name="reference_code" value="<%= CGI.escapeHTML(ref_code || "") %>"/>
           <br/>
           Set this value to reuse an existing badge. Clear to unlink from an existing badge. Remember: linking and unlinking will cause problems if any users have already exported badges.
-          <% if @course_config %>
-            To use this badge's settings for a different course, the code is <%= @course_config.reference_code %>. 
+          <% if @badge_config %>
+            To use this badge's settings for a different course, the code is <%= @badge_config.reference_code %>. 
           <% end %>
         </div>
       </div>

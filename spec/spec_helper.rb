@@ -4,13 +4,22 @@ require 'rack/test'
 require 'json'
 require './canvabadges'
 
-set :environment, :test
-
 RSpec.configure do |config|
   config.before(:each) { 
     DataMapper.auto_migrate! 
     domain("bob.com", "Bob")
+    ExternalConfig.create(:config_type => 'canvas_oauth', :value => 'abc', :shared_secret => 'xyz')
   }
+end
+
+def get_with_session(path, hash={}, args={})
+  args['rack.session'] = session.merge(args['rack.session'] || {})
+  get path, hash, args
+end
+
+def post_with_session(path, hash={}, args={})
+  args['rack.session'] = session.merge(args['rack.session'] || {})
+  post path, hash, args
 end
 
 def session
@@ -20,6 +29,19 @@ end
 def user
   id = Time.now.to_i.to_s + "_" + rand.round(8).to_s
   @user = UserConfig.create!(:user_id => id, :name => id, :domain_id => @domain.id) 
+end
+
+def badge_config
+  id = Time.now.to_i.to_s + rand.round(8).to_s
+  @badge_config = BadgeConfig.new(:placement_id => id, :domain_id => @domain.id, :course_id => '123')
+  @badge_config.settings = {
+    'badge_name' => "Cool Badge",
+    'badge_description' => "Badge for cool people",
+    'badge_url' => "http://example.com/badge"
+  }
+  @badge_config.save
+  @badge_config.nonce.should_not be_nil
+  @badge_config
 end
 
 def course
@@ -35,34 +57,34 @@ def course
   @course
 end
 
-def configured_course
-  course
-  hash = @course.settings
+def configured_badge
+  badge_config
+  hash = @badge_config.settings
   hash['min_percent'] = 50
-  @course.settings = hash
-  @course.save
-  @course.should be_configured
-  @course
+  @badge_config.settings = hash
+  @badge_config.save
+  @badge_config.should be_configured
+  @badge_config
 end
 
-def module_configured_course
-  course
-  hash = @course.settings
+def module_configured_badge
+  badge_config
+  hash = @badge_config.settings
   hash['min_percent'] = 50
   hash['modules'] = {'1' => 'Module 1', '2' => 'Module 2'}
-  @course.settings = hash
-  @course.save
-  @course.should be_configured
-  @course
+  @badge_config.settings = hash
+  @badge_config.save
+  @badge_config.should be_configured
+  @badge_config
 end
 
-def award_badge(course, user)
+def award_badge(badge_config, user)
   params = {
     'user_id' => user.user_id,
-    'course_id' => course.course_id,
-    'domain_id' => course.domain_id
+    'placement_id' => badge_config.placement_id,
+    'domain_id' => badge_config.domain_id
   }
-  @badge = Badge.manually_award(params, course, user.name, "email@bob.com")  
+  @badge = Badge.manually_award(params, badge_config, user.name, "email@bob.com")  
   @badge.nonce.should_not be_nil
   @badge
 end
@@ -77,11 +99,11 @@ def badge_json(badge, user)
     :issued => badge.issued.strftime('%b %e, %Y'),
     :nonce => badge.nonce,
     :state => badge.state,
-    :course_nonce => badge.course_nonce
+    :config_nonce => badge.config_nonce
   }
 end
 
-def fake_badge_json(course, user_id, user_name)
+def fake_badge_json(badge_config, user_id, user_name)
   {
     :id => user_id,
     :name => user_name,
@@ -91,7 +113,7 @@ def fake_badge_json(course, user_id, user_name)
     :issued => nil,
     :nonce => nil,
     :state => 'unissued',
-    :course_nonce => course.nonce
+    :config_nonce => badge_config.nonce
   }
 end
 

@@ -33,6 +33,79 @@ class UserConfig
   end
 end
 
+class BadgeConfig
+  include DataMapper::Resource
+  property :id, Serial
+  property :course_id, String
+  property :placement_id, String
+  property :nonce, String
+  property :domain_id, Integer
+  property :settings, Json
+  property :root_id, Integer
+  property :reference_code, String
+  
+  before :save, :generate_nonce
+  
+  def root_settings
+    conf = self
+    if self.root_id
+      conf = BadgeConfig.first(:id => self.root_id) || self
+    end
+    conf.settings || {}
+  end
+  
+  def root_nonce
+    conf = self
+    if self.root_id
+      conf = BadgeConfig.first(:id => self.root_id) || self
+    end
+    conf.nonce
+  end
+  
+  def generate_nonce
+    self.nonce ||= Digest::MD5.hexdigest(Time.now.to_i.to_s + rand.to_s)
+    self.reference_code ||= Digest::MD5.hexdigest(Time.now.to_i.to_s + rand.to_s)
+  end
+  
+  def set_root_from_reference_code(code)
+    root = BadgeConfig.first(:reference_code => code)
+    if root
+      self.root_id = root.id
+    else
+      self.root_id = nil
+    end
+  end
+  
+  def configured?
+    settings && settings['badge_url'] && settings['min_percent']
+  end
+  
+  def modules_required?
+    settings && settings['modules']
+  end
+  
+  def required_modules
+    (settings && settings['modules']) || []
+  end
+  
+  def required_module_ids
+    required_modules.map(&:first).map(&:to_i)
+  end
+  
+  def required_modules_completed?(completed_module_ids)
+    incomplete_module_ids = self.required_module_ids - completed_module_ids
+    incomplete_module_ids.length == 0
+  end
+  
+  def required_score_met?(percent)
+    settings && percent >= settings['min_percent']
+  end
+  
+  def requirements_met?(percent, completed_module_ids)
+    required_modules_completed?(completed_module_ids) && required_score_met?(percent)
+  end
+end
+
 class CourseConfig
   include DataMapper::Resource
   property :id, Serial
@@ -108,11 +181,13 @@ end
 class Badge
   include DataMapper::Resource
   property :id, Serial
+  property :placement_id, String
   property :course_id, String
   property :user_id, String
   property :domain_id, Integer
   property :badge_url, String, :length => 256
   property :nonce, String
+  property :badge_config_id, Integer
   property :course_config_id, Integer
   property :name, String, :length => 256
   property :user_full_name, String, :length => 256
@@ -127,6 +202,7 @@ class Badge
   property :global_user_id, String, :length => 256
   
   belongs_to :course_config
+  belongs_to :badge_config
   before :save, :generate_defaults
   
   def open_badge_json(host_with_port)
@@ -139,7 +215,7 @@ class Badge
         :name => self.name,
         :image => self.badge_url,
         :description => self.description,
-        :criteria => "#{BadgeHelpers.protocol}://#{host_with_port}/badges/criteria/#{self.course_nonce}",
+        :criteria => "#{BadgeHelpers.protocol}://#{host_with_port}/badges/criteria/#{self.config_nonce}",
         :issuer => {
           :origin => "#{BadgeHelpers.protocol}://#{host_with_port}",
           :name => "Canvabadges",
@@ -158,7 +234,7 @@ class Badge
       sha = Digest::SHA256.hexdigest(self.email + self.salt)
       self.recipient = "sha256$#{sha}"
     end
-    self.course_config ||= CourseConfig.first(:course_id => self.course_id, :domain_id => self.domain_id)
+    self.badge_config ||= BadgeConfig.first(:placement_id => self.placement_id, :domain_id => self.domain_id)
     user_config = UserConfig.first(:user_id => self.user_id, :domain_id => self.domain_id)
     self.global_user_id = user_config.global_user_id if user_config
     true
@@ -169,9 +245,9 @@ class Badge
     (conf && conf.name) || self.user_full_name
   end
   
-  def course_nonce
-    self.course_config ||= CourseConfig.first(:course_id => self.course_id, :domain_id => self.domain_id)
-    self.course_config && self.course_config.root_nonce
+  def config_nonce
+    self.badge_config ||= BadgeConfig.first(:placement_id => self.placement_id, :domain_id => self.domain_id)
+    self.badge_config && self.badge_config.root_nonce
   end
   
   def awarded?
@@ -192,9 +268,10 @@ class Badge
     save
   end
   
-  def self.generate_badge(params, course_config, name, email)
-    settings = course_config.settings || {}
-    badge = self.first_or_new(:user_id => params['user_id'], :course_id => params['course_id'], :domain_id => params['domain_id'])
+  def self.generate_badge(params, badge_config, name, email)
+    settings = badge_config.settings || {}
+    badge = self.first_or_new(:user_id => params['user_id'], :placement_id => params['placement_id'], :domain_id => params['domain_id'])
+    badge.badge_config = badge_config
     badge.name = settings['badge_name']
     badge.email = email
     badge.user_full_name = name || params['user_name']
@@ -203,8 +280,8 @@ class Badge
     badge
   end
   
-  def self.manually_award(params, course_config, name, email)
-    badge = generate_badge(params, course_config, name, email)
+  def self.manually_award(params, badge_config, name, email)
+    badge = generate_badge(params, badge_config, name, email)
     badge.manual_approval = true unless badge.pending?
     badge.state = 'awarded'
     badge.issued = DateTime.now
@@ -212,24 +289,12 @@ class Badge
     badge
   end
   
-  def self.complete(params, course_config, name, email)
-    settings = course_config.settings || {}
-    badge = generate_badge(params, course_config, name, email)
+  def self.complete(params, badge_config, name, email)
+    settings = badge_config.settings || {}
+    badge = generate_badge(params, badge_config, name, email)
     badge.state ||= settings['manual_approval'] ? 'pending' : 'awarded'
     badge.save
     badge
   end
 end
 
-module Sinatra
-  module Models
-    configure do  
-      env = ENV['RACK_ENV'] || settings.environment
-      DataMapper.setup(:default, (ENV["DATABASE_URL"] || "sqlite3:///#{Dir.pwd}/#{env}.sqlite3"))
-      DataMapper.auto_upgrade!
-    end
-    
-  end
-  
-  register Models
-end

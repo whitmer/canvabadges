@@ -12,7 +12,7 @@
 <% end %>
 <table>
   <% @badges.each do |badge| %>
-    <% badge_url = @for_current_user ? "/badges/check/#{badge.course_id}/#{badge.user_id}" : "/badges/criteria/#{badge.course_nonce}?user=#{badge.nonce}" %>
+    <% badge_url = @for_current_user ? "/badges/check/#{badge.placement_id}/#{badge.user_id}" : "/badges/criteria/#{badge.config_nonce}?user=#{badge.nonce}" %>
     <tr>
     <td style='padding: 0 5px;'><a href='#{badge_url}'><img src='<% badge.badge_url %>' class='thumbnail' alt='badge image'/></a></td>
     <td style='padding: 0 5px;'><%= badge.name %>
@@ -26,6 +26,6 @@
   <% end %>
 </table>
 <% if @for_current_user && !@badges.empty? %>
-  <% url = "#{BadgeHelpers.protocol}://#{request.host_with_port}/badges/all/#{params['domain_id']}/#{params['user_id']}" %>
+  <% url = "#{BadgeHelpers.protocol}://#{request.host_with_port}/badges/all/#{@domain_id}/#{@user_id}" %>
   <br/><form class='form-inline'><label>Share this Page: <input type='text' value='<%= url %>'/></label></form>
 <% end %>
