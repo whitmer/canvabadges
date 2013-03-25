@@ -25,8 +25,12 @@ describe 'Badging OAuth' do
       last_response.should_not be_ok
       assert_error_page("Course must be a Canvas course, and launched with public permission settings")
 
-      post "/placement_launch", {'oauth_consumer_key' => '123', 'tool_consumer_instance_guid' => 'something.bob.com', 'custom_canvas_user_id' => '1', 'custom_canvas_course_id' => '1'}
+      post "/placement_launch", {'oauth_consumer_key' => '123', 'tool_consumer_instance_guid' => 'something.bob.com', 'custom_canvas_user_id' => '1', 'custom_canvas_course_id' => '1', 'resource_link_id' => 'q2w3e4'}
       last_response.should be_redirect
+      bc = BadgeConfig.last
+      bc.placement_id.should == 'q2w3e4'
+      bc.course_id.should == '1'
+      bc.domain_id.should == @domain.id
     end
     
     it "should set session parameters" do

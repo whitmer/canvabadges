@@ -25,7 +25,7 @@ module Sinatra
           return error("Course must be a Canvas course, and launched with public permission settings")
         end
         if provider.valid_request?(request)
-          BadgeConfig.first_or_create(:placement_id => params['resource_link_id'], :domain_id => domain.id)
+          BadgeConfig.first_or_create(:placement_id => params['resource_link_id'], :domain_id => domain.id, :course_id => params['custom_canvas_course_id'])
           user_id = params['custom_canvas_user_id']
           user_config = UserConfig.first(:user_id => user_id, :domain_id => domain.id)
           session["user_id"] = user_id
