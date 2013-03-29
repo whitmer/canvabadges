@@ -40,8 +40,8 @@ module Sinatra
       app.get "/badges/check/:domain_id/:placement_id/:user_id" do
         load_badge_config(params['domain_id'], params['placement_id'], 'view')
         if @badge_config && @badge_config.configured?
-          scores_json = BadgeHelpers.api_call("/api/v1/courses/#{@course_id}?include[]=total_scores", @user_config)
-          modules_json = BadgeHelpers.api_call("/api/v1/courses/#{@course_id}/modules", @user_config) if @badge_config.modules_required?
+          scores_json = api_call("/api/v1/courses/#{@course_id}?include[]=total_scores", @user_config)
+          modules_json = api_call("/api/v1/courses/#{@course_id}/modules", @user_config) if @badge_config.modules_required?
           modules_json ||= []
           @completed_module_ids = modules_json.select{|m| m['completed_at'] }.map{|m| m['id'] }.compact
           unless scores_json
@@ -51,7 +51,7 @@ module Sinatra
           @student = scores_json['enrollments'].detect{|e| e['type'] == 'student' }
           @student['computed_final_score'] ||= 0 if @student
           @badge = nil
-  
+          
           if @student
             if @badge_config.requirements_met?(@student['computed_final_score'], @completed_module_ids)
               @badge = Badge.complete(params, @badge_config, session['name'], session['email'])
@@ -72,7 +72,7 @@ module Sinatra
       def edit_course_html
         raise "no user" unless @user_config
         raise "missing value" unless @domain_id && @placement_id && @course_id && @badge_config
-        @modules_json ||= BadgeHelpers.api_call("/api/v1/courses/#{@course_id}/modules", @user_config)
+        @modules_json ||= api_call("/api/v1/courses/#{@course_id}/modules", @user_config)
         erb :_badge_settings
       end
       
@@ -90,8 +90,8 @@ module Sinatra
       end
       
       def oauth_dance(request, host)
-        return_url = "#{BadgeHelpers.protocol}://#{request.host_with_port}/oauth_success"
-        redirect to("#{BadgeHelpers.protocol}://#{host}/login/oauth2/auth?client_id=#{BadgeHelpers.oauth_config.value}&response_type=code&redirect_uri=#{CGI.escape(return_url)}")
+        return_url = "#{protocol}://#{request.host_with_port}/oauth_success"
+        redirect to("#{protocol}://#{host}/login/oauth2/auth?client_id=#{oauth_config.value}&response_type=code&redirect_uri=#{CGI.escape(return_url)}")
       end 
   
     end

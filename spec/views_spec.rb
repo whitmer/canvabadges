@@ -115,6 +115,7 @@ describe 'Badging Models' do
       last_response.should be_ok
       last_response.body.should match(/Badge reference code/)
     end
+    
     it "should not allow students to see unconfigured badges" do
       badge_config
       user
@@ -143,6 +144,7 @@ describe 'Badging Models' do
         @badge = Badge.last
         @badge.should_not be_nil
         @badge.user_id.should == @user.user_id
+        @badge.state.should == 'awarded'
         last_response.should be_ok
         last_response.body.should match(/Cool Badge/)
       end
@@ -168,11 +170,39 @@ describe 'Badging Models' do
         @badge = Badge.last
         @badge.should_not be_nil
         @badge.user_id.should == @user.user_id
+        @badge.state.should == 'awarded'
         last_response.should be_ok
         last_response.body.should match(/Cool Badge/)
       end
       
       it "should not award the badge if final grade is met but not module completions" do
+        module_configured_badge
+        user
+        Badge.last.should be_nil
+        BadgeHelpers.should_receive(:api_call).with("/api/v1/courses/#{@badge_config.course_id}?include[]=total_scores", @user).and_return({'enrollments' => [{'type' => 'student', 'computed_final_score' => 60}]})
+        BadgeHelpers.should_receive(:api_call).with("/api/v1/courses/#{@badge_config.course_id}/modules", @user).and_return([])
+        get "/badges/check/#{@domain.id}/#{@badge_config.placement_id}/#{@user.user_id}", {}, 'rack.session' => {'user_id' => @user.user_id, "permission_for_#{@badge_config.course_id}" => 'view', 'email' => 'student@example.com'}
+        Badge.last.should be_nil
+        last_response.should be_ok
+        last_response.body.should match(/Cool Badge/)
+      end
+      
+      it "should award the badge if enough credits are earned" do
+        credit_configured_badge
+        user
+        Badge.last.should be_nil
+        BadgeHelpers.should_receive(:api_call).with("/api/v1/courses/#{@badge_config.course_id}?include[]=total_scores", @user).and_return({'enrollments' => [{'type' => 'student', 'computed_final_score' => 60}]})
+        BadgeHelpers.should_receive(:api_call).with("/api/v1/courses/#{@badge_config.course_id}/modules", @user).and_return([{'id' => 1, 'completed_at' => 'now'}, {'id' => 2}])
+        get "/badges/check/#{@domain.id}/#{@badge_config.placement_id}/#{@user.user_id}", {}, 'rack.session' => {'user_id' => @user.user_id, "permission_for_#{@badge_config.course_id}" => 'view', 'email' => 'student@example.com'}
+        @badge = Badge.last
+        @badge.should_not be_nil
+        @badge.user_id.should == @user.user_id
+        @badge.state.should == 'awarded'
+        last_response.should be_ok
+        last_response.body.should match(/Cool Badge/)
+      end
+      
+      it "should not award the badge if enough credits haven't been earned" do
         module_configured_badge
         user
         Badge.last.should be_nil

@@ -15,6 +15,20 @@ $(".public_badge").change(function() {
     }
   });
 });
+
+$("input.credits").change(function() {
+  var total = 0;
+  $("input.credits").each(function() {
+    total = total + (parseFloat($(this).val()) || 0);
+  });
+  $(".total_credits").text(total);
+}).filter(":first").change();
+
+$("#credit_based").change(function() {
+  $(".credits").toggle($(this).attr('checked'));
+  $("input.credits").change();
+}).change();
+
 $(".earn_badge").live('click', function() {
   $(this).parent().find("form").css('visibility', 'visible');
 });

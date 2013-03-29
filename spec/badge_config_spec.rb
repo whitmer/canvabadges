@@ -32,7 +32,9 @@ describe 'Badge Configuration' do
         'manual_approval' => '1',
         'min_percent' => '50',
         'module_123' => "Module 123",
-        'module_asdf' => "Bad module"
+        'module_asdf' => "Bad module",
+        'credits_for_123' => '19',
+        'credit_based' => '1'
       }
       post "/badges/settings/#{@domain.id}/#{@badge_config.placement_id}", params, 'rack.session' => {"permission_for_#{@badge_config.course_id}" => "edit", "user_id" => "9876"}
       last_response.should be_redirect
@@ -44,8 +46,10 @@ describe 'Badge Configuration' do
       @badge_config.settings['badge_description'].should == "My badge description"
       @badge_config.settings['manual_approval'].should == true
       @badge_config.settings['min_percent'].should == 50.0
-      @badge_config.settings['modules'].should == [[123, 'Module 123']]
-      
+      @badge_config.settings['credit_based'].should == true
+      @badge_config.credit_based?.should == true
+      @badge_config.settings['module_asdf'].should == nil
+      @badge_config.settings['modules'].should == [[123, 'Module 123', 19]]
     end
     
     it "should fail gracefully on empty parameters" do

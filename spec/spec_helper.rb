@@ -78,6 +78,21 @@ def module_configured_badge
   @badge_config
 end
 
+def credit_configured_badge
+  badge_config
+  hash = @badge_config.settings
+  hash['min_percent'] = 50
+  hash['modules'] = [['1', 'Module 1', 3], ['2', 'Module 2', 3]]
+  hash['credit_based'] = true
+  hash['required_credits'] = 5
+  hash['credits_for_final_score'] = 3
+  
+  @badge_config.settings = hash
+  @badge_config.save
+  @badge_config.should be_configured
+  @badge_config
+end
+
 def award_badge(badge_config, user)
   params = {
     'user_id' => user.user_id,

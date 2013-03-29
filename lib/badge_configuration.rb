@@ -16,16 +16,27 @@ module Sinatra
         settings['badge_name'] = params['badge_name'] || "Badge"
         settings['reference_code'] = params['reference_code']
         settings['badge_description'] = params['badge_description'] || "No description"
+        settings['badge_requirements'] = params['badge_requirements']
+        settings['badge_hours'] = params['badge_hours'].to_f.round(1)
         settings['manual_approval'] = params['manual_approval'] == '1'
+        settings['credit_based'] = params['credit_based'] == '1'
+        settings['required_credits'] = params['requird_credits'].to_f.round(1)
         settings['min_percent'] = params['min_percent'].to_f
+        settings['credits_for_final_score'] = params['credits_for_final_score'].to_f.round(1)
+        total_credits = settings['credits_for_final_score']
         modules = []
         params.each do |k, v|
           if k.match(/module_/)
             id = k.sub(/module_/, '').to_i
-            modules << [id, CGI.unescape(v)] if id > 0
+            if id > 0
+              total_credits += params["credits_for_#{id}"].to_f.round(1)
+              credits = params["credits_for_#{id}"].to_f.round(1)
+              modules << [id, CGI.unescape(v), credits]
+            end
           end
         end
         settings['modules'] = modules.length > 0 ? modules : nil
+        settings['total_credits'] = total_credits
         
         @badge_config.settings = settings
         @badge_config.set_root_from_reference_code(params['reference_code'])
@@ -53,7 +64,7 @@ module Sinatra
   
         settings = (@badge_config && @badge_config.settings) || {}
         if settings && settings['badge_url'] && settings['min_percent']
-          json = BadgeHelpers.api_call("/api/v1/courses/#{@course_id}/users?enrollment_type=student&include[]=email&user_id=#{@user_id}", @user_config)
+          json = api_call("/api/v1/courses/#{@course_id}/users?enrollment_type=student&include[]=email&user_id=#{@user_id}", @user_config)
           student = json.detect{|e| e['id'] == params['user_id'].to_i }
           if student
             badge = Badge.manually_award(params, @badge_config, student['name'], student['email'])

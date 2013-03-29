@@ -84,6 +84,10 @@ class BadgeConfig
     settings && settings['modules']
   end
   
+  def credit_based?
+    !!(settings && settings['credit_based'] && settings['required_credits'])
+  end
+  
   def required_modules
     (settings && settings['modules']) || []
   end
@@ -102,7 +106,17 @@ class BadgeConfig
   end
   
   def requirements_met?(percent, completed_module_ids)
-    required_modules_completed?(completed_module_ids) && required_score_met?(percent)
+    if credit_based?
+      credits = required_score_met?(percent) ? settings['credits_for_final_score'].to_f : 0
+      settings['modules'].each do |id, name, credit|
+        if completed_module_ids.include?(id.to_i)
+          credits += credit
+        end
+      end
+      credits > 0 && credits > settings['required_credits'].to_f
+    else
+      required_modules_completed?(completed_module_ids) && required_score_met?(percent)
+    end
   end
 end
 
@@ -215,9 +229,9 @@ class Badge
         :name => self.name,
         :image => self.badge_url,
         :description => self.description,
-        :criteria => "#{BadgeHelpers.protocol}://#{host_with_port}/badges/criteria/#{self.config_nonce}",
+        :criteria => "#{protocol}://#{host_with_port}/badges/criteria/#{self.config_nonce}",
         :issuer => {
-          :origin => "#{BadgeHelpers.protocol}://#{host_with_port}",
+          :origin => "#{protocol}://#{host_with_port}",
           :name => "Canvabadges",
           :org => "Instructure, Inc.",
           :contact => "support@instructure.com"

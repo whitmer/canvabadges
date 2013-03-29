@@ -27,14 +27,19 @@
         </div>
       </div>
       <div class="control-group">
-        <label class="control-label" for="min_percent">Final grade cutoff: </label>
+        <label class="control-label" for="badge_requirements">Explanation of requirements: </label>
         <div class="controls">
-          <div class="input-append">
-            <input <%= "disabled='true'" if disabled %> type="text" class="span1" placeholder="##" id="min_percent" name="min_percent" value="<%= settings['min_percent'] %>"/><span class='add-on'> % </span>
-          </div>
+          <textarea <%= "disabled='true'" if disabled %> class='input-xlarge' rows='3' name='badge_requirements' id='badge_requirements'><%= CGI.escapeHTML(settings['badge_requirements'] || "") %></textarea>
         </div>
       </div>
-      <div class="control-group advanced">
+      <div class="control-group">
+        <label class="control-label" for="hours">Approx. hours for completion: </label>
+        <div class="controls">
+          <input type="text" <%= "disabled='true'" if disabled %> class="span1" placeholder="###" id="hours" name="hours" value="<%= settings['hours'] %>"/>
+        </div>
+      </div>
+      <div class="control-group advanced" style="display: none;">
+        <!-- TODO: This won't work if the badges specify module completions... need to figure out a solution there -->
         <label class="control-label" for="reference_code">Badge reference code: </label>
         <div class="controls">
           <input type="text" placeholder="set to assign" class="span5" id="reference_code" name="reference_code" value="<%= CGI.escapeHTML(ref_code || "") %>"/>
@@ -56,23 +61,50 @@
           </div>
         </div>
       </div>
-        <% if @modules_json && @modules_json.length > 0 %>
+      <div class="control-group advanced">
+        <label class="control-label">Credits: </label>
+        <div class="controls">
+          <div class="input-append">
+            <label>
+              <input type="checkbox" <%= 'checked' if settings['credit_based'] %> id="credit_based" name="credit_based" value="1"/>
+              Use variable credits to allow multiple completion paths
+            </label>
+          </div>
+        </div>
+      </div>
+      <div class="control-group">
+        <label class="control-label" for="min_percent">Final grade cutoff: </label>
+        <div class="controls">
+          <div class="input-append">
+            <input <%= "disabled='true'" if disabled %> type="text" class="span1" placeholder="##" id="min_percent" name="min_percent" value="<%= settings['min_percent'] %>"/><span class='add-on'> % </span>
+            <input name="credits_for_final_score" class="credits span1" title="Credits for Final Grade" placeholder="credits"/>
+          </div>
+        </div>
+      </div>
+      <% if @modules_json && @modules_json.length > 0 %>
         <div class="control-group advanced">
           <label class="control-label">Modules requiring completion:</label>
           <div class="controls">
             <% @modules_json.each do |mod| %>
               <% checked = (settings['modules'] || []).map(&:first).include?(mod['id']) %>
-              <div>
-                <label>
+              <div class='module'>
+                <label style='display: inline-block'>
                   <input type="checkbox" <%= 'checked' if checked %> name="module_<%= mod['id'] %>" value="<%= CGI.escape(mod['name']) %>"/>
                   <%= mod['name'] %>
                 </label>
+                <input name="credits_for_<%= mod['id'] %>" class="credits span1" title="Credits for <%= mod['name'] %>" placeholder="credits"/>
               </div>
             <% end %>
           </div>
         </div>
-        </div>
       <%  end %>
+      <div class="control-group credits">
+        <label class="control-label" for="required_credits">Credits needed for completion: </label>
+        <div class="controls">
+          <input type="text" <%= "disabled='true'" if disabled %> class="span1" placeholder="###" id="required_credits" name="required_credits" value="<%= settings['required_credits'] %>"/>
+          out of <span class='total_credits'><%= settings['total_credits'] %></span>
+        </div>
+      </div>
       <div class="form-actions" style="border: 0; background: transparent;">
         <button type="submit" class='btn btn-primary'>Save Badge Settings</button>
       </div>

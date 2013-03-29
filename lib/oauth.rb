@@ -64,18 +64,18 @@ module Sinatra
           return error("Launch parameters lost")
         end
         domain = Domain.first(:id => session['domain_id'])
-        return_url = "#{BadgeHelpers.protocol}://#{request.host_with_port}/oauth_success"
+        return_url = "#{protocol}://#{request.host_with_port}/oauth_success"
         code = params['code']
-        url = "#{BadgeHelpers.protocol}://#{domain.host}/login/oauth2/token"
+        url = "#{protocol}://#{domain.host}/login/oauth2/token"
         uri = URI.parse(url)
         
         http = Net::HTTP.new(uri.host, uri.port)
-        http.use_ssl = BadgeHelpers.protocol == "https"
+        http.use_ssl = protocol == "https"
         request = Net::HTTP::Post.new(uri.request_uri)
         request.set_form_data({
-          :client_id => BadgeHelpers.oauth_config.value,
+          :client_id => oauth_config.value,
           :code => code,
-          :client_secret => BadgeHelpers.oauth_config.shared_secret,
+          :client_secret => oauth_config.shared_secret,
           :redirect_uri => CGI.escape(return_url)
         })
         response = http.request(request)
