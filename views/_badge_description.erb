@@ -2,4 +2,13 @@
 <img src='<%= settings['badge_url'] %>' style='float: left; margin-right: 20px;' class='thumbnail'/>
 <h2><%= settings['badge_name'] || "Unnamed Badge" %></h2>
 <p class='desc'><%= settings['badge_description'] %></p>
+<% if settings['badge_requirements'] && settings['badge_requirements'] != '' %>
+  <p class='desc'>
+    Requirements for completion:<br/>
+    <%= settings['badge_requirements'] %>
+  </p>
+<% end %>
+<% if settings['hours'] %>
+  <p class='desc'>Approximate hours for completion: <%= settings['hours'] %></p>
+<% end %>
 <div style='clear: left; padding-bottom: 10px;'></div>
