@@ -229,9 +229,9 @@ class Badge
         :name => self.name,
         :image => self.badge_url,
         :description => self.description,
-        :criteria => "#{protocol}://#{host_with_port}/badges/criteria/#{self.config_nonce}",
+        :criteria => "#{BadgeHelper.protocol}://#{host_with_port}/badges/criteria/#{self.config_nonce}",
         :issuer => {
-          :origin => "#{protocol}://#{host_with_port}",
+          :origin => "#{BadgeHelper.protocol}://#{host_with_port}",
           :name => "Canvabadges",
           :org => "Instructure, Inc.",
           :contact => "support@instructure.com"
@@ -262,6 +262,10 @@ class Badge
   def config_nonce
     self.badge_config ||= BadgeConfig.first(:placement_id => self.placement_id, :domain_id => self.domain_id)
     self.badge_config && self.badge_config.root_nonce
+  end
+  
+  def needing_evaluation?
+    !awarded? && !pending?
   end
   
   def awarded?

@@ -40,21 +40,24 @@ module Sinatra
       app.get "/badges/check/:domain_id/:placement_id/:user_id" do
         load_badge_config(params['domain_id'], params['placement_id'], 'view')
         if @badge_config && @badge_config.configured?
-          scores_json = api_call("/api/v1/courses/#{@course_id}?include[]=total_scores", @user_config)
-          modules_json = api_call("/api/v1/courses/#{@course_id}/modules", @user_config) if @badge_config.modules_required?
-          modules_json ||= []
-          @completed_module_ids = modules_json.select{|m| m['completed_at'] }.map{|m| m['id'] }.compact
-          unless scores_json
-            return error("No data")
-          end
-          
-          @student = scores_json['enrollments'].detect{|e| e['type'] == 'student' }
-          @student['computed_final_score'] ||= 0 if @student
-          @badge = nil
-          
-          if @student
-            if @badge_config.requirements_met?(@student['computed_final_score'], @completed_module_ids)
-              @badge = Badge.complete(params, @badge_config, session['name'], session['email'])
+          if @badge && !@badge.needing_evaluation?
+            @student = {}
+          else
+            scores_json = api_call("/api/v1/courses/#{@course_id}?include[]=total_scores", @user_config)
+            modules_json = api_call("/api/v1/courses/#{@course_id}/modules", @user_config) if @badge_config.modules_required?
+            modules_json ||= []
+            @completed_module_ids = modules_json.select{|m| m['completed_at'] }.map{|m| m['id'] }.compact
+            unless scores_json
+              return error("No data")
+            end
+            
+            @student = scores_json['enrollments'].detect{|e| e['type'] == 'student' }
+            @student['computed_final_score'] ||= 0 if @student
+            
+            if @student
+              if @badge_config.requirements_met?(@student['computed_final_score'], @completed_module_ids)
+                @badge = Badge.complete(params, @badge_config, session['name'], session['email'])
+              end
             end
           end
           erb :badge_check

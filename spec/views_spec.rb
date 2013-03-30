@@ -110,7 +110,7 @@ describe 'Badging Models' do
     it "should allow instructors/admins to configure unconfigured badges" do
       badge_config
       user
-      BadgeHelpers.should_receive(:api_call).with("/api/v1/courses/#{@badge_config.course_id}/modules", @user).and_return([])
+      Canvabadges.any_instance.should_receive(:api_call).with("/api/v1/courses/#{@badge_config.course_id}/modules", @user).and_return([])
       get "/badges/check/#{@domain.id}/#{@badge_config.placement_id}/#{@user.user_id}", {}, 'rack.session' => {'user_id' => @user.user_id, "permission_for_#{@badge_config.course_id}" => 'edit'}
       last_response.should be_ok
       last_response.body.should match(/Badge reference code/)
@@ -128,18 +128,26 @@ describe 'Badging Models' do
       configured_badge
       user
 
-      BadgeHelpers.should_receive(:api_call).with("/api/v1/courses/#{@badge_config.course_id}?include[]=total_scores", @user).and_return({'enrollments' => [{'type' => 'student', 'computed_final_score' => 40}]})
+      Canvabadges.any_instance.should_receive(:api_call).with("/api/v1/courses/#{@badge_config.course_id}?include[]=total_scores", @user).and_return({'enrollments' => [{'type' => 'student', 'computed_final_score' => 40}]})
       get "/badges/check/#{@domain.id}/#{@badge_config.placement_id}/#{@user.user_id}", {}, 'rack.session' => {'user_id' => @user.user_id, "permission_for_#{@badge_config.course_id}" => 'view'}
       last_response.should be_ok
       last_response.body.should match(/Cool Badge/)
     end
     
     describe "meeting completion criteria as a student" do
+      it "should show the badge as awarded if manually awarded" do
+        award_badge(configured_badge, user)
+        get "/badges/check/#{@domain.id}/#{@badge_config.placement_id}/#{@user.user_id}", {}, 'rack.session' => {'user_id' => @user.user_id, "permission_for_#{@badge_config.course_id}" => 'view', 'email' => 'student@example.com'}
+        last_response.should be_ok
+        last_response.body.should match(/Cool Badge/)
+        last_response.body.should match(/You've earned this badge!/)
+      end
+      
       it "should award the badge if final grade is the only criteria and is met" do
         configured_badge
         user
         Badge.last.should be_nil
-        BadgeHelpers.should_receive(:api_call).with("/api/v1/courses/#{@badge_config.course_id}?include[]=total_scores", @user).and_return({'enrollments' => [{'type' => 'student', 'computed_final_score' => 60}]})
+        Canvabadges.any_instance.should_receive(:api_call).with("/api/v1/courses/#{@badge_config.course_id}?include[]=total_scores", @user).and_return({'enrollments' => [{'type' => 'student', 'computed_final_score' => 60}]})
         get "/badges/check/#{@domain.id}/#{@badge_config.placement_id}/#{@user.user_id}", {}, 'rack.session' => {'user_id' => @user.user_id, "permission_for_#{@badge_config.course_id}" => 'view', 'email' => 'student@example.com'}
         @badge = Badge.last
         @badge.should_not be_nil
@@ -153,7 +161,7 @@ describe 'Badging Models' do
         configured_badge
         user
         Badge.last.should be_nil
-        BadgeHelpers.should_receive(:api_call).with("/api/v1/courses/#{@badge_config.course_id}?include[]=total_scores", @user).and_return({'enrollments' => [{'type' => 'student', 'computed_final_score' => 40}]})
+        Canvabadges.any_instance.should_receive(:api_call).with("/api/v1/courses/#{@badge_config.course_id}?include[]=total_scores", @user).and_return({'enrollments' => [{'type' => 'student', 'computed_final_score' => 40}]})
         get "/badges/check/#{@domain.id}/#{@badge_config.placement_id}/#{@user.user_id}", {}, 'rack.session' => {'user_id' => @user.user_id, "permission_for_#{@badge_config.course_id}" => 'view', 'email' => 'student@example.com'}
         Badge.last.should be_nil
         last_response.should be_ok
@@ -164,8 +172,8 @@ describe 'Badging Models' do
         module_configured_badge
         user
         Badge.last.should be_nil
-        BadgeHelpers.should_receive(:api_call).with("/api/v1/courses/#{@badge_config.course_id}?include[]=total_scores", @user).and_return({'enrollments' => [{'type' => 'student', 'computed_final_score' => 60}]})
-        BadgeHelpers.should_receive(:api_call).with("/api/v1/courses/#{@badge_config.course_id}/modules", @user).and_return([{'id' => 1, 'completed_at' => 'now'}, {'id' => 2, 'completed_at' => 'now'}])
+        Canvabadges.any_instance.should_receive(:api_call).with("/api/v1/courses/#{@badge_config.course_id}?include[]=total_scores", @user).and_return({'enrollments' => [{'type' => 'student', 'computed_final_score' => 60}]})
+        Canvabadges.any_instance.should_receive(:api_call).with("/api/v1/courses/#{@badge_config.course_id}/modules", @user).and_return([{'id' => 1, 'completed_at' => 'now'}, {'id' => 2, 'completed_at' => 'now'}])
         get "/badges/check/#{@domain.id}/#{@badge_config.placement_id}/#{@user.user_id}", {}, 'rack.session' => {'user_id' => @user.user_id, "permission_for_#{@badge_config.course_id}" => 'view', 'email' => 'student@example.com'}
         @badge = Badge.last
         @badge.should_not be_nil
@@ -179,8 +187,8 @@ describe 'Badging Models' do
         module_configured_badge
         user
         Badge.last.should be_nil
-        BadgeHelpers.should_receive(:api_call).with("/api/v1/courses/#{@badge_config.course_id}?include[]=total_scores", @user).and_return({'enrollments' => [{'type' => 'student', 'computed_final_score' => 60}]})
-        BadgeHelpers.should_receive(:api_call).with("/api/v1/courses/#{@badge_config.course_id}/modules", @user).and_return([])
+        Canvabadges.any_instance.should_receive(:api_call).with("/api/v1/courses/#{@badge_config.course_id}?include[]=total_scores", @user).and_return({'enrollments' => [{'type' => 'student', 'computed_final_score' => 60}]})
+        Canvabadges.any_instance.should_receive(:api_call).with("/api/v1/courses/#{@badge_config.course_id}/modules", @user).and_return([])
         get "/badges/check/#{@domain.id}/#{@badge_config.placement_id}/#{@user.user_id}", {}, 'rack.session' => {'user_id' => @user.user_id, "permission_for_#{@badge_config.course_id}" => 'view', 'email' => 'student@example.com'}
         Badge.last.should be_nil
         last_response.should be_ok
@@ -191,8 +199,8 @@ describe 'Badging Models' do
         credit_configured_badge
         user
         Badge.last.should be_nil
-        BadgeHelpers.should_receive(:api_call).with("/api/v1/courses/#{@badge_config.course_id}?include[]=total_scores", @user).and_return({'enrollments' => [{'type' => 'student', 'computed_final_score' => 60}]})
-        BadgeHelpers.should_receive(:api_call).with("/api/v1/courses/#{@badge_config.course_id}/modules", @user).and_return([{'id' => 1, 'completed_at' => 'now'}, {'id' => 2}])
+        Canvabadges.any_instance.should_receive(:api_call).with("/api/v1/courses/#{@badge_config.course_id}?include[]=total_scores", @user).and_return({'enrollments' => [{'type' => 'student', 'computed_final_score' => 60}]})
+        Canvabadges.any_instance.should_receive(:api_call).with("/api/v1/courses/#{@badge_config.course_id}/modules", @user).and_return([{'id' => 1, 'completed_at' => 'now'}, {'id' => 2}])
         get "/badges/check/#{@domain.id}/#{@badge_config.placement_id}/#{@user.user_id}", {}, 'rack.session' => {'user_id' => @user.user_id, "permission_for_#{@badge_config.course_id}" => 'view', 'email' => 'student@example.com'}
         @badge = Badge.last
         @badge.should_not be_nil
@@ -206,8 +214,8 @@ describe 'Badging Models' do
         module_configured_badge
         user
         Badge.last.should be_nil
-        BadgeHelpers.should_receive(:api_call).with("/api/v1/courses/#{@badge_config.course_id}?include[]=total_scores", @user).and_return({'enrollments' => [{'type' => 'student', 'computed_final_score' => 60}]})
-        BadgeHelpers.should_receive(:api_call).with("/api/v1/courses/#{@badge_config.course_id}/modules", @user).and_return([])
+        Canvabadges.any_instance.should_receive(:api_call).with("/api/v1/courses/#{@badge_config.course_id}?include[]=total_scores", @user).and_return({'enrollments' => [{'type' => 'student', 'computed_final_score' => 60}]})
+        Canvabadges.any_instance.should_receive(:api_call).with("/api/v1/courses/#{@badge_config.course_id}/modules", @user).and_return([])
         get "/badges/check/#{@domain.id}/#{@badge_config.placement_id}/#{@user.user_id}", {}, 'rack.session' => {'user_id' => @user.user_id, "permission_for_#{@badge_config.course_id}" => 'view', 'email' => 'student@example.com'}
         Badge.last.should be_nil
         last_response.should be_ok

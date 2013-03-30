@@ -86,6 +86,7 @@ module Sinatra
       def load_badge_config(domain_id, placement_id, permission=nil)
         @badge_config = BadgeConfig.first(:domain_id => domain_id, :placement_id => placement_id)
         @user_config = UserConfig.first(:domain_id => domain_id, :user_id => session['user_id'])
+        @badge = Badge.first(:domain_id => domain_id, :placement_id => placement_id, :user_id => session['user_id'])
         
         if !@badge_config
           halt 404, error("Configuration not found")

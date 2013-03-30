@@ -34,3 +34,9 @@ class Canvabadges < Sinatra::Base
   DataMapper.auto_upgrade!
 end
 
+module BadgeHelper
+  def self.protocol
+    ENV['RACK_ENV'].to_s == "development" ? "http" : "https"
+  end
+end
+

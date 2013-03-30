@@ -154,14 +154,17 @@ describe 'Badge Configuration' do
       
       @badge_config.settings['min_percent'] = 10
       @badge_config.save
-      BadgeHelpers.stub!(:api_call).and_return([])
+      Canvabadges.any_instance.should_receive(:api_call).and_return([])
 
       post "/badges/award/#{@domain.id}/#{@badge_config.placement_id}/asdfjkl", {}, 'rack.session' => {"permission_for_#{@badge_config.course_id}" => 'edit', 'user_id' => 'asdf'}
       last_response.should_not be_ok
       assert_error_page("That user is not a student in this course")
-
+    end
+    
+    it "should allow manual awarding" do
       user
-      BadgeHelpers.stub!(:api_call).and_return([{'id' => @user.user_id.to_i, 'name' => 'bob', 'email' => 'bob@example.com'}])
+      configured_badge
+      Canvabadges.any_instance.should_receive(:api_call).and_return([{'id' => @user.user_id.to_i, 'name' => 'bob', 'email' => 'bob@example.com'}])
       post "/badges/award/#{@domain.id}/#{@badge_config.placement_id}/#{@user.user_id}", {}, 'rack.session' => {"permission_for_#{@badge_config.course_id}" => 'edit', 'user_id' => @user.user_id}
       last_response.should be_redirect
       last_response.location.should == "http://example.org/badges/check/#{@domain.id}/#{@badge_config.placement_id}/#{@user.user_id}"
@@ -172,7 +175,7 @@ describe 'Badge Configuration' do
       user
       @badge_config.settings['min_percent'] = 10
       @badge_config.save
-      BadgeHelpers.stub!(:api_call).and_return([{'id' => @user.user_id.to_i, 'name' => 'bob', 'email' => 'bob@example.com'}])
+      Canvabadges.any_instance.should_receive(:api_call).and_return([{'id' => @user.user_id.to_i, 'name' => 'bob', 'email' => 'bob@example.com'}])
       post "/badges/award/#{@domain.id}/#{@badge_config.placement_id}/#{@user.user_id}", {}, 'rack.session' => {"permission_for_#{@badge_config.course_id}" => 'edit', 'user_id' => @user.user_id}
       last_response.should be_redirect
       last_response.location.should == "http://example.org/badges/check/#{@domain.id}/#{@badge_config.placement_id}/#{@user.user_id}"

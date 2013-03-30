@@ -97,7 +97,6 @@ describe 'Badges API' do
     
     it "should return nothing if no course" do
       user
-      BadgeHelpers.stub!(:api_call).and_return([])
       get "/api/v1/badges/current/#{@domain.id}/123.json", {}, 'rack.session' => {"permission_for_123" => 'edit', 'user_id' => @user.user_id}
       last_response.should_not be_ok
       last_response.body.should == {"error" => true, "message" => "Configuration not found"}.to_json      
@@ -108,7 +107,7 @@ describe 'Badges API' do
       user
       s1 = fake_badge_json(@badge_config, '123', 'bob')
       s2 = fake_badge_json(@badge_config, '456', 'fred')
-      BadgeHelpers.stub!(:api_call).and_return([{'id' => s1[:id], 'name' => s1[:name]}, {'id' => s2[:id], 'name' => s2[:name]}])
+      Canvabadges.any_instance.should_receive(:api_call).and_return([{'id' => s1[:id], 'name' => s1[:name]}, {'id' => s2[:id], 'name' => s2[:name]}])
       get "/api/v1/badges/current/#{@domain.id}/#{@badge_config.placement_id}.json", {}, 'rack.session' => {"permission_for_#{@badge_config.course_id}" => 'edit', 'user_id' => @user.user_id}
       last_response.should be_ok
       last_response.body.should == {:meta => {:next => nil}, :objects => [s1, s2]}.to_json      
@@ -122,7 +121,7 @@ describe 'Badges API' do
       json = [{'id' => s1[:id], 'name' => s1[:name]}, {'id' => s2[:id], 'name' => s2[:name]}]
       json.instance_variable_set('@has_more', true)
       
-      BadgeHelpers.stub!(:api_call).and_return(json)
+      Canvabadges.any_instance.should_receive(:api_call).and_return(json)
       get "/api/v1/badges/current/#{@domain.id}/#{@badge_config.placement_id}.json", {}, 'rack.session' => {"permission_for_#{@badge_config.course_id}" => 'edit', 'user_id' => @user.user_id}
       last_response.should be_ok
       last_response.body.should == {:meta => {:next => "/api/v1/badges/current/#{@domain.id}/#{@badge_config.placement_id}.json?page=2"}, :objects => [s1, s2]}.to_json      
