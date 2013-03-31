@@ -308,6 +308,29 @@ describe 'Badging Models' do
       badge.issued.should be_nil
       badge.state.should == 'pending'
     end
+    
+    it "should include custom issuer information on badge awards" do
+      badge_config
+      user
+      badge = Badge.complete({'user_id' => @user.user_id, 'placement_id' => @badge_config.placement_id, 'domain_id' => @domain.id}, @badge_config, @user.name, "email@email.com")
+      json = badge.open_badge_json("example.com")
+      json[:badge].should_not be_nil
+      json[:badge][:issuer].should_not be_nil
+      json[:badge][:issuer][:name].should == BadgeHelper.issuer['name']
+      json[:badge][:issuer][:org].should == BadgeHelper.issuer['org']
+      json[:badge][:issuer][:url].should == BadgeHelper.issuer['url']
+      json[:badge][:issuer][:contact].should == BadgeHelper.issuer['email']
+
+      @badge_config.set_org(:name => "My School", :url => "http://myschool.edu", :email => "admin@myschool.edu", :image_url => "http://myschool.edu/pic.png")
+      badge = Badge.complete({'user_id' => @user.user_id, 'placement_id' => @badge_config.placement_id, 'domain_id' => @domain.id}, @badge_config, @user.name, "email@email.com")
+      json = badge.open_badge_json("example.com")
+      json[:badge].should_not be_nil
+      json[:badge][:issuer].should_not be_nil
+      json[:badge][:issuer][:name].should == BadgeHelper.issuer['name']
+      json[:badge][:issuer][:org].should == "My School"
+      json[:badge][:issuer][:url].should == "http://myschool.edu"
+      json[:badge][:issuer][:contact].should == 'admin@myschool.edu'
+    end
   end  
 
 end

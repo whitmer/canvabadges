@@ -105,6 +105,20 @@
           out of <span class='total_credits'><%= settings['total_credits'] %></span>
         </div>
       </div>
+      <div class="control-group verification">
+        <% if settings['verification'] %>
+          <p><img src='<%= settings['verification']['image_url'] %>'/>
+          This badge has been verified by 
+          <%= request.host %>. It is associated with 
+          <a href="<%= settings['verification']['url'] %>">
+          <%= settings['verification']['name'] %></a>.</p>
+        <% else %>
+          <p>This badge hasn't been verified. If you'd like
+          your badge verified you'll need to contact the
+          administrator of this site.</p>
+        <% end %>
+        <div style="clear: left;"></div>
+      </div>
       <div class="form-actions" style="border: 0; background: transparent;">
         <button type="submit" class='btn btn-primary'>Save Badge Settings</button>
       </div>

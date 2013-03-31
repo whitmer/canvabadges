@@ -96,6 +96,38 @@ module Sinatra
           return error("Error retrieving access token")
         end
       end
+      
+      app.get "/login" do
+        request_token = consumer.get_request_token(:oauth_callback => "#{request.scheme}://#{request.host_with_port}/login_success")
+        if request_token.token && request_token.secret
+          session[:oauth_token] = request_token.token
+          session[:oauth_token_secret] = request_token.secret
+        else
+          return "Authorization failed"
+        end
+        redirect to("https://api.twitter.com/oauth/authenticate?oauth_token=#{request_token.token}")
+      end
+      
+      app.get "/login_success" do
+        verifier = params[:oauth_verifier]
+        if params[:oauth_token] != session[:oauth_token]
+          return "Authorization failed"
+        end
+        request_token = OAuth::RequestToken.new(consumer,
+          session[:oauth_token],
+          session[:oauth_token_secret]
+        )
+        access_token = request_token.get_access_token(:oauth_verifier => verifier)
+        screen_name = access_token.params['screen_name']
+        
+        if !screen_name
+          return "Authorization failed"
+        end
+        
+        @conf = LtiConfig.first(:consumer_key => screen_name)
+        @conf ||= LtiConfig.generate("Twitter for @#{screen_name}", screen_name)
+        erb :config_tokens
+      end
     end
   end
   

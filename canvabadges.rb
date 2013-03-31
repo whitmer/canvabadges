@@ -38,5 +38,8 @@ module BadgeHelper
   def self.protocol
     ENV['RACK_ENV'].to_s == "development" ? "http" : "https"
   end
+  def self.issuer
+    @issuer ||= YAML.load(File.read('./issuer.yml'))
+  end
 end
 

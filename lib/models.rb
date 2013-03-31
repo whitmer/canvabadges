@@ -46,6 +46,23 @@ class BadgeConfig
   
   before :save, :generate_nonce
   
+  property :issuer_name, String
+  property :issuer_image_url, String
+  property :issuer_org, String
+  property :issuer_url, String
+  property :issuer_email, String
+
+  def set_org(args={})
+    self.settings ||= {}
+    self.settings['verification'] = {}
+    ['name', 'url', 'email', 'image_url'].each do |key|
+      raise "missing #{key}" unless args[key] || args[key.to_sym]
+      self.settings['verification'][key] = args[key] || args[key.to_sym]
+    end
+    self.save
+    self.settings['verification']
+  end
+  
   def root_settings
     conf = self
     if self.root_id
@@ -214,6 +231,11 @@ class Badge
   property :public, Boolean
   property :state, String
   property :global_user_id, String, :length => 256
+  property :issuer_name, String
+  property :issuer_image_url, String
+  property :issuer_org, String
+  property :issuer_url, String
+  property :issuer_email, String
   
   belongs_to :course_config
   belongs_to :badge_config
@@ -230,11 +252,13 @@ class Badge
         :image => self.badge_url,
         :description => self.description,
         :criteria => "#{BadgeHelper.protocol}://#{host_with_port}/badges/criteria/#{self.config_nonce}",
+        :evidence => "#{BadgeHelper.protocol}://#{host_with_port}/badges/criteria/#{self.config_nonce}?user=#{self.nonce}",
         :issuer => {
           :origin => "#{BadgeHelper.protocol}://#{host_with_port}",
-          :name => "Canvabadges",
-          :org => "Instructure, Inc.",
-          :contact => "support@instructure.com"
+          :name => (self.issuer_name || BadgeHelper.issuer['name']),
+          :url => (self.issuer_url || BadgeHelper.issuer['url']),
+          :org => (self.issuer_org || BadgeHelper.issuer['org']),
+          :contact => (self.issuer_email || BadgeHelper.issuer['email'])
         }
       }
     }
@@ -289,6 +313,15 @@ class Badge
   def self.generate_badge(params, badge_config, name, email)
     settings = badge_config.settings || {}
     badge = self.first_or_new(:user_id => params['user_id'], :placement_id => params['placement_id'], :domain_id => params['domain_id'])
+
+    if badge_config.settings && badge_config.settings['verification'] && badge_config.settings['verification'].is_a?(Hash)
+      badge.issuer_image_url = badge_config.settings['verification']['image_url']
+      badge.issuer_org = badge_config.settings['verification']['name']
+      badge.issuer_url = badge_config.settings['verification']['url']
+      badge.issuer_email = badge_config.settings['verification']['email']
+    end
+
+    badge.issuer_name = BadgeHelper.issuer['name']
     badge.badge_config = badge_config
     badge.name = settings['badge_name']
     badge.email = email
