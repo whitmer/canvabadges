@@ -1,10 +1,9 @@
 require 'sinatra/base'
-require 'oauth'
 
 module Sinatra
-  module OAuth
+  module Auth
     def self.registered(app)
-      app.helpers OAuth::Helpers
+      app.helpers Auth::Helpers
       
       app.post "/badge_check" do
         error("This is an old launch. You need to re-configure your LTI settings")
