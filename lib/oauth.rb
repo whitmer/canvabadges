@@ -1,4 +1,5 @@
 require 'sinatra/base'
+require 'oauth'
 
 module Sinatra
   module OAuth
