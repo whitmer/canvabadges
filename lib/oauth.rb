@@ -3,6 +3,8 @@ require 'sinatra/base'
 module Sinatra
   module OAuth
     def self.registered(app)
+      app.helpers OAuth::Helpers
+      
       app.post "/badge_check" do
         error("This is an old launch. You need to re-configure your LTI settings")
       end
@@ -124,9 +126,24 @@ module Sinatra
           return "Authorization failed"
         end
         
-        @conf = LtiConfig.first(:consumer_key => screen_name)
-        @conf ||= LtiConfig.generate("Twitter for @#{screen_name}", screen_name)
+        
+        @conf = ExternalConfig.generate(screen_name)
         erb :config_tokens
+      end
+    end
+    module Helpers
+      def consumer
+        consumer ||= OAuth::Consumer.new(twitter_config.consumer_key, twitter_config.shared_secret, {
+          :site => "http://api.twitter.com",
+          :request_token_path => "/oauth/request_token",
+          :access_token_path => "/oauth/access_token",
+          :authorize_path=> "/oauth/authorize",
+          :signature_method => "HMAC-SHA1"
+        })
+      end
+      
+      def twitter_config
+        @@twitter_config ||= ExternalConfig.first(:config_type => 'twitter_for_login')
       end
     end
   end

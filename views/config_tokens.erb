@@ -1,0 +1,26 @@
+<div style="width: 500px; margin: 0 auto;">
+  <h2><img src="/badges/default.png" alt=""/> Credentials accepted!</h2>
+  <p>
+  You can use the following credentials to configure this app for
+  use in your course:
+  </p>
+  <dl>
+    <dt>Key:</dt><dd><%= @conf.value %></dd>
+    <dt>Secret:</dt><dd><%= @conf.shared_secret %></dd>
+  </dl>
+  <p>
+    If you want to add Canvabadges to your course you'll need to contact
+    us about getting a key and shared secret to use in your course.
+    <a href="/canvabadges.xml">Copy this XML link</a> and pick "By URL" as 
+    the configuration type to quickly set it up!
+    <a href="/login">Login using the Twitters</a> to get a
+    key and secret.
+  </p>
+  <p>
+    This is a site that I put together in my free time
+    to test out the idea badges inside of Canvas.
+    If you copy the credentials above you're agreeing to
+    use the site at your own risk. It most definitely will
+    not work in any LMS other than Canvas.
+  </p>
+</div>

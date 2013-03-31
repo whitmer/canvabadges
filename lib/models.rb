@@ -14,8 +14,17 @@ class ExternalConfig
   include DataMapper::Resource
   property :id, Serial
   property :config_type, String
+  property :app_name, String
   property :value, String
   property :shared_secret, String, :length => 256
+  
+  def self.generate(name)
+    conf = ExternalConfig.first_or_new(:config_type => 'lti', :app_name => name)
+    conf.value = Digest::MD5.hexdigest(Time.now.to_i.to_s + rand.to_s).to_s
+    conf.shared_secret = Digest::MD5.hexdigest(Time.now.to_i.to_s + rand.to_s + conf.value)
+    conf.save
+    conf
+  end
 end
 
 class UserConfig

@@ -114,8 +114,9 @@
           <%= settings['verification']['name'] %></a>.</p>
         <% else %>
           <p>This badge hasn't been verified. If you'd like
-          your badge verified you'll need to contact the
-          administrator of this site.</p>
+          your badge verified you'll need to 
+          <a href="<%= BadgeHelper.issuer['owner_url'] %>">contact the
+          administrator of this site</a>.</p>
         <% end %>
         <div style="clear: left;"></div>
       </div>
