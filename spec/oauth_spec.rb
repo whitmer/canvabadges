@@ -78,7 +78,7 @@ describe 'Badging OAuth' do
       IMS::LTI::ToolProvider.any_instance.stub(:roles).and_return(['student'])
       post "/placement_launch", {'oauth_consumer_key' => '123', 'tool_consumer_instance_guid' => 'something.bob.com', 'resource_link_id' => '2s3d', 'custom_canvas_user_id' => @user.user_id, 'custom_canvas_course_id' => '1'}
       last_response.should be_redirect
-      last_response.location.should == "http://example.org/badges/check/#{@domain.id}/2s3d/#{@user.user_id}"
+      last_response.location.should == "http://example.org/badges/check/2s3d/#{@user.user_id}"
     end
     
   end  

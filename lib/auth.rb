@@ -52,9 +52,9 @@ module Sinatra
           if user_config
             session['user_id'] = user_config.user_id
             if params['custom_show_all']
-              redirect to("/badges/all/#{domain.id}/#{user_config.user_id}")
+              redirect to("/badges/all/#{user_config.user_id}")
             else
-              redirect to("/badges/check/#{domain.id}/#{params['resource_link_id']}/#{user_config.user_id}")
+              redirect to("/badges/check/#{params['resource_link_id']}/#{user_config.user_id}")
             end
           # otherwise we need to do the oauth dance for this user
           else
