@@ -10,11 +10,34 @@ class Domain
   property :name, String
 end
 
+class Organization
+  include DataMapper::Resource
+  property :id, Serial
+  property :settings, Json
+  
+  def as_json(host_with_port)
+    settings = self.settings || BadgeHelper.issuer
+    {
+      'name' => settings['name'],
+      'url' => settings['url'],
+      'description' => settings['description'],
+      'image' => settings['image'],
+      'email' => settings['email'],
+      'revocationList' => "#{BadgeHelper.protocol}://#{host_with_port}/api/v1/organizations/#{self.id || 'default'}/revocations"
+    }
+  end
+  
+  def to_json(host_with_port)
+    as_json(host_with_port).to_json
+  end
+end
+
 class ExternalConfig
   include DataMapper::Resource
   property :id, Serial
   property :config_type, String
   property :app_name, String
+  property :organization_id, Integer
   property :value, String
   property :shared_secret, String, :length => 256
   
@@ -48,30 +71,44 @@ class BadgeConfig
   property :course_id, String
   property :placement_id, String
   property :nonce, String
+  property :external_config_id, Integer
+  property :organization_id, Integer
   property :domain_id, Integer
   property :settings, Json
   property :root_id, Integer
   property :reference_code, String
   
   before :save, :generate_nonce
+  belongs_to :external_config
+  belongs_to :organization
   
-  property :issuer_name, String
-  property :issuer_image_url, String
-  property :issuer_org, String
-  property :issuer_url, String
-  property :issuer_email, String
-
-  def set_org(args={})
-    self.settings ||= {}
-    self.settings['verification'] = {}
-    ['name', 'url', 'email', 'image_url'].each do |key|
-      raise "missing #{key}" unless args[key] || args[key.to_sym]
-      self.settings['verification'][key] = args[key] || args[key.to_sym]
-    end
-    self.save
-    self.settings['verification']
+  def as_json(host_with_port)
+    settings = self.settings || {}
+    image = settings['badge_url'] || "/badges/default.png"
+    image = host_with_port + image if image.match(/^\//)
+    {
+      :name => settings['badge_name'],
+      :description => settings['badge_description'],
+      :image => image,
+      :criteria => "#{BadgeHelper.protocol}://#{host_with_port}/badges/criteria/#{self.id}/#{self.nonce}",
+      :issuer => "#{BadgeHelper.protocol}://#{host_with_port}/api/v1/organizations/#{self.org_id}.json",
+      :alignment => [], # TODO
+      :tags => [] # TODO
+    }
   end
   
+  def to_json(host_with_port)
+    as_json(host_with_port).to_json
+  end
+  
+  def org_id
+    if self.organization && self.organization.settings
+      "#{self.organization_id}-#{self.organization.settings['name'].downcase.gsub(/[^\w]+/, '-')[0, 30]}"
+    else
+      "default"
+    end
+  end
+
   def root_settings
     conf = self
     if self.root_id
@@ -252,24 +289,21 @@ class Badge
   
   def open_badge_json(host_with_port)
     {
-      :recipient => self.recipient,
-      :salt => self.salt, 
-      :issued_on => (self.issued && self.issued.strftime("%Y-%m-%d")),
-      :badge => {
-        :version => "0.5.0",
-        :name => self.name,
-        :image => self.badge_url,
-        :description => self.description,
-        :criteria => "#{BadgeHelper.protocol}://#{host_with_port}/badges/criteria/#{self.config_nonce}",
-        :evidence => "#{BadgeHelper.protocol}://#{host_with_port}/badges/criteria/#{self.config_nonce}?user=#{self.nonce}",
-        :issuer => {
-          :origin => "#{BadgeHelper.protocol}://#{host_with_port}",
-          :name => (self.issuer_name || BadgeHelper.issuer['name']),
-          :url => (self.issuer_url || BadgeHelper.issuer['url']),
-          :org => (self.issuer_org || BadgeHelper.issuer['org']),
-          :contact => (self.issuer_email || BadgeHelper.issuer['email'])
-        }
-      }
+      :uid => self.id.to_s,
+      :recipient => {
+        :identity => self.recipient,
+        :type => "email",
+        :hashed => true,
+        :salt => self.salt
+      },
+      :badge => "#{BadgeHelper.protocol}://#{host_with_port}/api/v1/badges/summary/#{self.id}/#{self.config_nonce}.json",
+      :verify => {
+        :type => "hosted",
+        :url => "#{BadgeHelper.protocol}://#{host_with_port}/api/v1/badges/data/#{self.id}/#{self.user_id}/#{self.nonce}.json"
+      },
+      :issuedOn => (self.issued && self.issued.strftime("%Y-%m-%d")),
+      :image => self.badge_url,
+      :evidence => "#{BadgeHelper.protocol}://#{host_with_port}/badges/criteria/#{self.id}/#{self.config_nonce}?user=#{self.nonce}"
     }
   end
   
@@ -321,13 +355,15 @@ class Badge
   
   def self.generate_badge(params, badge_config, name, email)
     settings = badge_config.settings || {}
-    badge = self.first_or_new(:user_id => params['user_id'], :placement_id => params['placement_id'], :domain_id => params['domain_id'])
+    badge = self.first_or_new(:user_id => params['user_id'], :badge_config_id => badge_config.id)
+    badge.placement_id = badge_config.placement_id
+    badge.domain_id = badge_config.domain_id
 
-    if badge_config.settings && badge_config.settings['verification'] && badge_config.settings['verification'].is_a?(Hash)
-      badge.issuer_image_url = badge_config.settings['verification']['image_url']
-      badge.issuer_org = badge_config.settings['verification']['name']
-      badge.issuer_url = badge_config.settings['verification']['url']
-      badge.issuer_email = badge_config.settings['verification']['email']
+    if badge_config.settings && badge_config.settings['org'] && badge_config.settings['org'].is_a?(Hash)
+      badge.issuer_image_url = badge_config.settings['org']['image']
+      badge.issuer_org = badge_config.settings['org']['name']
+      badge.issuer_url = badge_config.settings['org']['url']
+      badge.issuer_email = badge_config.settings['org']['email']
     end
 
     badge.issuer_name = BadgeHelper.issuer['name']

@@ -4,6 +4,40 @@ module Sinatra
   module Api
     def self.registered(app)
       app.helpers Api::Helpers
+      
+      # open badge organizations permalink
+      app.get "/api/v1/organizations/:id.json" do
+        org_id = params['id'].split(/-/)[0]
+        if org_id == 'default'
+          return api_response(Organization.new.as_json(request.host_with_port))
+        end
+        config = Organization.first(:id => org_id)
+        halt 404, api_response({:error => "not found"}) unless config && config.settings
+        api_response(config.as_json(request.host_with_port))
+      end
+      
+      # open badge details permalink
+      app.get "/api/v1/badges/summary/:id/:nonce.json" do
+        bc = BadgeConfig.first(:id => params['id'], :nonce => params['nonce'])
+        halt 404, api_response({:error => "not found"}) unless bc
+        api_response(bc.as_json(request.host_with_port))
+      end
+      
+      # open badge organizations revocations permalink
+      app.get "/api/v1/organizations/:id/revocations.json" do
+        {}.to_json
+      end
+
+      # open badge award details permalink
+      app.head "/api/v1/badges/data/:badge_config_id/:user_id/:code.json" do
+        api_response(badge_data(params, request.host_with_port))
+      end
+      
+      # open badge award details permalink
+      app.get "/api/v1/badges/data/:badge_config_id/:user_id/:code.json" do
+        api_response(badge_data(params, request.host_with_port))
+      end
+
       # list of publicly available badges for the current user
       app.get "/api/v1/badges/public/:user_id/:host.json" do
         domain = Domain.first(:host => params['host'])
@@ -29,25 +63,15 @@ module Sinatra
       # list of students who have been awarded this badge, whether or not
       # they are currently active in the course
       # requires admin permissions
-      app.get "/api/v1/badges/awarded/:domain_id/:placement_id.json" do
+      app.get "/api/v1/badges/awarded/:badge_config_id.json" do
         api_response(badge_list(true, params, session))
       end
       
       # list of students currently active in the course, showing whether
       # or not they have been awarded the badge
       # requires admin permissions
-      app.get "/api/v1/badges/current/:domain_id/:placement_id.json" do
+      app.get "/api/v1/badges/current/:badge_config_id.json" do
         api_response(badge_list(false, params, session))
-      end
-      
-      # open badge details permalink
-      app.head "/api/v1/badges/data/:placement_id/:user_id/:code.json" do
-        api_response(badge_data(params, request.host_with_port))
-      end
-      
-      # open badge details permalink
-      app.get "/api/v1/badges/data/:placement_id/:user_id/:code.json" do
-        api_response(badge_data(params, request.host_with_port))
       end
     end
     
@@ -61,7 +85,7 @@ module Sinatra
       end 
           
       def badge_data(params, host_with_port)
-        badge = Badge.first(:placement_id => params[:placement_id], :user_id => params[:user_id], :nonce => params[:code])
+        badge = Badge.first(:id => params[:badge_config_id], :user_id => params[:user_id], :nonce => params[:code])
         headers 'Content-Type' => 'application/json'
         if badge
           badge.badge_url = "#{protocol}://#{host_with_port}" + badge.badge_url if badge.badge_url.match(/^\//)
@@ -73,15 +97,15 @@ module Sinatra
       
       def badge_list(awarded, params, session)
         @api_request = true
-        load_badge_config(params['domain_id'], params['placement_id'], 'edit')
+        load_badge_config(params['badge_config_id'], 'edit')
 
-        badges = Badge.all(:domain_id => @domain_id, :placement_id => @placement_id)
+        badges = Badge.all(:badge_config_id => @badge_config_id)
         result = []
         next_url = nil
         params['page'] = '1' if params['page'].to_i == 0
         if awarded
           if badges.length > (params['page'].to_i * 50)
-            next_url = "/api/v1/badges/awarded/#{@domain_id}/#{@placement_id}.json?page=#{params['page'].to_i + 1}"
+            next_url = "/api/v1/badges/awarded/#{@badge_config_id}.json?page=#{params['page'].to_i + 1}"
           end
           badges = badges[((params['page'].to_i - 1) * 50), 50]
           badges.each do |badge|
@@ -94,7 +118,7 @@ module Sinatra
             result << badge_hash(student['id'], student['name'], badge, @badge_config && @badge_config.root_nonce)
           end
           if json.instance_variable_get('@has_more')
-            next_url = "/api/v1/badges/current/#{@domain_id}/#{@placement_id}.json?page=#{params['page'].to_i + 1}"
+            next_url = "/api/v1/badges/current/#{@badge_config_id}.json?page=#{params['page'].to_i + 1}"
           end
         end
         return {

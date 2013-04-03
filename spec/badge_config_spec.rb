@@ -9,15 +9,15 @@ describe 'Badge Configuration' do
 
   describe "badge configuration" do
     it "should require instructor/admin authorization" do
-      post "/badges/settings/1/00"
+      post "/badges/settings/1"
       last_response.should_not be_ok
       assert_error_page("Configuration not found")
       
-      post "/badges/settings/1/00", {}, 'rack.session' => {'user_id' => '1234'}
+      post "/badges/settings/1", {}, 'rack.session' => {'user_id' => '1234'}
       last_response.should_not be_ok
       assert_error_page("Configuration not found")
       
-      post "/badges/settings/#{@domain.id}/12345", {}, 'rack.session' => {"permission_for_12345" => "view", 'user_id' => '1234'}
+      post "/badges/settings/12345", {}, 'rack.session' => {"permission_for_12345" => "view", 'user_id' => '1234'}
       last_response.should_not be_ok
       assert_error_page("Configuration not found")
     end
@@ -36,9 +36,9 @@ describe 'Badge Configuration' do
         'credits_for_123' => '19',
         'credit_based' => '1'
       }
-      post "/badges/settings/#{@domain.id}/#{@badge_config.placement_id}", params, 'rack.session' => {"permission_for_#{@badge_config.course_id}" => "edit", "user_id" => "9876"}
+      post "/badges/settings/#{@badge_config.id}", params, 'rack.session' => {"permission_for_#{@badge_config.course_id}" => "edit", "user_id" => "9876"}
       last_response.should be_redirect
-      last_response.location.should == "http://example.org/badges/check/#{@domain.id}/#{@badge_config.placement_id}/9876"
+      last_response.location.should == "http://example.org/badges/check/#{@badge_config.id}/9876"
       @badge_config.reload
       @badge_config.settings['badge_url'].should == "http://example.com/badge.png"
       @badge_config.settings['badge_name'].should == "My badge"
@@ -54,9 +54,9 @@ describe 'Badge Configuration' do
     
     it "should fail gracefully on empty parameters" do
       badge_config
-      post "/badges/settings/#{@domain.id}/#{@badge_config.placement_id}", {}, 'rack.session' => {"permission_for_#{@badge_config.course_id}" => "edit", "user_id" => "9876"}
+      post "/badges/settings/#{@badge_config.id}", {}, 'rack.session' => {"permission_for_#{@badge_config.course_id}" => "edit", "user_id" => "9876"}
       last_response.should be_redirect
-      last_response.location.should == "http://example.org/badges/check/#{@domain.id}/#{@badge_config.placement_id}/9876"
+      last_response.location.should == "http://example.org/badges/check/#{@badge_config.id}/9876"
       @badge_config.reload
       @badge_config.settings['badge_url'].should == "/badges/default.png"
       @badge_config.settings['badge_name'].should == "Badge"
@@ -70,14 +70,14 @@ describe 'Badge Configuration' do
     it "should allow linking to an existing badge" do
       @bc1 = badge_config
       @bc2 = badge_config
-      post "/badges/settings/#{@domain.id}/#{@bc2.placement_id}", {'reference_code' => @bc1.reference_code}, 'rack.session' => {"permission_for_#{@bc2.course_id}" => "edit", "user_id" => "9876"}
+      post "/badges/settings/#{@bc2.id}", {'reference_code' => @bc1.reference_code}, 'rack.session' => {"permission_for_#{@bc2.course_id}" => "edit", "user_id" => "9876"}
       
       @bc1.id.should_not == @bc2.id
       @bc2.root_nonce.should == @bc1.nonce
       @bc2.root_settings.should == @bc1.settings
 
       @bc3 = badge_config
-      post "/badges/settings/#{@domain.id}/#{@bc3.placement_id}", {'reference_code' => ''}, 'rack.session' => {"permission_for_#{@bc3.course_id}" => "edit", "user_id" => "9876"}
+      post "/badges/settings/#{@bc3.id}", {'reference_code' => ''}, 'rack.session' => {"permission_for_#{@bc3.course_id}" => "edit", "user_id" => "9876"}
       @bc3.id.should_not == @bc1.id
       @bc3.root_nonce.should == @bc3.nonce
       @bc3.root_settings.should == @bc3.settings
@@ -132,23 +132,23 @@ describe 'Badge Configuration' do
     it "should require instructor/admin authorization" do
       badge_config
       user
-      post "/badges/award/#{@domain.id}/#{@badge_config.placement_id}/#{@user.user_id}", {}, 'rack.session' => {}
+      post "/badges/award/#{@badge_config.id}/#{@user.user_id}", {}, 'rack.session' => {}
       last_response.should_not be_ok
       assert_error_page("Session information lost")
     end
     
     it "should do nothing for an invalid course or user" do
       badge_config
-      post "/badges/award/#{@domain.id}/#{@badge_config.placement_id}/asdfjkl", {}, 'rack.session' => {"permission_for_#{@badge_config.course_id}" => 'edit'}
+      post "/badges/award/#{@badge_config.id}/asdfjkl", {}, 'rack.session' => {"permission_for_#{@badge_config.course_id}" => 'edit'}
       last_response.should_not be_ok
       assert_error_page("Session information lost")
 
-      post "/badges/award/#{@domain.id}/asdf/asdfjkl", {}, 'rack.session' => {'permission_for_asdf' => 'edit', 'user_id' => 'asdf'}
+      post "/badges/award/asdf/asdfjkl", {}, 'rack.session' => {'permission_for_asdf' => 'edit', 'user_id' => 'asdf'}
       last_response.should_not be_ok
       assert_error_page("Configuration not found")
       
 
-      post "/badges/award/#{@domain.id}/#{@badge_config.placement_id}/asdfjkl", {}, 'rack.session' => {"permission_for_#{@badge_config.course_id}" => 'edit', 'user_id' => 'asdf'}
+      post "/badges/award/#{@badge_config.id}/asdfjkl", {}, 'rack.session' => {"permission_for_#{@badge_config.course_id}" => 'edit', 'user_id' => 'asdf'}
       last_response.should_not be_ok
       assert_error_page("This badge has not been configured yet")
       
@@ -156,7 +156,7 @@ describe 'Badge Configuration' do
       @badge_config.save
       Canvabadges.any_instance.should_receive(:api_call).and_return([])
 
-      post "/badges/award/#{@domain.id}/#{@badge_config.placement_id}/asdfjkl", {}, 'rack.session' => {"permission_for_#{@badge_config.course_id}" => 'edit', 'user_id' => 'asdf'}
+      post "/badges/award/#{@badge_config.id}/asdfjkl", {}, 'rack.session' => {"permission_for_#{@badge_config.course_id}" => 'edit', 'user_id' => 'asdf'}
       last_response.should_not be_ok
       assert_error_page("That user is not a student in this course")
     end
@@ -165,9 +165,9 @@ describe 'Badge Configuration' do
       user
       configured_badge
       Canvabadges.any_instance.should_receive(:api_call).and_return([{'id' => @user.user_id.to_i, 'name' => 'bob', 'email' => 'bob@example.com'}])
-      post "/badges/award/#{@domain.id}/#{@badge_config.placement_id}/#{@user.user_id}", {}, 'rack.session' => {"permission_for_#{@badge_config.course_id}" => 'edit', 'user_id' => @user.user_id}
+      post "/badges/award/#{@badge_config.id}/#{@user.user_id}", {}, 'rack.session' => {"permission_for_#{@badge_config.course_id}" => 'edit', 'user_id' => @user.user_id}
       last_response.should be_redirect
-      last_response.location.should == "http://example.org/badges/check/#{@domain.id}/#{@badge_config.placement_id}/#{@user.user_id}"
+      last_response.location.should == "http://example.org/badges/check/#{@badge_config.id}/#{@user.user_id}"
     end
     
     it "should allow instructors to manually award the badge for their students" do
@@ -176,9 +176,9 @@ describe 'Badge Configuration' do
       @badge_config.settings['min_percent'] = 10
       @badge_config.save
       Canvabadges.any_instance.should_receive(:api_call).and_return([{'id' => @user.user_id.to_i, 'name' => 'bob', 'email' => 'bob@example.com'}])
-      post "/badges/award/#{@domain.id}/#{@badge_config.placement_id}/#{@user.user_id}", {}, 'rack.session' => {"permission_for_#{@badge_config.course_id}" => 'edit', 'user_id' => @user.user_id}
+      post "/badges/award/#{@badge_config.id}/#{@user.user_id}", {}, 'rack.session' => {"permission_for_#{@badge_config.course_id}" => 'edit', 'user_id' => @user.user_id}
       last_response.should be_redirect
-      last_response.location.should == "http://example.org/badges/check/#{@domain.id}/#{@badge_config.placement_id}/#{@user.user_id}"
+      last_response.location.should == "http://example.org/badges/check/#{@badge_config.id}/#{@user.user_id}"
     end
   end
 end

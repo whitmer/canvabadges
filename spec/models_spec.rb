@@ -139,20 +139,15 @@ describe 'Badging Models' do
         award_badge(badge_config, user)
         hash = @badge.open_badge_json("bob.com")
         sha = Digest::SHA256.hexdigest(@badge.email + @badge.salt)
-        hash[:recipient].should == "sha256$#{sha}"
-        hash[:salt].should_not be_nil
-        hash[:issued_on] = Time.now.strftime("%Y-%m-%d")
-        hash[:badge].should_not be_nil
-        hash[:badge][:version].should == '0.5.0'
-        hash[:badge][:name].should == @badge.name
-        hash[:badge][:image].should == "http://example.com/badge"
-        hash[:badge][:description].should == "Badge for cool people"
-        hash[:badge][:criteria].should == "https://bob.com/badges/criteria/#{@badge.config_nonce}"
-        hash[:badge][:issuer].should_not be_nil
-        hash[:badge][:issuer][:origin].should == "https://bob.com"
-        hash[:badge][:issuer][:name].should == "Canvabadges"
-        hash[:badge][:issuer][:org].should == "Instructure, Inc."
-        hash[:badge][:issuer][:contact].should == "support@instructure.com"
+        hash[:recipient].should == {
+          :hashed => true,
+          :identity => @badge.recipient,
+          :salt => @badge.salt,
+          :type => "email"
+        }
+        hash[:badge].should == "https://bob.com/api/v1/badges/summary/#{@badge_config.id}/#{@badge_config.nonce}.json"
+        hash[:evidence].should == "https://bob.com/badges/criteria/#{@badge_config.id}/#{@badge_config.nonce}?user=#{@badge.nonce}"
+        hash[:image].should == "http://example.com/badge"
       end
       
       it "should not fail if invalid badge data crops up somehow" do
@@ -161,26 +156,17 @@ describe 'Badging Models' do
         @badge.badge_config = nil
         hash = @badge.open_badge_json("bob.com")
         hash.keys.should be_include(:recipient)
-        hash.keys.should be_include(:salt)
-        hash.keys.should be_include(:issued_on)
+        hash.keys.should be_include(:issuedOn)
         hash.keys.should be_include(:badge)
-        hash[:badge].keys.should be_include(:version)
-        hash[:badge].keys.should be_include(:name)
-        hash[:badge].keys.should be_include(:image)
-        hash[:badge].keys.should be_include(:description)
-        hash[:badge].keys.should be_include(:criteria)
-        hash[:badge].keys.should be_include(:issuer)
-        hash[:badge][:issuer].keys.should be_include(:origin)
-        hash[:badge][:issuer].keys.should be_include(:name)
-        hash[:badge][:issuer].keys.should be_include(:org)
-        hash[:badge][:issuer].keys.should be_include(:contact)
       end
       
       it "should use the correct host and port" do
         award_badge(badge_config, user)
         hash = @badge.open_badge_json("alpha.net")
-        hash[:badge][:criteria].should == "https://alpha.net/badges/criteria/#{@badge.config_nonce}"
-        hash[:badge][:issuer][:origin].should == "https://alpha.net"
+        hash[:badge].should == "https://alpha.net/api/v1/badges/summary/#{@badge_config.id}/#{@badge_config.nonce}.json"
+        
+        hash = @badge_config.as_json("alpha.org")
+        hash[:issuer].should == "https://alpha.org/api/v1/organizations/default.json"
       end
     end
     
@@ -219,7 +205,7 @@ describe 'Badging Models' do
     it "should allow generating badges" do
       badge_config
       user
-      badge = Badge.generate_badge({'user_id' => @user.user_id, 'placement_id' => @badge_config.placement_id, 'domain_id' => @domain.id}, @badge_config, @user.name, "email@email.com")
+      badge = Badge.generate_badge({'user_id' => @user.user_id, 'badge_config_id' => @badge_config.id}, @badge_config, @user.name, "email@email.com")
       badge.user_id.should == @user.user_id
       badge.badge_config_id.should == @badge_config.id
       badge.placement_id.should == @badge_config.placement_id
@@ -235,7 +221,7 @@ describe 'Badging Models' do
     it "should allow manually awarding new badges" do
       badge_config
       user
-      badge = Badge.manually_award({'user_id' => @user.user_id, 'placement_id' => @badge_config.placement_id, 'domain_id' => @domain.id}, @badge_config, @user.name, "email@email.com")
+      badge = Badge.manually_award({'user_id' => @user.user_id, 'badge_config_id' => @badge_config.id}, @badge_config, @user.name, "email@email.com")
       badge.user_id.should == @user.user_id
       badge.placement_id.should == @badge_config.placement_id
       badge.name.should == @badge_config.settings['badge_name']
@@ -249,7 +235,7 @@ describe 'Badging Models' do
     
     it "should allow manually awarding existing badges" do
       award_badge(badge_config, user)
-      badge = Badge.manually_award({'user_id' => @user.user_id, 'placement_id' => @badge_config.placement_id, 'domain_id' => @domain.id}, @badge_config, @user.name, "email@email.com")
+      badge = Badge.manually_award({'user_id' => @user.user_id, 'badge_config_id' => @badge_config.id}, @badge_config, @user.name, "email@email.com")
       badge.id.should == @badge.id
       badge.user_id.should == @user.user_id
       badge.placement_id.should == @badge_config.placement_id
@@ -265,7 +251,7 @@ describe 'Badging Models' do
     it "should allow completing new badges" do
       badge_config
       user
-      badge = Badge.complete({'user_id' => @user.user_id, 'placement_id' => @badge_config.placement_id, 'domain_id' => @domain.id}, @badge_config, @user.name, "email@email.com")
+      badge = Badge.complete({'user_id' => @user.user_id, 'badge_config_id' => @badge_config.id}, @badge_config, @user.name, "email@email.com")
       badge.user_id.should == @user.user_id
       badge.placement_id.should == @badge_config.placement_id
       badge.name.should == @badge_config.settings['badge_name']
@@ -279,7 +265,7 @@ describe 'Badging Models' do
     
     it "should allow completing existing badges" do
       award_badge(badge_config, user)
-      badge = Badge.complete({'user_id' => @user.user_id, 'placement_id' => @badge_config.placement_id, 'domain_id' => @domain.id}, @badge_config, @user.name, "email@email.com")
+      badge = Badge.complete({'user_id' => @user.user_id, 'badge_config_id' => @badge_config.id}, @badge_config, @user.name, "email@email.com")
       badge.id.should == @badge.id
       badge.user_id.should == @user.user_id
       badge.placement_id.should == @badge_config.placement_id
@@ -297,7 +283,7 @@ describe 'Badging Models' do
       user
       @badge_config.settings['manual_approval'] = true
       @badge_config.save
-      badge = Badge.complete({'user_id' => @user.user_id, 'placement_id' => @badge_config.placement_id, 'domain_id' => @domain.id}, @badge_config, @user.name, "email@email.com")
+      badge = Badge.complete({'user_id' => @user.user_id, 'badge_config_id' => @badge_config.id}, @badge_config, @user.name, "email@email.com")
       badge.user_id.should == @user.user_id
       badge.placement_id.should == @badge_config.placement_id
       badge.name.should == @badge_config.settings['badge_name']
@@ -312,24 +298,36 @@ describe 'Badging Models' do
     it "should include custom issuer information on badge awards" do
       badge_config
       user
-      badge = Badge.complete({'user_id' => @user.user_id, 'placement_id' => @badge_config.placement_id, 'domain_id' => @domain.id}, @badge_config, @user.name, "email@email.com")
+      badge = Badge.complete({'user_id' => @user.user_id, 'badge_config_id' => @badge_config.id}, @badge_config, @user.name, "email@email.com")
       json = badge.open_badge_json("example.com")
       json[:badge].should_not be_nil
-      json[:badge][:issuer].should_not be_nil
-      json[:badge][:issuer][:name].should == BadgeHelper.issuer['name']
-      json[:badge][:issuer][:org].should == BadgeHelper.issuer['org']
-      json[:badge][:issuer][:url].should == BadgeHelper.issuer['url']
-      json[:badge][:issuer][:contact].should == BadgeHelper.issuer['email']
+      json[:badge].should == "https://example.com/api/v1/badges/summary/#{@badge_config.id}/#{@badge_config.nonce}.json"
+      
+      json = @badge_config.as_json("example.com")
+      json[:issuer].should == "https://example.com/api/v1/organizations/default.json"
+      
+      Organization.new.as_json("example.com").should == {
+        'name' => BadgeHelper.issuer['name'],
+        'url' => BadgeHelper.issuer['url'],
+        'description' => BadgeHelper.issuer['description'],
+        'image' => BadgeHelper.issuer['image'],
+        'email' => BadgeHelper.issuer['email'],
+        'revocationList' => "#{BadgeHelper.protocol}://example.com/api/v1/organizations/default/revocations"
+      }
+      
 
-      @badge_config.set_org(:name => "My School", :url => "http://myschool.edu", :email => "admin@myschool.edu", :image_url => "http://myschool.edu/pic.png")
-      badge = Badge.complete({'user_id' => @user.user_id, 'placement_id' => @badge_config.placement_id, 'domain_id' => @domain.id}, @badge_config, @user.name, "email@email.com")
-      json = badge.open_badge_json("example.com")
-      json[:badge].should_not be_nil
-      json[:badge][:issuer].should_not be_nil
-      json[:badge][:issuer][:name].should == BadgeHelper.issuer['name']
-      json[:badge][:issuer][:org].should == "My School"
-      json[:badge][:issuer][:url].should == "http://myschool.edu"
-      json[:badge][:issuer][:contact].should == 'admin@myschool.edu'
+      configured_school      
+      @badge_config.organization = @school
+      json = @badge_config.as_json("example.com")
+      json[:issuer].should == "https://example.com/api/v1/organizations/#{@school.id}-my-school.json"
+      @school.as_json("example.com").should == {
+       "description" => "My School has been around a long time",
+       "email" => "admin@myschool.edu",
+       "image" => "http://myschool.edu/logo.png",
+       "name" => "My School",
+       "revocationList" => "https://example.com/api/v1/organizations/#{@school.id}/revocations",
+       "url" => "http://myschool.edu"
+      }
     end
   end  
 

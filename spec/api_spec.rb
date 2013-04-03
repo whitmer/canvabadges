@@ -49,21 +49,21 @@ describe 'Badges API' do
   describe "awarded badges for course" do
     it "should require instructor/admin authorization" do
       badge_config
-      get "/api/v1/badges/awarded/#{@badge_config.domain_id}/#{@badge_config.placement_id}.json"
+      get "/api/v1/badges/awarded/#{@badge_config.id}.json"
       last_response.should_not be_ok
       last_response.body.should == {"error" => true, "message" => "Session information lost"}.to_json      
     end
     
     it "should return nothing if no course" do
       user
-      get "/api/v1/badges/awarded/#{@domain.id}/123.json", {}, 'rack.session' => {"permission_for_123" => 'edit', 'user_id' => @user.user_id}
+      get "/api/v1/badges/awarded/123.json", {}, 'rack.session' => {"permission_for_123" => 'edit', 'user_id' => @user.user_id}
       last_response.should_not be_ok
       last_response.body.should == {"error" => true, "message" => "Configuration not found"}.to_json
     end
     
     it "should return awarded badges if there are any" do
       award_badge(badge_config, user)
-      get "/api/v1/badges/awarded/#{@badge_config.domain_id}/#{@badge_config.placement_id}.json", {}, 'rack.session' => {"permission_for_#{@badge_config.course_id}" => 'edit', 'user_id' => @user.user_id}
+      get "/api/v1/badges/awarded/#{@badge_config.id}.json", {}, 'rack.session' => {"permission_for_#{@badge_config.course_id}" => 'edit', 'user_id' => @user.user_id}
       last_response.should be_ok
       last_response.body.should == {:meta => {:next => nil}, :objects => [badge_json(@badge, @user)]}.to_json      
     end
@@ -73,11 +73,11 @@ describe 'Badges API' do
       55.times do
         award_badge(@badge_config, user)
       end
-      get "/api/v1/badges/awarded/#{@badge_config.domain_id}/#{@badge_config.placement_id}.json", {}, 'rack.session' => {"permission_for_#{@badge_config.course_id}" => 'edit', 'user_id' => @admin.user_id}
+      get "/api/v1/badges/awarded/#{@badge_config.id}.json", {}, 'rack.session' => {"permission_for_#{@badge_config.course_id}" => 'edit', 'user_id' => @admin.user_id}
       last_response.should be_ok
       json = JSON.parse(last_response.body)
       json['objects'].length.should == 50
-      json['meta']['next'].should == "/api/v1/badges/awarded/#{@badge_config.domain_id}/#{@badge_config.placement_id}.json?page=2"
+      json['meta']['next'].should == "/api/v1/badges/awarded/#{@badge_config.id}.json?page=2"
       
       get json['meta']['next'], {}, 'rack.session' => {"permission_for_#{@badge_config.course_id}" => 'edit', 'user_id' => @admin.user_id}
       last_response.should be_ok
@@ -90,14 +90,14 @@ describe 'Badges API' do
   describe "active students for course" do
     it "should require instructor/admin authorization" do
       badge_config
-      get "/api/v1/badges/current/#{@badge_config.domain_id}/#{@badge_config.placement_id}.json"
+      get "/api/v1/badges/current/#{@badge_config.id}.json"
       last_response.should_not be_ok
       last_response.body.should == {"error" => true, "message" => "Session information lost"}.to_json      
     end
     
     it "should return nothing if no course" do
       user
-      get "/api/v1/badges/current/#{@domain.id}/123.json", {}, 'rack.session' => {"permission_for_123" => 'edit', 'user_id' => @user.user_id}
+      get "/api/v1/badges/current/123.json", {}, 'rack.session' => {"permission_for_123" => 'edit', 'user_id' => @user.user_id}
       last_response.should_not be_ok
       last_response.body.should == {"error" => true, "message" => "Configuration not found"}.to_json      
     end
@@ -108,7 +108,7 @@ describe 'Badges API' do
       s1 = fake_badge_json(@badge_config, '123', 'bob')
       s2 = fake_badge_json(@badge_config, '456', 'fred')
       Canvabadges.any_instance.should_receive(:api_call).and_return([{'id' => s1[:id], 'name' => s1[:name]}, {'id' => s2[:id], 'name' => s2[:name]}])
-      get "/api/v1/badges/current/#{@domain.id}/#{@badge_config.placement_id}.json", {}, 'rack.session' => {"permission_for_#{@badge_config.course_id}" => 'edit', 'user_id' => @user.user_id}
+      get "/api/v1/badges/current/#{@badge_config.id}.json", {}, 'rack.session' => {"permission_for_#{@badge_config.course_id}" => 'edit', 'user_id' => @user.user_id}
       last_response.should be_ok
       last_response.body.should == {:meta => {:next => nil}, :objects => [s1, s2]}.to_json      
     end
@@ -122,9 +122,9 @@ describe 'Badges API' do
       json.instance_variable_set('@has_more', true)
       
       Canvabadges.any_instance.should_receive(:api_call).and_return(json)
-      get "/api/v1/badges/current/#{@domain.id}/#{@badge_config.placement_id}.json", {}, 'rack.session' => {"permission_for_#{@badge_config.course_id}" => 'edit', 'user_id' => @user.user_id}
+      get "/api/v1/badges/current/#{@badge_config.id}.json", {}, 'rack.session' => {"permission_for_#{@badge_config.course_id}" => 'edit', 'user_id' => @user.user_id}
       last_response.should be_ok
-      last_response.body.should == {:meta => {:next => "/api/v1/badges/current/#{@domain.id}/#{@badge_config.placement_id}.json?page=2"}, :objects => [s1, s2]}.to_json      
+      last_response.body.should == {:meta => {:next => "/api/v1/badges/current/#{@badge_config.id}.json?page=2"}, :objects => [s1, s2]}.to_json      
     end
   end
   
@@ -132,45 +132,87 @@ describe 'Badges API' do
     # HEAD and GET
     it "should respond to HEAD request" do
       award_badge(badge_config, user)
-      head "/api/v1/badges/data/#{@badge_config.placement_id}/#{@user.user_id}/#{@badge.nonce}.json"
+      head "/api/v1/badges/data/#{@badge_config.id}/#{@user.user_id}/#{@badge.nonce}.json"
       last_response.should be_ok      
     end
     
     it "should return nothing if invalid parameters" do
       award_badge(badge_config, user)
-      get "/api/v1/badges/data/#{@badge_config.placement_id}x/#{@user.user_id}/#{@badge.nonce}.json"
+      get "/api/v1/badges/data/#{@badge_config.id}x/#{@user.user_id}/#{@badge.nonce}.json"
       last_response.should be_ok 
       last_response.body.should == {:error => "Not found"}.to_json
 
-      get "/api/v1/badges/data/#{@badge_config.placement_id}/#{@user.user_id}x/#{@badge.nonce}.json"
+      get "/api/v1/badges/data/#{@badge_config.id}/#{@user.user_id}x/#{@badge.nonce}.json"
       last_response.should be_ok 
       last_response.body.should == {:error => "Not found"}.to_json
 
-      get "/api/v1/badges/data/#{@badge_config.placement_id}/#{@user.user_id}/#{@badge.nonce}x.json"
+      get "/api/v1/badges/data/#{@badge_config.id}/#{@user.user_id}/#{@badge.nonce}x.json"
       last_response.should be_ok 
       last_response.body.should == {:error => "Not found"}.to_json
     end
     
-    it "should return valid OBI badge data" do
+    it "should return valid OBI BadgeAssertion data" do
       award_badge(badge_config, user)
-      get "/api/v1/badges/data/#{@badge_config.placement_id}/#{@user.user_id}/#{@badge.nonce}.json"
+      get "/api/v1/badges/data/#{@badge_config.id}/#{@user.user_id}/#{@badge.nonce}.json"
       last_response.should be_ok 
       last_response.body.should == @badge.open_badge_json("example.org").to_json
       json = JSON.parse(last_response.body)
       json['recipient'].should_not be_nil
-      json['salt'].should_not be_nil
-      json['issued_on'].should_not be_nil
-      json['badge'].should_not be_nil
-      json['badge']['version'].should_not be_nil      
-      json['badge']['name'].should_not be_nil      
-      json['badge']['image'].should_not be_nil      
-      json['badge']['description'].should_not be_nil      
-      json['badge']['criteria'].should_not be_nil      
-      json['badge']['issuer'].should_not be_nil      
-      json['badge']['issuer']['origin'].should_not be_nil      
-      json['badge']['issuer']['name'].should_not be_nil      
-      json['badge']['issuer']['org'].should_not be_nil      
-      json['badge']['issuer']['contact'].should_not be_nil      
+      json['recipient']['salt'].should_not be_nil
+      json['verify'].should == {
+        "type"=>"hosted", 
+        "url"=>"https://example.org/api/v1/badges/data/#{@badge_config.id}/#{@user.user_id}/#{@badge.nonce}.json"
+      }
+      json['issuedOn'].should_not be_nil
+      json['badge'].should == "https://example.org/api/v1/badges/summary/#{@badge_config.id}/#{@badge_config.nonce}.json"
+    end
+    
+    it "should return valid OBI BadgeClass data" do
+      award_badge(badge_config, user)
+      get "/api/v1/badges/summary/#{@badge_config.id}/#{@badge_config.nonce}.json"
+      last_response.should be_ok 
+      last_response.body.should == @badge_config.as_json("example.org").to_json
+      json = JSON.parse(last_response.body)
+      json['name'].should_not be_nil
+      json['description'].should_not be_nil
+      json['image'].should_not be_nil
+      json['criteria'].should_not be_nil
+      json['issuer'].should_not be_nil
+      
+      json['name'].should == "Cool Badge"
+      json['description'].should == "Badge for cool people"
+      json['image'].should == "http://example.com/badge"
+      json['criteria'].should == "https://example.org/badges/criteria/#{@badge_config.id}/#{@badge_config.nonce}"
+      json['issuer'].should == "https://example.org/api/v1/organizations/default.json"
+      json['alignment'].should == []
+      json['tags'].should == []
+    end
+    
+    it "should return valid OBI IssuerOrganization data" do
+      get "/api/v1/organizations/default.json"
+      last_response.should be_ok 
+      last_response.body.should == Organization.new.as_json("example.org").to_json
+
+      get "/api/v1/organizations/#{@config.id}.json"
+      last_response.should_not be_ok 
+      last_response.body.should == {:error => "not found"}.to_json
+
+      configured_school      
+      get "/api/v1/organizations/#{@school.id}.json"
+      last_response.should be_ok 
+      last_response.body.should == @school.as_json("example.org").to_json
+      json = JSON.parse(last_response.body)
+      json['name'].should_not be_nil
+      json['url'].should_not be_nil
+      json['description'].should_not be_nil
+      json['image'].should_not be_nil
+      json['email'].should_not be_nil
+      json['name'].should == @school.settings['name']
+      json['url'].should == @school.settings['url']
+      json['description'].should == @school.settings['description']
+      json['image'].should == @school.settings['image']
+      json['email'].should == @school.settings['email']
+      json['revocationList'].should == "https://example.org/api/v1/organizations/#{@school.id}/revocations"
     end
   end
 end

@@ -27,11 +27,15 @@ module Sinatra
           return error("Course must be a Canvas course, and launched with public permission settings")
         end
         if provider.valid_request?(request)
-          BadgeConfig.first_or_create(:placement_id => params['resource_link_id'], :domain_id => domain.id, :course_id => params['custom_canvas_course_id'])
+          bc = BadgeConfig.first_or_new(:placement_id => params['resource_link_id'], :domain_id => domain.id, :course_id => params['custom_canvas_course_id'])
+          bc.external_config_id ||= tool_config.id
+          bc.organization_id = tool_config.organization_id if !bc.id
+          bc.save
           user_id = params['custom_canvas_user_id']
           user_config = UserConfig.first(:user_id => user_id, :domain_id => domain.id)
           session["user_id"] = user_id
           session["launch_placement_id"] = params['resource_link_id']
+          session["launch_badge_config_id"] = bc.id
           session["launch_course_id"] = params['custom_canvas_course_id']
           session["permission_for_#{params['custom_canvas_course_id']}"] = 'view'
           session['email'] = params['lis_person_contact_email_primary']
@@ -62,7 +66,7 @@ module Sinatra
       end
   
       app.get "/oauth_success" do
-        if !session['domain_id'] || !session['user_id'] || !session['launch_placement_id'] || !session['source_id']
+        if !session['domain_id'] || !session['user_id'] || !session['launch_badge_config_id'] || !session['source_id']
           return error("Launch parameters lost")
         end
         domain = Domain.first(:id => session['domain_id'])
@@ -90,7 +94,7 @@ module Sinatra
           user_config.name = session['name']
           user_config.global_user_id = session['source_id'] + "_" + json['user']['id'].to_s
           user_config.save
-          redirect to("/badges/check/#{domain.id}/#{session['launch_placement_id']}/#{user_config.user_id}")
+          redirect to("/badges/check/#{session['launch_badge_config_id']}/#{user_config.user_id}")
           session.destroy
           session['user_id'] = user_config.user_id.to_s
           session['domain_id'] = user_config.domain_id.to_s

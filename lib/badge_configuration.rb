@@ -7,8 +7,8 @@ module Sinatra
       
       # configure badge settings.
       # eventually the teacher will also use this to configure badge acceptance criteria
-      app.post "/badges/settings/:domain_id/:placement_id" do
-        load_badge_config(params['domain_id'], params['placement_id'], 'edit')
+      app.post "/badges/settings/:badge_config_id" do
+        load_badge_config(params['badge_config_id'], 'edit')
         
         settings = @badge_config.settings || {}
         settings['badge_url'] = params['badge_url']
@@ -43,7 +43,7 @@ module Sinatra
         @badge_config.settings = settings
         @badge_config.set_root_from_reference_code(params['reference_code'])
         @badge_config.save
-        redirect to("/badges/check/#{@domain_id}/#{@placement_id}/#{@user_id}")
+        redirect to("/badges/check/#{@badge_config_id}/#{@user_id}")
       end
       
       # set a badge to public or private
@@ -61,8 +61,8 @@ module Sinatra
       end
       
       # manually award a user with the course's badge
-      app.post "/badges/award/:domain_id/:placement_id/:user_id" do
-        load_badge_config(params['domain_id'], params['placement_id'], 'edit')
+      app.post "/badges/award/:badge_config_id/:user_id" do
+        load_badge_config(params['badge_config_id'], 'edit')
   
         settings = (@badge_config && @badge_config.settings) || {}
         if settings && settings['badge_url'] && settings['min_percent']
@@ -71,7 +71,7 @@ module Sinatra
           if student
             badge = Badge.manually_award(params, @badge_config, student['name'], student['email'])
             
-            redirect to("/badges/check/#{@domain_id}/#{@placement_id}/#{@user_id}")
+            redirect to("/badges/check/#{@badge_config_id}/#{@user_id}")
           else
             return error("That user is not a student in this course")
           end
@@ -83,14 +83,15 @@ module Sinatra
     end
   
     module Helpers
-      def load_badge_config(domain_id, placement_id, permission=nil)
-        @badge_config = BadgeConfig.first(:domain_id => domain_id, :placement_id => placement_id)
+      def load_badge_config(badge_config_id, permission=nil)
+        @badge_config = BadgeConfig.first(:id => badge_config_id)
+        domain_id = @badge_config && @badge_config.domain_id
         @user_config = UserConfig.first(:domain_id => domain_id, :user_id => session['user_id'])
-        @badge = Badge.first(:domain_id => domain_id, :placement_id => placement_id, :user_id => session['user_id'])
-        
         if !@badge_config
           halt 404, error("Configuration not found")
         end
+
+        @badge = Badge.first(:badge_config_id => @badge_config.id, :user_id => session['user_id'])
         @course_id = @badge_config.course_id
         if permission
           if !session['user_id']
@@ -102,6 +103,7 @@ module Sinatra
           end
         end
         @placement_id = @badge_config.placement_id
+        @badge_config_id = @badge_config.id
         @domain_id = @badge_config.domain_id
         @user_id = session['user_id']
       end

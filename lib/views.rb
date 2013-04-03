@@ -15,13 +15,13 @@ module Sinatra
       end
   
       # public page that shows requirements for badge completion
-      app.get "/badges/criteria/:config_nonce" do
-        @badge_config = BadgeConfig.first(:nonce => params['config_nonce'])
+      app.get "/badges/criteria/:id/:nonce" do
+        @badge_config = BadgeConfig.first(:id => params['id'], :nonce => params['nonce'])
         if !@badge_config
           return error("Badge not found")
         end
         @badge = Badge.first(:nonce => params['user'])
-        @earned = params['user'] && @badge && @badge.config_nonce == params['config_nonce']
+        @earned = params['user'] && @badge && @badge.awarded? && @badge.config_nonce == params['nonce']
         erb :badge_completion
       end
       
@@ -37,8 +37,8 @@ module Sinatra
       
       # the magic page, APIs it up to make sure the user has done what they need to,
       # shows the results and lets them add the badge if they're done
-      app.get "/badges/check/:domain_id/:placement_id/:user_id" do
-        load_badge_config(params['domain_id'], params['placement_id'], 'view')
+      app.get "/badges/check/:badge_config_id/:user_id" do
+        load_badge_config(params['badge_config_id'], 'view')
         if @badge_config && @badge_config.configured?
           if @badge && !@badge.needing_evaluation?
             @student = {}
@@ -74,7 +74,7 @@ module Sinatra
     module Helpers
       def edit_course_html
         raise "no user" unless @user_config
-        raise "missing value" unless @domain_id && @placement_id && @course_id && @badge_config
+        raise "missing value" unless @domain_id && @badge_config_id && @course_id && @badge_config
         @modules_json ||= api_call("/api/v1/courses/#{@course_id}/modules", @user_config)
         erb :_badge_settings
       end

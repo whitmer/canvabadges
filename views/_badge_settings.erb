@@ -3,7 +3,7 @@
    advanced = ref_code || settings['modules'] || settings['manual_approval']
    disabled = @badge_config && @badge_config.root_id 
 %>
-  <form class='well form-horizontal' style="margin-top: 15px;" method="post" action="/badges/settings/<%= @domain_id %>/<%= @placement_id %>">
+  <form class='well form-horizontal' style="margin-top: 15px;" method="post" action="/badges/settings/<%= @badge_config_id %>">
     <h2>Badge Settings</h2>
     <img src="<%= settings['badge_url'] || '/badges/default.png' %>" style='float: left; margin-right: 10px;' class='thumbnail'/>
     <fieldset>

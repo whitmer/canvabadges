@@ -2,6 +2,8 @@
 <% if @badge %>
   <h2><%= @badge.user_name %></h2>
   <% if @earned %>
-    <p><img src='/check.gif'/> This user completed the requirements necessary to receive this badge</p>
+    <p><img src='/check.gif'/> This user has completed the requirements necessary to receive this badge</p>
+  <% else %>
+    <p><img src='/redx.gif'/> This user has not completed the requirements necessary to receive this badge</p>
   <% end %>
 <% end %>

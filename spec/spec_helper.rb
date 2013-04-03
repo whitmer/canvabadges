@@ -8,8 +8,22 @@ RSpec.configure do |config|
   config.before(:each) { 
     DataMapper.auto_migrate! 
     domain("bob.com", "Bob")
-    ExternalConfig.create(:config_type => 'canvas_oauth', :value => 'abc', :shared_secret => 'xyz')
+    @config = ExternalConfig.create(:config_type => 'canvas_oauth', :value => 'abc', :shared_secret => 'xyz')
   }
+end
+
+def configured_school
+  @school = Organization.create(
+    'settings' => {
+      'name' => "My School",
+      'url' => "http://myschool.edu",
+      'description' => "My School has been around a long time",
+      'image' => "http://myschool.edu/logo.png",
+      'email' => "admin@myschool.edu"
+    }
+  )
+  @school.as_json("example.org")['name'].should == "My School"
+  @school
 end
 
 def get_with_session(path, hash={}, args={})
@@ -33,7 +47,7 @@ end
 
 def badge_config
   id = Time.now.to_i.to_s + rand.round(8).to_s
-  @badge_config = BadgeConfig.new(:placement_id => id, :domain_id => @domain.id, :course_id => '123')
+  @badge_config = BadgeConfig.new(:placement_id => id, :domain_id => @domain.id, :course_id => '123', :external_config_id => @config.id)
   @badge_config.settings = {
     'badge_name' => "Cool Badge",
     'badge_description' => "Badge for cool people",
