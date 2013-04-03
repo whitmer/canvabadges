@@ -11,15 +11,14 @@
 <% if settings['hours'] %>
   <p class='desc'>Approximate hours for completion: <%= settings['hours'] %></p>
 <% end %>
-<% if settings['verification'] %>
-  <p class="desc verification">
-    <p><img src='<%= settings['verification']['image_url'] %>'/>
-    This badge has been verified by 
-    <%= request.host %>. It is associated with 
-    <a href="<%= settings['verification']['url'] %>">
-    <%= settings['verification']['name'] %></a>.</p>
-    <span style="clear: left;"></span>
-  </p>
-<% end %>
+<% org = (@badge_config.organization && @badge_config.organization.settings) || BadgeHelper.issuer %>
+<p class="desc verification">
+  <img src='<%= org['image'] %>'/>
+  This badge was created at 
+  <%= request.host %>. It is associated with 
+  <a href="<%= org['url'] %>">
+  <%= org['name'] %></a>.
+  <span style="clear: left;"></span>
+</p>
 
 <div style='clear: left; padding-bottom: 10px;'></div>

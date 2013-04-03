@@ -106,19 +106,17 @@
         </div>
       </div>
       <div class="control-group verification">
-        <% if settings['verification'] %>
-          <p><img src='<%= settings['verification']['image_url'] %>'/>
-          This badge has been verified by 
+        <% org = (@badge_config.organization && @badge_config.organization.settings) || BadgeHelper.issuer %>
+        <p class="desc verification">
+          <img src='<%= org['image'] %>'/>
+          This badge was created at 
           <%= request.host %>. It is associated with 
-          <a href="<%= settings['verification']['url'] %>">
-          <%= settings['verification']['name'] %></a>.</p>
-        <% else %>
-          <p>This badge hasn't been verified. If you'd like
-          your badge verified you'll need to 
-          <a href="<%= BadgeHelper.issuer['owner_url'] %>">contact the
-          administrator of this site</a>.</p>
-        <% end %>
-        <div style="clear: left;"></div>
+          <a href="<%= org['url'] %>">
+          <%= org['name'] %></a>. If this association
+          is incorrect, please <a href="<%= BadgeHelper.issuer['owner_url'] %>">contact the
+          administrator of this site</a>.
+          <span style="clear: left;"></span>
+        </p>
       </div>
       <div class="form-actions" style="border: 0; background: transparent;">
         <button type="submit" class='btn btn-primary'>Save Badge Settings</button>
