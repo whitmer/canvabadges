@@ -107,7 +107,7 @@
       </div>
       <div class="control-group verification">
         <% org = (@badge_config.organization && @badge_config.organization.settings) || BadgeHelper.issuer %>
-        <p class="desc verification">
+        <p class="verification">
           <img src='<%= org['image'] %>'/>
           This badge was created at 
           <%= request.host %>. It is associated with 
