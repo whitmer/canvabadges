@@ -85,7 +85,7 @@ module Sinatra
       end 
           
       def badge_data(params, host_with_port)
-        badge = Badge.first(:id => params[:badge_config_id], :user_id => params[:user_id], :nonce => params[:code])
+        badge = Badge.first(:badge_config_id => params[:badge_config_id], :user_id => params[:user_id], :nonce => params[:code])
         headers 'Content-Type' => 'application/json'
         if badge
           badge.badge_url = "#{protocol}://#{host_with_port}" + badge.badge_url if badge.badge_url.match(/^\//)
