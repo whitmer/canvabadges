@@ -9,6 +9,10 @@ module Sinatra
         erb :index
       end
       
+      app.get "/stats" do
+        erb :stats
+      end
+      
       app.get "/canvabadges.xml" do
         response.headers['Content-Type'] = "text/xml"
         erb :config_xml, :layout => false
