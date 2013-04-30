@@ -23,7 +23,7 @@ class Organization
       'description' => settings['description'],
       'image' => settings['image'],
       'email' => settings['email'],
-      'revocationList' => "#{BadgeHelper.protocol}://#{host_with_port}/api/v1/organizations/#{self.id || 'default'}/revocations"
+      'revocationList' => "#{BadgeHelper.protocol}://#{host_with_port}/api/v1/organizations/#{self.id || 'default'}/revocations.json"
     }
   end
   
