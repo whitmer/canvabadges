@@ -85,7 +85,7 @@ class BadgeConfig
   def as_json(host_with_port)
     settings = self.settings || {}
     image = settings['badge_url'] || "/badges/default.png"
-    image = host_with_port + image if image.match(/^\//)
+    image = "#{BadgeHelper.protocol}://" + host_with_port + image if image.match(/^\//)
     {
       :name => settings['badge_name'],
       :description => settings['badge_description'],
