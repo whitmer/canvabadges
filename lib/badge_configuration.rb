@@ -104,7 +104,7 @@ module Sinatra
         end
         @placement_id = @badge_config.placement_id
         @badge_config_id = @badge_config.id
-        @domain_id = @badge_config.domain_id
+        @domain_id = @badge_config.domain_id || domain_id
         @user_id = session['user_id']
       end
     end
