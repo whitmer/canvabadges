@@ -296,14 +296,14 @@ class Badge
         :hashed => true,
         :salt => self.salt
       },
-      :badge => "#{BadgeHelper.protocol}://#{host_with_port}/api/v1/badges/summary/#{self.id}/#{self.config_nonce}.json",
+      :badge => "#{BadgeHelper.protocol}://#{host_with_port}/api/v1/badges/summary/#{self.badge_config_id}/#{self.config_nonce}.json",
       :verify => {
         :type => "hosted",
-        :url => "#{BadgeHelper.protocol}://#{host_with_port}/api/v1/badges/data/#{self.id}/#{self.user_id}/#{self.nonce}.json"
+        :url => "#{BadgeHelper.protocol}://#{host_with_port}/api/v1/badges/data/#{self.badge_config_id}/#{self.user_id}/#{self.nonce}.json"
       },
       :issuedOn => (self.issued && self.issued.strftime("%Y-%m-%d")),
       :image => self.badge_url,
-      :evidence => "#{BadgeHelper.protocol}://#{host_with_port}/badges/criteria/#{self.id}/#{self.config_nonce}?user=#{self.nonce}"
+      :evidence => "#{BadgeHelper.protocol}://#{host_with_port}/badges/criteria/#{self.badge_config_id}/#{self.config_nonce}?user=#{self.nonce}"
     }
   end
   
