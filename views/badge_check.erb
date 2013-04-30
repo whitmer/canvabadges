@@ -65,7 +65,7 @@
       To earn this badge you need <%= settings['min_percent'] %>%, but you only have <%= @student['computed_final_score'].to_f %>% in this course right now.
       <div class='progress progress-danger progress-striped progress-big'><div class='tick' style='left: <%= (3 * settings['min_percent']).to_i.to_s %>px;'></div><div class='bar' style='width: <%= @student['computed_final_score'].to_i.to_s %>%;'></div></div>
     <% end %>
-    <a class='btn btn-primary btn-large' href='/badges/all/<%= @domain_id %>/<%= @user_id %>'>See All Your Badges</a>
+    <a class='btn btn-primary btn-large' href='/badges/all/<%= @badge_config.domain_id %>/<%= @user_id %>'>See All Your Badges</a>
   <% end %>
 <% else %>
   <h3>You are not a student in this course, so you can't earn this badge</h3>
