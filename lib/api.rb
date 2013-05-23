@@ -139,6 +139,7 @@ module Sinatra
             :issued => badge && badge.issued && badge.issued.strftime('%b %e, %Y'),
             :nonce => badge && badge.nonce,
             :state => badge.state,
+            :config_id => badge.badge_config_id,
             :config_nonce => root_nonce || badge.config_nonce
           }
         else
@@ -151,6 +152,7 @@ module Sinatra
             :issued => nil,
             :nonce => nil,
             :state => 'unissued',
+            :config_id => nil,
             :config_nonce => root_nonce
           }
         end

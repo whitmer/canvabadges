@@ -24,9 +24,9 @@ $(function() {
           for(idx in data.objects) {
             var badge = data.objects[idx];
             var $badge = $("<div/>", {style: 'float: left;'});
-            var link = protocol_and_host + "/badges/criteria/" + badge.course_nonce + "?user=" + badge.nonce;
+            var link = protocol_and_host + "/badges/criteria/" + badge.config_id + "/" + badge.config_nonce + "?user=" + badge.nonce;
             var $a = $("<a/>", {href: link});
-            $a.append($("<img/>", {src: badge.image_url, style: 'width: 72px; height: 72px;'}));
+            $a.append($("<img/>", {src: badge.image_url, style: 'width: 72px; height: 72px; padding-right: 10px;'}));
             $badge.append($a);
             $box.append($badge);
           }

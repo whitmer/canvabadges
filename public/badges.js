@@ -51,7 +51,7 @@ function loadResults(url) {
         html = "<tr>";
         html += "<td>";
         if(badge.issued && badge.state == 'awarded') {
-          html += "<a href='/badges/criteria/" + badge.course_nonce + "?user=" + badge.nonce + "'>" + badge.name + "</a>";
+          html += "<a href='/badges/criteria/" + badge.config_id + "/" + badge.config_nonce + "?user=" + badge.nonce + "'>" + badge.name + "</a>";
         } else {
           html += badge.name;
         }
