@@ -1,32 +1,52 @@
-<div style="width: 500px; margin: 0 auto;">
-  <h2><img src="/badges/default.png" alt=""/> Credentials accepted!</h2>
-  <p>
-  You can use the following credentials to configure this app for
-  use in your course:
-  </p>
-  <dl>
-    <dt>Key:</dt><dd><%= @conf.value %></dd>
-    <dt>Secret:</dt><dd><%= @conf.shared_secret %></dd>
-  </dl>
-  <p>
-    If you want to add Canvabadges to your course you'll need to contact
-    us about getting a key and shared secret to use in your course.
-    <a href="/canvabadges.xml">Copy this XML link</a> and pick "By URL" as 
-    the configuration type to quickly set it up!
-  </p>
-  <p>
-    Once you've got the tool configured, you'll want to add it
-    as a content item to one of your modules. When you click the
-    newly-added link in the module you'll be able to
-    configure the badge. Badges can be earned
-    based on final grade and/or module completion (using the existing
-    completion requirements in Canvas modules).
-  </p>
-  <p>
-    This is a site that I put together in my free time
-    to test out the idea badges inside of Canvas.
-    If you copy the credentials above you're agreeing to
-    use the site at your own risk. It most definitely will
-    not work in any LMS other than Canvas.
-  </p>
+<h2><a href="/"><img src="/badges/default.png" alt=""/></a> Credentials accepted!</h2>
+<div class="row">
+  <span class="span6">
+    <p>
+    You can use the following credentials to configure this app for
+    use in your course:
+    </p>
+    <dl>
+      <dt>Key:</dt><dd><%= @conf.value %></dd>
+      <dt>Secret:</dt><dd><%= @conf.shared_secret %></dd>
+    </dl>
+    <ol id="instructions">
+      <li>
+        <a href="/canvabadges.xml">Copy this XML link</a> and pick "By URL" as 
+        the configuration type to add as a new external tool in Canvas (use the key
+        and secret above for configuration)
+      </li>
+      <li>
+        If you're an admin, add <a href="/canvas_profile_badges.js">this javascript file</a>
+        to your global Canvas JavaScript to make badges appear on user profiles.
+      </li>
+      <li>
+        Add Content to a module in Canvas. Pick External Tool, then Canvabadges. Make sure
+        to give the badge a better name.
+      </li>
+      <li>
+        Open the badge link as a teacher/admin. You can configure details about the badge and
+        define completion criteria. Badge completion can be based on final grade (leave at 0
+        to ignore) or module completions(s).
+      </li>
+    </ol>
+  </span>
+  <span class="span6">
+    <iframe width="420" height="315" src="http://www.youtube.com/embed/N-utskPWtG0?rel=0" frameborder="0" allowfullscreen></iframe>
+  </span>
 </div>
+  <hr/>
+<p>
+  Note about credits: there's a more advanced option in badge configuration
+  not showin in the screencast called "credits". Basically it allows multiple
+  paths for earning the badge. You can use credits to say you either need 90%
+  in the class (say, 9 credits) or you need to finish three of the four modules
+  (3 credits each) to earn the badge (9 credits needed to earn the badge). You 
+  can completely ignore this if you want :-).
+</p>
+<p>
+  This is a site that I put together in my free time
+  to test out the idea badges inside of Canvas.
+  If you copy the credentials above you're agreeing to
+  use the site at your own risk. It most definitely will
+  not work in any LMS other than Canvas.
+</p>

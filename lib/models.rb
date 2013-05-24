@@ -43,8 +43,8 @@ class ExternalConfig
   
   def self.generate(name)
     conf = ExternalConfig.first_or_new(:config_type => 'lti', :app_name => name)
-    conf.value = Digest::MD5.hexdigest(Time.now.to_i.to_s + rand.to_s).to_s
-    conf.shared_secret = Digest::MD5.hexdigest(Time.now.to_i.to_s + rand.to_s + conf.value)
+    conf.value ||= Digest::MD5.hexdigest(Time.now.to_i.to_s + rand.to_s).to_s
+    conf.shared_secret ||= Digest::MD5.hexdigest(Time.now.to_i.to_s + rand.to_s + conf.value)
     conf.save
     conf
   end
