@@ -17,9 +17,12 @@ module Sinatra
           return error("Invalid tool launch - unknown tool consumer")
         end
         secret = tool_config.shared_secret
-        host = params['tool_consumer_instance_guid'].split(/\./)[1..-1].join(".") if params['tool_consumer_instance_guid'] && params['tool_consumer_instance_guid'].match(/\./)
-        domain = Domain.first(:host => host)
-        domain ||= Domain.new(:host => host)
+        host = params['custom_canvas_api_domain']
+        if host && params['launch_presentation_return_url'].match(Regexp.new(host.sub(/\.instructure\.com/, ".(test|beta).instructure.com")))
+          host = params['launch_presentation_return_url'].split(/\//)[2]
+        end
+        host ||= params['tool_consumer_instance_guid'].split(/\./)[1..-1].join(".") if params['tool_consumer_instance_guid'] && params['tool_consumer_instance_guid'].match(/\./)
+        domain = Domain.first_or_new(:host => host)
         domain.name = params['tool_consumer_instance_name']
         domain.save
         provider = IMS::LTI::ToolProvider.new(key, secret, params)
