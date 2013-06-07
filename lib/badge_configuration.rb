@@ -66,7 +66,7 @@ module Sinatra
   
         settings = (@badge_config && @badge_config.settings) || {}
         if settings && settings['badge_url'] && settings['min_percent']
-          json = api_call("/api/v1/courses/#{@course_id}/users?enrollment_type=student&include[]=email&user_id=#{@user_id}", @user_config)
+          json = api_call("/api/v1/courses/#{@course_id}/users?enrollment_type=student&include[]=email&user_id=#{params['user_id']}", @user_config)
           student = json.detect{|e| e['id'] == params['user_id'].to_i }
           if student
             badge = Badge.manually_award(params, @badge_config, student['name'], student['email'])
