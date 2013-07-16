@@ -6,6 +6,8 @@ module Sinatra
       app.helpers Views::Helpers
       
       app.get "/" do
+        @org = Organization.first(:host => request.env['HTTP_HOST'])
+        return error("Domain not properly configured. No Organization record matching the host #{request.env['HTTP_HOST']}") unless @org
         erb :index
       end
       

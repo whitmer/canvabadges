@@ -9,23 +9,27 @@ describe 'Badges API' do
   
   describe "public badges for user" do
     it "should return nothing if no user" do
+      example_org
       get "/api/v1/badges/public/1/bob.com.json"
       last_response.should be_ok
       last_response.body.should == {:objects => []}.to_json
     end
     it "should return nothing if user with no badges" do
+      example_org
       user
       get "/api/v1/badges/public/#{@user.user_id}/bob.com.json"
       last_response.should be_ok
       last_response.body.should == {:objects => []}.to_json
     end
     it "should return nothing if user with badges but none are public" do
+      example_org
       award_badge(badge_config, user)
       get "/api/v1/badges/public/#{@user.user_id}/bob.com.json"
       last_response.should be_ok
       last_response.body.should == {:objects => []}.to_json
     end
     it "should return badges that are public for the user" do
+      example_org
       award_badge(badge_config, user)
       @badge.public = true
       @badge.save!
@@ -34,6 +38,7 @@ describe 'Badges API' do
       last_response.body.should == {:objects => [badge_json(@badge, @user)]}.to_json
     end
     it "should only return badges that are public for the user" do
+      example_org
       award_badge(badge_config, user)
       @bc1 = @badge_config
       @badge1 = @badge
@@ -129,29 +134,32 @@ describe 'Badges API' do
   end
   
   describe "open badges data" do
-    # HEAD and GET
-    it "should respond to HEAD request" do
-      award_badge(badge_config, user)
-      head "/api/v1/badges/data/#{@badge_config.id}/#{@user.user_id}/#{@badge.nonce}.json"
-      last_response.should be_ok      
-    end
-    
     it "should return nothing if invalid parameters" do
+      example_org
       award_badge(badge_config, user)
       get "/api/v1/badges/data/#{@badge_config.id}x/#{@user.user_id}/#{@badge.nonce}.json"
-      last_response.should be_ok 
+      last_response.should_not be_ok 
       last_response.body.should == {:error => "Not found"}.to_json
 
       get "/api/v1/badges/data/#{@badge_config.id}/#{@user.user_id}x/#{@badge.nonce}.json"
-      last_response.should be_ok 
+      last_response.should_not be_ok 
       last_response.body.should == {:error => "Not found"}.to_json
 
       get "/api/v1/badges/data/#{@badge_config.id}/#{@user.user_id}/#{@badge.nonce}x.json"
-      last_response.should be_ok 
+      last_response.should_not be_ok 
       last_response.body.should == {:error => "Not found"}.to_json
     end
     
+    # HEAD and GET
+    it "should respond to HEAD request" do
+      example_org
+      award_badge(badge_config, user)
+      get "/api/v1/badges/data/#{@badge_config.id}/#{@user.user_id}/#{@badge.nonce}.json"
+      last_response.should be_ok      
+    end
+    
     it "should return valid OBI BadgeAssertion data" do
+      example_org
       award_badge(badge_config, user)
       get "/api/v1/badges/data/#{@badge_config.id}/#{@user.user_id}/#{@badge.nonce}.json"
       last_response.should be_ok 
@@ -168,6 +176,7 @@ describe 'Badges API' do
     end
     
     it "should return valid OBI BadgeClass data" do
+      example_org
       award_badge(badge_config, user)
       get "/api/v1/badges/summary/#{@badge_config.id}/#{@badge_config.nonce}.json"
       last_response.should be_ok 
@@ -183,24 +192,34 @@ describe 'Badges API' do
       json['description'].should == "Badge for cool people"
       json['image'].should == "http://example.com/badge"
       json['criteria'].should == "https://example.org/badges/criteria/#{@badge_config.id}/#{@badge_config.nonce}"
-      json['issuer'].should == "https://example.org/api/v1/organizations/default.json"
+      json['issuer'].should == "https://example.org/api/v1/organizations/#{@org.org_id}.json"
       json['alignment'].should == []
       json['tags'].should == []
     end
     
-    it "should return valid OBI IssuerOrganization data" do
-      get "/api/v1/organizations/default.json"
-      last_response.should be_ok 
-      last_response.body.should == Organization.new.as_json("example.org").to_json
+    it "should not find the badge information if requested from the wrong domain" do
+      example_org
+      configured_school
+      award_badge(badge_config(@school), user)
+      get "/api/v1/badges/summary/#{@badge_config.id}/#{@badge_config.nonce}.json"
+      last_response.should_not be_ok 
+      last_response.body.should == {:error => "not found"}.to_json
+    end
 
-      get "/api/v1/organizations/#{@config.id}.json"
+    it "should return valid OBI IssuerOrganization data" do
+      example_org
+      get "/api/v1/organizations/default.json"
+      last_response.body.should == Organization.new(:host => "example.org").to_json
+      last_response.should be_ok 
+
+      get "/api/v1/organizations/1234.json"
       last_response.should_not be_ok 
       last_response.body.should == {:error => "not found"}.to_json
 
       configured_school      
       get "/api/v1/organizations/#{@school.id}.json"
       last_response.should be_ok 
-      last_response.body.should == @school.as_json("example.org").to_json
+      last_response.body.should == @school.as_json.to_json
       json = JSON.parse(last_response.body)
       json['name'].should_not be_nil
       json['url'].should_not be_nil
@@ -212,7 +231,16 @@ describe 'Badges API' do
       json['description'].should == @school.settings['description']
       json['image'].should == @school.settings['image']
       json['email'].should == @school.settings['email']
-      json['revocationList'].should == "https://example.org/api/v1/organizations/#{@school.id}/revocations"
+      json['revocationList'].should == "https://badges.myschool.edu/api/v1/organizations/#{@school.id}/revocations.json"
+    end
+    
+    it "should not find the badge information if requested from the wrong domain" do
+      example_org
+      configured_school
+      award_badge(badge_config(@school), user)
+      get "/api/v1/badges/summary/#{@badge_config.id}/#{@badge_config.nonce}.json"
+      last_response.should_not be_ok 
+      last_response.body.should == {:error => "not found"}.to_json
     end
   end
 end

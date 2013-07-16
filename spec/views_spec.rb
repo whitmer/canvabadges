@@ -8,11 +8,18 @@ describe 'Badging Models' do
   end
   
   describe "index" do
+    it "should error on unconfigured domain" do
+      get "/"
+      assert_error_page("Domain not properly configured.")
+    end
+    
     it "should return" do
+      example_org
       get "/"
       last_response.should be_ok
-      last_response.body.should match(/Canvabadges are cool/)
+      last_response.body.should match(/Canvabadges Badges/)
     end
+    
   end  
   
   describe "LTI XML config" do

@@ -6,36 +6,47 @@ module Sinatra
       app.helpers Api::Helpers
       
       # open badge organizations permalink
+      # OBI-Compliant Result Required
       app.get "/api/v1/organizations/:id.json" do
+        get_org
         org_id = params['id'].split(/-/)[0]
         if org_id == 'default'
-          return api_response(Organization.new.as_json(request.host_with_port))
+          return api_response(Organization.new(:host => request.host_with_port).as_json)
         end
         config = Organization.first(:id => org_id)
         halt 404, api_response({:error => "not found"}) unless config && config.settings
-        api_response(config.as_json(request.host_with_port))
+        api_response(config.as_json)
       end
       
       # open badge details permalink
+      # OBI-Compliant Result Required
       app.get "/api/v1/badges/summary/:id/:nonce.json" do
+        get_org
         bc = BadgeConfig.first(:id => params['id'], :nonce => params['nonce'])
+        bc = nil if bc && bc.organization_id != @org.id
         halt 404, api_response({:error => "not found"}) unless bc
-        api_response(bc.as_json(request.host_with_port))
+        api_response(bc.as_json(@org.host))
       end
       
       # open badge organizations revocations permalink
+      # OBI-Compliant Result Required
       app.get "/api/v1/organizations/:id/revocations.json" do
+        get_org
         {}.to_json
       end
 
-      # open badge award details permalink
+      # HEAD open badge award details permalink
+      # OBI-Compliant Result Required
       app.head "/api/v1/badges/data/:badge_config_id/:user_id/:code.json" do
-        api_response(badge_data(params, request.host_with_port))
+        get_org
+        api_response(badge_data(params, @org.host))
       end
-      
-      # open badge award details permalink
+
+      # GET open badge award details permalink
+      # OBI-Compliant Result Required
       app.get "/api/v1/badges/data/:badge_config_id/:user_id/:code.json" do
-        api_response(badge_data(params, request.host_with_port))
+        get_org
+        api_response(badge_data(params, @org.host))
       end
 
       # list of publicly available badges for the current user
@@ -76,6 +87,11 @@ module Sinatra
     end
     
     module Helpers
+      def get_org
+        @org = Organization.first(:host => request.env['HTTP_HOST'])
+        halt(400, {:error => "Domain not properly configured. No Organization record matching the host #{request.env['HTTP_HOST']}"}.to_json) unless @org
+      end
+      
       def api_response(hash)
         if params['callback'] 
           "#{params['callback']}(#{hash.to_json});"
@@ -85,13 +101,15 @@ module Sinatra
       end 
           
       def badge_data(params, host_with_port)
+        bc = BadgeConfig.first(:id => params[:badge_config_id])
         badge = Badge.first(:badge_config_id => params[:badge_config_id], :user_id => params[:user_id], :nonce => params[:code])
+        badge = nil if bc && bc.organization_id != @org.id
         headers 'Content-Type' => 'application/json'
         if badge
           badge.badge_url = "#{protocol}://#{host_with_port}" + badge.badge_url if badge.badge_url.match(/^\//)
           return badge.open_badge_json(host_with_port)
         else
-          return {:error => "Not found"}
+          halt 404, api_response({:error => "Not found"})
         end
       end
       

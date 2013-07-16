@@ -12,8 +12,13 @@ RSpec.configure do |config|
   }
 end
 
+def example_org
+  @org = Organization.create(:host => "example.org", :settings => {'name' => 'Canvabadges'})
+end
+
 def configured_school
   @school = Organization.create(
+    'host' => 'badges.myschool.edu',
     'settings' => {
       'name' => "My School",
       'url' => "http://myschool.edu",
@@ -22,7 +27,7 @@ def configured_school
       'email' => "admin@myschool.edu"
     }
   )
-  @school.as_json("example.org")['name'].should == "My School"
+  @school.as_json['name'].should == "My School"
   @school
 end
 
@@ -45,7 +50,7 @@ def user
   @user = UserConfig.create!(:user_id => id, :name => id, :domain_id => @domain.id) 
 end
 
-def badge_config
+def badge_config(org=nil)
   id = Time.now.to_i.to_s + rand.round(8).to_s
   @badge_config = BadgeConfig.new(:placement_id => id, :domain_id => @domain.id, :course_id => '123', :external_config_id => @config.id)
   @badge_config.settings = {
@@ -53,6 +58,8 @@ def badge_config
     'badge_description' => "Badge for cool people",
     'badge_url' => "http://example.com/badge"
   }
+  @org = org if org
+  @badge_config.organization_id = @org && @org.id
   @badge_config.save
   @badge_config.nonce.should_not be_nil
   @badge_config
@@ -128,6 +135,7 @@ def badge_json(badge, user)
     :issued => badge.issued.strftime('%b %e, %Y'),
     :nonce => badge.nonce,
     :state => badge.state,
+    :config_id => badge.badge_config_id,
     :config_nonce => badge.config_nonce
   }
 end
@@ -142,6 +150,7 @@ def fake_badge_json(badge_config, user_id, user_name)
     :issued => nil,
     :nonce => nil,
     :state => 'unissued',
+    :config_id => nil,
     :config_nonce => badge_config.nonce
   }
 end

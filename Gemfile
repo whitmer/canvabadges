@@ -11,6 +11,7 @@ gem 'dm-aggregates'
 gem 'dm-postgres-adapter'
 gem 'erubis'
 gem 'dm-types', "1.2.0"
+gem 'rack-ssl-enforcer'
 
 group :development do
     gem 'dm-sqlite-adapter'

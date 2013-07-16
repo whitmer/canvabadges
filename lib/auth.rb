@@ -11,10 +11,11 @@ module Sinatra
       
       # LTI tool launch, makes sure we're oauth-good and then redirects to the magic page
       app.post "/placement_launch" do
+        get_org
         key = params['oauth_consumer_key']
         tool_config = ExternalConfig.first(:config_type => 'lti', :value => key)
         if !tool_config
-          return error("Invalid tool launch - unknown tool consumer")
+          halt 400, error("Invalid tool launch - unknown tool consumer")
         end
         secret = tool_config.shared_secret
         host = params['custom_canvas_api_domain']
@@ -27,12 +28,13 @@ module Sinatra
         domain.save
         provider = IMS::LTI::ToolProvider.new(key, secret, params)
         if !params['custom_canvas_user_id'] || !params['custom_canvas_course_id']
-          return error("Course must be a Canvas course, and launched with public permission settings")
+          halt 400, error("Course must be a Canvas course, and launched with public permission settings")
         end
         if provider.valid_request?(request)
           bc = BadgeConfig.first_or_new(:placement_id => params['resource_link_id'], :domain_id => domain.id, :course_id => params['custom_canvas_course_id'])
           bc.external_config_id ||= tool_config.id
           bc.organization_id = tool_config.organization_id if !bc.id
+          bc.organization_id ||= @org.id
           bc.save
           user_id = params['custom_canvas_user_id']
           user_config = UserConfig.first(:user_id => user_id, :domain_id => domain.id)

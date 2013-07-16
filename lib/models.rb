@@ -13,9 +13,11 @@ end
 class Organization
   include DataMapper::Resource
   property :id, Serial
+  property :host, String
   property :settings, Json
   
-  def as_json(host_with_port)
+  def as_json
+    host_with_port = self.host
     settings = self.settings || BadgeHelper.issuer
     {
       'name' => settings['name'],
@@ -27,8 +29,12 @@ class Organization
     }
   end
   
-  def to_json(host_with_port)
-    as_json(host_with_port).to_json
+  def to_json
+    as_json.to_json
+  end
+  
+  def org_id
+    "#{self.id}-#{self.settings['name'].downcase.gsub(/[^\w]+/, '-')[0, 30]}"
   end
 end
 

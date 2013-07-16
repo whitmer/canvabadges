@@ -306,13 +306,13 @@ describe 'Badging Models' do
       json = @badge_config.as_json("example.com")
       json[:issuer].should == "https://example.com/api/v1/organizations/default.json"
       
-      Organization.new.as_json("example.com").should == {
+      Organization.new(:host => "example.com").as_json.should == {
         'name' => BadgeHelper.issuer['name'],
         'url' => BadgeHelper.issuer['url'],
         'description' => BadgeHelper.issuer['description'],
         'image' => BadgeHelper.issuer['image'],
         'email' => BadgeHelper.issuer['email'],
-        'revocationList' => "#{BadgeHelper.protocol}://example.com/api/v1/organizations/default/revocations"
+        'revocationList' => "#{BadgeHelper.protocol}://example.com/api/v1/organizations/default/revocations.json"
       }
       
 
@@ -320,12 +320,12 @@ describe 'Badging Models' do
       @badge_config.organization = @school
       json = @badge_config.as_json("example.com")
       json[:issuer].should == "https://example.com/api/v1/organizations/#{@school.id}-my-school.json"
-      @school.as_json("example.com").should == {
+      @school.as_json.should == {
        "description" => "My School has been around a long time",
        "email" => "admin@myschool.edu",
        "image" => "http://myschool.edu/logo.png",
        "name" => "My School",
-       "revocationList" => "https://example.com/api/v1/organizations/#{@school.id}/revocations",
+       "revocationList" => "https://badges.myschool.edu/api/v1/organizations/#{@school.id}/revocations.json",
        "url" => "http://myschool.edu"
       }
     end

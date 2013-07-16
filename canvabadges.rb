@@ -32,6 +32,11 @@ class Canvabadges < Sinatra::Base
   env = ENV['RACK_ENV'] || settings.environment
   DataMapper.setup(:default, (ENV["DATABASE_URL"] || "sqlite3:///#{Dir.pwd}/#{env}.sqlite3"))
   DataMapper.auto_upgrade!
+  
+  configure :production do
+    require 'rack-ssl-enforcer'
+    use Rack::SslEnforcer
+  end
 end
 
 module BadgeHelper

@@ -1,8 +1,8 @@
-<h2><img src="/badges/default.png" alt=""/> Canvabadges are cool</h2>
+<h2><img src="<%= @org.settings['image'] || "/badges/default.png" %>" alt=""/> <%= @org.settings['name'] %> Badges</h2>
 <div class="row">
   <span class="span6">
     <p>
-      Canvabadges let you award badges to students in courses based on their total
+      <%= @org.settings['name'] %> let you award badges to students in courses based on their total
       grade in the course and their completion of course modules. You can also put
       a manual approval step on as well that requires your final sign-off before they
       receive the badge.
@@ -15,9 +15,16 @@
       profiles.
     </p>
     <ol id="instructions">
-      <li>
-        <a href="/login" class="btn btn-primary btn-large">login using the Twitters</a> to get a key and secret
-      </li>
+      <% if @org.settings['twitter_login'] %>
+        <li>
+          <a href="/login" class="btn btn-primary btn-large">login using the Twitters</a> to get a key and secret
+        </li>
+      <% else %>
+        <li>
+          Access to badges from this organization are managed internally.
+          <a href="mailto:<%= @org.settings['email'] %>">Contact the organization</a> for help in getting a key and secret if you believe you should be able to generate badges on behalf of the organization.
+        </li>
+      <% end %>
       <li>
         <a href="/canvabadges.xml">Copy this XML link</a> and pick "By URL" as 
         the configuration type to add as a new external tool in Canvas
@@ -39,13 +46,14 @@
     (i.e. badges.utah.edu instead of canvabadges.herokuapp.com).
     If you're one of those schools, you can run 
     <a href="https://github.com/whitmer/canvabadges">the code</a>
-    yourself.
+    yourself, or <a href="<%= BadgeHelper.issuer['owner_url'] %>">contact
+    the site's owner</a> about getting a custom domain configured.
   </p>
   <p>
     If that's too heavy for you, you can use this 
-    site to set up lightweight badges, or contact 
-    <a href="<%= BadgeHelper.issuer['owner_url'] %>">the site's
-    owners</a> to get a slightly more official-looking certificate
+    site to set up lightweight badges, or  
+    <a href="<%= BadgeHelper.issuer['owner_url'] %>">contact the site's
+    owner</a> to get a slightly more official-looking certificate
     for your issued badges.
   </p>
   <a href="http://openbadges.org/"><img src="/OpenBadges_Insignia_WeIssue.png" alt="We issue open badges"/></a>
