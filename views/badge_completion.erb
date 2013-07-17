@@ -1,14 +1,2 @@
+<% @current_badge = @badge %>
 <%= erb :_badge_description %>
-<% if @badge %>
-  <% if @user_config && @user_config.image %>
-    <img src="<%= @user_config.image %>" class="avatar"/>
-    <h2><a href="<%= @user_config.profile_url %>"><%= @badge.user_name %></a></h2>
-  <% else %>
-    <h2><%= @badge.user_name %></h2>
-  <% end %>
-  <% if @earned %>
-    <p><img src='/check.gif'/> This user has completed the requirements necessary to receive this badge</p>
-  <% else %>
-    <p><img src='/redx.gif'/> This user has not completed the requirements necessary to receive this badge</p>
-  <% end %>
-<% end %>
