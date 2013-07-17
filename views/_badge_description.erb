@@ -15,10 +15,9 @@
 <% settings = (org && org.settings) || BadgeHelper.issuer %>
 <p class="verification">
   <img src='<%= settings['image'] %>'/>
-  This badge was created at 
-  <%= (org && org.host) || request.host %>. It is associated with 
-  <a href="<%= settings['url'] %>">
-  <%= settings['name'] %></a>.
+  This badge was issued by <a href="<%= settings['url'] %>">
+  <%= settings['name'] %></a>. It is hosted at 
+  <%= (org && org.host) || request.host %>.
   <span style="clear: left;"></span>
 </p>
 

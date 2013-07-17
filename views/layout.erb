@@ -63,6 +63,9 @@
           #instructions li {
             padding: 10px 0;
           }
+          .footer {
+            margin-top: 50px;
+          }
           </style>
         </head>
         <body>
@@ -70,6 +73,10 @@
           <div id="contents">
 <%= yield %>
           </div>
+          <footer class="footer">
+            <% issuer = BadgeHelper.issuer %>
+            powered by <a href="<%= issuer['url'] %>"><%= issuer['name'] %></a>
+          </footer>
         </div>
         <script src="/jquery.min.js"></script>
         <script src="https://beta.openbadges.org/issuer.js"></script>
