@@ -3,21 +3,22 @@
 <h2><%= settings['badge_name'] || "Unnamed Badge" %></h2>
 <p class='desc'><%= settings['badge_description'] %></p>
 <% if settings['badge_requirements'] && settings['badge_requirements'] != '' %>
+  <h3>Requirements for completion:</h3>
   <p class='desc'>
-    Requirements for completion:<br/>
     <%= settings['badge_requirements'] %>
   </p>
 <% end %>
 <% if settings['hours'] %>
-  <p class='desc'>Approximate hours for completion: <%= settings['hours'] %></p>
+  <h3>Approximate hours for completion: <%= settings['hours'] %></h3>
 <% end %>
-<% org = (@badge_config.organization && @badge_config.organization.settings) || BadgeHelper.issuer %>
+<% org = @badge_config.organization %>
+<% settings = (org && org.settings) || BadgeHelper.issuer %>
 <p class="verification">
-  <img src='<%= org['image'] %>'/>
+  <img src='<%= settings['image'] %>'/>
   This badge was created at 
-  <%= request.host %>. It is associated with 
-  <a href="<%= org['url'] %>">
-  <%= org['name'] %></a>.
+  <%= (org && org.host) || request.host %>. It is associated with 
+  <a href="<%= settings['url'] %>">
+  <%= settings['name'] %></a>.
   <span style="clear: left;"></span>
 </p>
 
