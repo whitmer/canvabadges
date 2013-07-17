@@ -288,6 +288,7 @@ class Badge
   property :salt, String, :length => 256
   property :issued, DateTime
   property :email, String
+  property :evidence_url, String, :length => 4096
   property :manual_approval, Boolean
   property :public, Boolean
   property :state, String
@@ -318,7 +319,7 @@ class Badge
       },
       :issuedOn => (self.issued && self.issued.strftime("%Y-%m-%d")),
       :image => self.badge_url,
-      :evidence => "#{BadgeHelper.protocol}://#{host_with_port}/badges/criteria/#{self.badge_config_id}/#{self.config_nonce}?user=#{self.nonce}"
+      :evidence => (self.evidence_url || "#{BadgeHelper.protocol}://#{host_with_port}/badges/criteria/#{self.badge_config_id}/#{self.config_nonce}?user=#{self.nonce}")
     }
   end
   

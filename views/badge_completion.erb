@@ -1,2 +1,7 @@
 <% @current_badge = @badge %>
 <%= erb :_badge_description %>
+
+<% if @badge.evidence_url %>
+  <h2>Evidence of completion:</h2>
+  
+<% end %>
