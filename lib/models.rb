@@ -63,11 +63,20 @@ class UserConfig
   property :access_token, String, :length => 256
   property :domain_id, Integer
   property :name, String, :length => 256
+  property :image, String, :length => 512
   property :global_user_id, String, :length => 256
   belongs_to :domain
   
   def host
     self.domain && self.domain.host
+  end
+  
+  def profile_url
+    if host
+      "#{BadgeHelper.protocol}://" + host + "/users/" + self.user_id
+    else
+      "http://www.instructure.com"
+    end
   end
 end
 

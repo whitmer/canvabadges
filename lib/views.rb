@@ -27,6 +27,11 @@ module Sinatra
           return error("Badge not found")
         end
         @badge = Badge.first(:nonce => params['user'])
+        if @badge
+          @user_config = UserConfig.first(:user_id => @badge.user_id, :domain_id => @badge.domain_id)
+          @user_config ||= UserConfig.first(:global_user_id => @badge.global_user_id)
+        end
+
         @earned = params['user'] && @badge && @badge.awarded? && @badge.config_nonce == params['nonce']
         erb :badge_completion
       end

@@ -39,6 +39,7 @@ module Sinatra
           user_id = params['custom_canvas_user_id']
           user_config = UserConfig.first(:user_id => user_id, :domain_id => domain.id)
           session["user_id"] = user_id
+          session["user_image"] = params['user_image']
           session["launch_placement_id"] = params['resource_link_id']
           session["launch_badge_config_id"] = bc.id
           session["launch_course_id"] = params['custom_canvas_course_id']
@@ -55,6 +56,8 @@ module Sinatra
           session['domain_id'] = domain.id.to_s
           # if we already have an oauth token then we're good
           if user_config
+            user_config.image = params['user_image']
+            user_config.save
             session['user_id'] = user_config.user_id
             if params['custom_show_all']
               redirect to("/badges/all/#{user_config.user_id}")
@@ -97,6 +100,7 @@ module Sinatra
           user_config ||= UserConfig.new(:user_id => session['user_id'], :domain_id => domain.id)
           user_config.access_token = json['access_token']
           user_config.name = session['name']
+          user_config.image = session['user_image']
           user_config.global_user_id = session['source_id'] + "_" + json['user']['id'].to_s
           user_config.save
           redirect to("/badges/check/#{session['launch_badge_config_id']}/#{user_config.user_id}")
