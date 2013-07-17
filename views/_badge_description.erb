@@ -11,9 +11,9 @@
     <h2><%= @current_badge.user_name %></h2>
   <% end %>
   <% if @earned %>
-    <p><img src='/check.gif'/> This user has completed the requirements necessary to receive this badge</p>
+    <p><img src='/check.gif'/> This user has completed the requirements necessary to receive this badge<% if @current_badge.issued %>, and it was awarded <%= @current_badge.issued.strftime("%d %b, %Y") %><% end %>.</p>
   <% else %>
-    <p><img src='/redx.gif'/> This user has not completed the requirements necessary to receive this badge</p>
+    <p><img src='/redx.gif'/> This user has not completed the requirements necessary to receive this badge.</p>
   <% end %>
 <% end %>
 
