@@ -310,7 +310,7 @@ describe 'Badging Models' do
         'name' => BadgeHelper.issuer['name'],
         'url' => BadgeHelper.issuer['url'],
         'description' => BadgeHelper.issuer['description'],
-        'image' => "https://example.com/badges/default.png",
+        'image' => "https://example.com/organizations/default.png",
         'email' => BadgeHelper.issuer['email'],
         'revocationList' => "#{BadgeHelper.protocol}://example.com/api/v1/organizations/default/revocations.json"
       }
