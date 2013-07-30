@@ -40,20 +40,17 @@
   </span>
 </div>
   <hr/>
-  <p>
-    Lots of schools will probably want to host their 
-    own badge issuing server, so the domain matches their school
-    (i.e. badges.utah.edu instead of canvabadges.herokuapp.com).
-    If you're one of those schools, you can run 
-    <a href="https://github.com/whitmer/canvabadges">the code</a>
-    yourself, or <a href="<%= BadgeHelper.issuer['owner_url'] %>">contact
-    the site's owner</a> about getting a custom domain configured.
-  </p>
-  <p>
-    If that's too heavy for you, you can use this 
-    site to set up lightweight badges, or  
-    <a href="<%= BadgeHelper.issuer['owner_url'] %>">contact the site's
-    owner</a> to get a slightly more official-looking certificate
-    for your issued badges.
-  </p>
+  <% if @org.default? %>
+    <p>
+      Lots of schools will probably want to host their 
+      own badge issuing server, so the domain matches their school
+      (i.e. badges.utah.edu instead of canvabadges.herokuapp.com).
+      Good news! You can now do that with Canvabadges! Just
+      <a href="<%= BadgeHelper.issuer['owner_url'] %>">contact
+      the site's owner</a> about getting a custom domain configured.
+      Or you can also run 
+      <a href="https://github.com/whitmer/canvabadges">the code</a>
+      yourself.
+    </p>
+  <% end %>
   <a href="http://openbadges.org/"><img src="/OpenBadges_Insignia_WeIssue.png" alt="We issue open badges"/></a>
