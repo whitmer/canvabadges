@@ -70,40 +70,10 @@ function loadResults(url) {
       var badge_config_id = $("#badges").attr('data-badge_config_id');
       for(var idx in data['objects']) {
         var badge = data['objects'][idx];
-        html = "<tr>";
-        html += "<td>";
-        if(badge.issued && badge.state == 'awarded') {
-          html += "<a href='/badges/criteria/" + badge.config_id + "/" + badge.config_nonce + "?user=" + badge.nonce + "'>" + badge.name + "</a>";
-        } else {
-          html += badge.name;
-        }
-        html += "</td>";
-        html += "<td>";
-        if(badge.manual && badge.state == 'awarded') {
-          html += "<img src='/add.png' alt='manually awarded' title='manually awarded'/>"
-        } else if(badge.issued && badge.state == 'awarded') {
-          html += "<img src='/check.gif' alt='earned' title='earned'/>"
-        } else if(badge.state == 'pending') {
-          html += "<img src='/warning.png' alt='pending approval' class='earn_badge' title='earned, needs approval. click to manually award'/>";
-          if(badge.evidence_url) {
-            html += "<a href='" + badge.evidence_url + "' target='_blank' class='evidence_link label label-info'>evidence</a>&nbsp;";
-          }
-          html += "<form class='form form-inline' method='POST' action='/badges/award/" + badge_config_id + "/" + badge.id + "' style='visibility: hidden; display: inline; margin-left: 10px;'>";
-          html += "<input type='hidden' name='user_name' value='" + badge.name + "'/>";
-          html += "<button class='btn btn-primary' type='submit'><span class='icon-check icon-white'></span> Award Badge</button>";
-          html += "</form>";
-        } else {
-          html += "<img src='/redx.png' alt='not earned' class='earn_badge' title='not earned. click to manually award'/>";
-          html += "<form class='form form-inline' method='POST' action='/badges/award/" + badge_config_id + "/" + badge.id + "' style='visibility: hidden; display: inline; margin-left: 10px;'>";
-          html += "<input type='hidden' name='user_name' value='" + badge.name + "'/>";
-          html += "<button class='btn btn-primary' type='submit'><span class='icon-check icon-white'></span> Award Badge</button>";
-          html += "</form>";
-        }
-        html += "</td>";
-        
-        html += "<td>" + (badge.issued || "&nbsp;") + "</td>";
-        html += "</tr>";
-        $("#badges tbody").append(html);
+        badge.awarded = badge.issued && badge.state == 'awarded';
+        badge.manually_awarded = badge.awarded && badge.manual;
+        badge.pending = badge.state == 'pending';
+        $("#badges tbody").append(Handlebars.templates['badge_row'](badge));
       }
       if(data['meta']['next']) {
         $("#badges tbody").append("<tr class='more' rel='" + data['meta']['next'] + "'><td colspan='3'><a href='#'>more...</a></td></tr>");
