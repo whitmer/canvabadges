@@ -132,6 +132,17 @@
           <span style="clear: left;"></span>
         </p>
       </div>
+      <div class="control-group advanced">
+        <label class="control-label">Public: </label>
+        <div class="controls">
+          <div class="input-append">
+            <label>
+              <input id="public" type="checkbox" <%= 'checked' if @badge_config.public %> name="public" value="1"/>
+              List this badge in the organization's public badge directory
+            </label>
+          </div>
+        </div>
+      </div>
       <div class="form-actions" style="border: 0; background: transparent;">
         <button type="submit" class='btn btn-primary'>Save Badge Settings</button>
       </div>

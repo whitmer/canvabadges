@@ -1,0 +1,35 @@
+<h2><img src="<%= @org.settings['image'] || "/organizations/default.png" %>" alt=""/> Recently-Set-Up Public Badges</h2>
+<div class="row">
+  <div class="span10 offset1" style="padding-top: 15px;">
+    <% if @badge_configs.length == 0 %><h3>Nothing to Show</h3><% end %>
+    <% @badge_configs.each do |bc| %>
+      <div class="badge_config">
+        <% settings = bc.settings || {} %>
+        <img src='<%= settings['badge_url'] %>' style='float: left; margin-right: 10px;' class='thumbnail'/>
+        <h2>
+        <% if settings['course_url'] %>
+          <a href="<%= settings['course_url'] %>"><%= settings['badge_name'] || "Unnamed Badge" %></a></h2>
+        <% else %>
+          <%= settings['badge_name'] || "Unnamed Badge" %></h2>
+        <% end %>
+        </h2>
+        <p class='desc'><%= settings['badge_description'] %></p>
+
+        <% if settings['hours'] %>
+          <p>Approx hours: <%= settings['hours'] %></p>
+        <% end %>
+        <% org = bc.organization %>
+        <% settings = (org && org.settings) || BadgeHelper.issuer %>
+        <p class="extra">
+          <img src='<%= settings['image'] %>'/>
+          Issued by <a href="<%= settings['url'] %>">
+          <%= settings['name'] %></a>. Hosted at 
+          <%= (org && org.host) || request.host %>.
+          <span style="clear: left;"></span>
+        </p>
+
+        <div style='clear: left;'></div>
+      </div>
+    <% end %>  
+  </div>
+</div>

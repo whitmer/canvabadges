@@ -18,7 +18,7 @@ class Organization
   
   def as_json
     host_with_port = self.host
-    image = (settings && settings['image']) || "/badges/default.png"
+    image = (settings && settings['image']) || "/organizations/default.png"
     if !image.match(/:\/\//)
       image = "#{BadgeHelper.protocol}://" + host_with_port + image
     end
@@ -96,6 +96,8 @@ class BadgeConfig
   property :settings, Json
   property :root_id, Integer
   property :reference_code, String
+  property :public, Boolean
+  property :updated_at, DateTime
   
   before :save, :generate_nonce
   belongs_to :external_config
@@ -158,6 +160,12 @@ class BadgeConfig
     end
   end
   
+  def update_counts
+    self.settings ||= {}
+    self.settings['awarded_count'] = Badge.all(:badge_config_id => self.id, :state => 'awarded').count
+    self.save
+  end
+  
   def configured?
     settings && settings['badge_url'] && settings['min_percent']
   end
@@ -206,78 +214,6 @@ class BadgeConfig
   end
 end
 
-class CourseConfig
-  include DataMapper::Resource
-  property :id, Serial
-  property :course_id, String
-  property :nonce, String
-  property :domain_id, Integer
-  property :settings, Json
-  property :root_id, Integer
-  property :reference_code, String
-  
-  before :save, :generate_nonce
-  
-  def root_settings
-    conf = self
-    if self.root_id
-      conf = CourseConfig.first(:id => self.root_id) || self
-    end
-    conf.settings || {}
-  end
-  
-  def root_nonce
-    conf = self
-    if self.root_id
-      conf = CourseConfig.first(:id => self.root_id) || self
-    end
-    conf.nonce
-  end
-  
-  def generate_nonce
-    self.nonce ||= Digest::MD5.hexdigest(Time.now.to_i.to_s + rand.to_s)
-    self.reference_code ||= Digest::MD5.hexdigest(Time.now.to_i.to_s + rand.to_s)
-  end
-  
-  def set_root_from_reference_code(code)
-    root = CourseConfig.first(:reference_code => code)
-    if root
-      self.root_id = root.id
-    else
-      self.root_id = nil
-    end
-  end
-  
-  def configured?
-    settings && settings['badge_url'] && settings['min_percent']
-  end
-  
-  def modules_required?
-    settings && settings['modules']
-  end
-  
-  def required_modules
-    (settings && settings['modules']) || []
-  end
-  
-  def required_module_ids
-    required_modules.map(&:first).map(&:to_i)
-  end
-  
-  def required_modules_completed?(completed_module_ids)
-    incomplete_module_ids = self.required_module_ids - completed_module_ids
-    incomplete_module_ids.length == 0
-  end
-  
-  def required_score_met?(percent)
-    settings && percent >= settings['min_percent']
-  end
-  
-  def requirements_met?(percent, completed_module_ids)
-    required_modules_completed?(completed_module_ids) && required_score_met?(percent)
-  end
-end
-
 class Badge
   include DataMapper::Resource
   property :id, Serial
@@ -288,7 +224,6 @@ class Badge
   property :badge_url, String, :length => 256
   property :nonce, String
   property :badge_config_id, Integer
-  property :course_config_id, Integer
   property :name, String, :length => 256
   property :user_full_name, String, :length => 256
   property :description, Text
@@ -307,7 +242,6 @@ class Badge
   property :issuer_url, String
   property :issuer_email, String
   
-  belongs_to :course_config
   belongs_to :badge_config
   before :save, :generate_defaults
   
@@ -407,6 +341,7 @@ class Badge
     badge.state = 'awarded'
     badge.issued = DateTime.now
     badge.save
+    badge_config.update_counts
     badge
   end
   
@@ -416,6 +351,7 @@ class Badge
     badge.state = nil if badge.state == 'unissued'
     badge.state ||= settings['manual_approval'] ? 'pending' : 'awarded'
     badge.save
+    badge_config.update_counts
     badge
   end
 end

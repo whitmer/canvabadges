@@ -42,6 +42,8 @@ module Sinatra
         settings['total_credits'] = total_credits
         
         @badge_config.settings = settings
+        @badge_config.updated_at = DateTime.now
+        @badge_config.public = params['public'] == '1'
         @badge_config.set_root_from_reference_code(params['reference_code'])
         @badge_config.save
         redirect to("/badges/check/#{@badge_config_id}/#{@user_id}")

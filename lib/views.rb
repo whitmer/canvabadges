@@ -6,13 +6,25 @@ module Sinatra
       app.helpers Views::Helpers
       
       app.get "/" do
-        @org = Organization.first(:host => request.env['HTTP_HOST'])
-        return error("Domain not properly configured. No Organization record matching the host #{request.env['HTTP_HOST']}") unless @org
+        org_check
         erb :index
       end
       
       app.get "/stats" do
+        org_check
         erb :stats
+      end
+      
+      app.get "/badges/public" do
+        org_check
+        @badge_configs = BadgeConfig.all(:public => true, :order => :updated_at.desc, :limit => 25)
+        erb :public_badge_configs
+      end
+      
+      app.get "/badges/public/awarded" do
+        org_check
+        @badges = Badge.all(:state => 'awarded', :public => true, :order => :issued.desc, :limit => 25)
+        erb :public_badges
       end
       
       app.get "/canvabadges.xml" do
@@ -86,6 +98,11 @@ module Sinatra
     end
     
     module Helpers
+      def org_check
+        @org = Organization.first(:host => request.env['HTTP_HOST'])
+        halt 404, error("Domain not properly configured. No Organization record matching the host #{request.env['HTTP_HOST']}") unless @org
+      end
+      
       def edit_course_html
         raise "no user" unless @user_config
         raise "missing value" unless @domain_id && @badge_config_id && @course_id && @badge_config

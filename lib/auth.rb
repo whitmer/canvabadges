@@ -38,6 +38,8 @@ module Sinatra
           bc.external_config_id ||= tool_config.id
           bc.organization_id = tool_config.organization_id if !bc.id
           bc.organization_id ||= @org.id
+          bc.settings ||= {}
+          bc.settings['course_url'] ||= "#{BadgeHelper.protocol}://" + host + "/courses/" + params['custom_canvas_course_id']
           bc.save
           user_id = params['custom_canvas_user_id']
           user_config = UserConfig.first(:user_id => user_id, :domain_id => domain.id)
@@ -144,6 +146,7 @@ module Sinatra
         end
         
         
+        @org = Organization.first(:host => request.env['HTTP_HOST'])
         @conf = ExternalConfig.generate(screen_name)
         erb :config_tokens
       end
