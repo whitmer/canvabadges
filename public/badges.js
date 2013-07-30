@@ -15,6 +15,19 @@ $(".public_badge").change(function() {
     }
   });
 });
+$("#evidence_url").change(function() {
+  var url = $(this).closest("form").attr('rel');
+  $.ajax({
+    type: 'POST',
+    dataType: 'json',
+    url: url,
+    data: {
+      evidence_url: $(this).val()
+    },
+    error: function() {
+    }
+  });
+});
 
 $("input.credits").change(function() {
   var total = 0;
@@ -23,7 +36,13 @@ $("input.credits").change(function() {
   });
   $(".total_credits").text(total);
 }).filter(":first").change();
-
+$("#require_evidence").change(function() {
+  if($(this).attr('checked')) {
+    $("#manual_approval").attr('checked', true).attr('disabled', true);
+  } else {
+    $("#manual_approval").attr('disabled', false);
+  }
+}).change();
 $("#credit_based").change(function() {
   $(".credits").toggle($(this).attr('checked'));
   $("input.credits").change();
@@ -36,6 +55,9 @@ $(".more").live('click', function(event) {
   event.preventDefault();
   $(this).remove();
   loadResults($(this).attr('rel'));
+});
+$('.evidence_link').live('click', function(event) {
+  $(this).closest("tr").addClass('selected_row');
 });
 function loadResults(url) {
   $("#badges tbody").append("<tr class='loading'><td colspan='3'>Loading...</td></tr>");
@@ -63,6 +85,9 @@ function loadResults(url) {
           html += "<img src='/check.gif' alt='earned' title='earned'/>"
         } else if(badge.state == 'pending') {
           html += "<img src='/warning.png' alt='pending approval' class='earn_badge' title='earned, needs approval. click to manually award'/>";
+          if(badge.evidence_url) {
+            html += "<a href='" + badge.evidence_url + "' target='_blank' class='evidence_link label label-info'>evidence</a>&nbsp;";
+          }
           html += "<form class='form form-inline' method='POST' action='/badges/award/" + badge_config_id + "/" + badge.id + "' style='visibility: hidden; display: inline; margin-left: 10px;'>";
           html += "<input type='hidden' name='user_name' value='" + badge.name + "'/>";
           html += "<button class='btn btn-primary' type='submit'><span class='icon-check icon-white'></span> Award Badge</button>";

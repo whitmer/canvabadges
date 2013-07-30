@@ -215,7 +215,7 @@ describe 'Badging Models' do
       badge.description.should == @badge_config.settings['badge_description']
       badge.badge_url.should == @badge_config.settings['badge_url']
       badge.issued.should be_nil
-      badge.state.should be_nil
+      badge.state.should == 'unissued'
     end
     
     it "should allow manually awarding new badges" do
@@ -310,7 +310,7 @@ describe 'Badging Models' do
         'name' => BadgeHelper.issuer['name'],
         'url' => BadgeHelper.issuer['url'],
         'description' => BadgeHelper.issuer['description'],
-        'image' => BadgeHelper.issuer['image'],
+        'image' => "https://example.com/badges/default.png",
         'email' => BadgeHelper.issuer['email'],
         'revocationList' => "#{BadgeHelper.protocol}://example.com/api/v1/organizations/default/revocations.json"
       }

@@ -57,9 +57,9 @@ module Sinatra
         badge_list = []
         if domain
           if user && user.global_user_id
-            badges = Badge.all(:global_user_id => user.global_user_id, :public => true)
+            badges = Badge.all(:state => 'awarded', :global_user_id => user.global_user_id, :public => true)
           else
-            badges = Badge.all(:user_id => params['user_id'], :domain_id => domain.id, :public => true)
+            badges = Badge.all(:state => 'awarded', :user_id => params['user_id'], :domain_id => domain.id, :public => true)
           end
           badges.each do |badge|
             badge_list << badge_hash(badge.user_id, badge.user_name, badge)
@@ -102,7 +102,7 @@ module Sinatra
           
       def badge_data(params, host_with_port)
         bc = BadgeConfig.first(:id => params[:badge_config_id])
-        badge = Badge.first(:badge_config_id => params[:badge_config_id], :user_id => params[:user_id], :nonce => params[:code])
+        badge = Badge.first(:state => 'awarded', :badge_config_id => params[:badge_config_id], :user_id => params[:user_id], :nonce => params[:code])
         badge = nil if bc && bc.organization_id != @org.id
         headers 'Content-Type' => 'application/json'
         if badge
@@ -122,6 +122,7 @@ module Sinatra
         next_url = nil
         params['page'] = '1' if params['page'].to_i == 0
         if awarded
+          badges = badges.all(:state => 'awarded')
           if badges.length > (params['page'].to_i * 50)
             next_url = "/api/v1/badges/awarded/#{@badge_config_id}.json?page=#{params['page'].to_i + 1}"
           end
@@ -157,6 +158,7 @@ module Sinatra
             :issued => badge && badge.issued && badge.issued.strftime('%b %e, %Y'),
             :nonce => badge && badge.nonce,
             :state => badge.state,
+            :evidence_url => badge.evidence_url,
             :config_id => badge.badge_config_id,
             :config_nonce => root_nonce || badge.config_nonce
           }
@@ -170,6 +172,7 @@ module Sinatra
             :issued => nil,
             :nonce => nil,
             :state => 'unissued',
+            :evidence_url => nil,
             :config_id => nil,
             :config_nonce => root_nonce
           }

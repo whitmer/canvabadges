@@ -19,6 +19,7 @@ module Sinatra
         settings['badge_requirements'] = params['badge_requirements']
         settings['badge_hours'] = params['badge_hours'].to_f.round(1)
         settings['manual_approval'] = params['manual_approval'] == '1'
+        settings['require_evidence'] = params['require_evidence'] == '1'
         settings['credit_based'] = params['credit_based'] == '1'
         settings['required_credits'] = params['requird_credits'].to_f.round(1)
         settings['min_percent'] = params['min_percent'].to_f
@@ -52,7 +53,12 @@ module Sinatra
         if !badge
           halt 400, {:error => "invalid badge"}.to_json
         elsif badge.user_id == session['user_id']
-          badge.public = (params['public'] == 'true')
+          if params['public']
+            badge.public = (params['public'] == 'true')
+          end
+          if params['evidence_url'] && !badge.awarded?
+            badge.evidence_url = params['evidence_url']
+          end
           badge.save
           {:id => badge.id, :nonce => badge.nonce, :public => badge.public}.to_json
         else
@@ -102,6 +108,7 @@ module Sinatra
             halt 404, error("Insufficient permissions") if session["permission_for_#{@course_id}"] != 'edit'
           end
         end
+        @admin = session["permission_for_#{@course_id}"] == 'edit'
         @placement_id = @badge_config.placement_id
         @badge_config_id = @badge_config.id
         @domain_id = @badge_config.domain_id || domain_id

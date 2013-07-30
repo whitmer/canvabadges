@@ -49,6 +49,21 @@ describe 'Badges API' do
       last_response.should be_ok
       last_response.body.should == {:objects => [badge_json(@badge, @user)]}.to_json
     end
+    it "should not return badges that aren't in the 'awarded' state" do
+      example_org
+      award_badge(badge_config, user)
+      @badge.public = true
+      @badge.save!
+      @good_badge = @badge
+      
+      award_badge(badge_config, @user)
+      @badge.public = true
+      @badge.state = 'revoked'
+      @badge.save!
+      get "/api/v1/badges/public/#{@user.user_id}/bob.com.json"
+      last_response.should be_ok
+      last_response.body.should == {:objects => [badge_json(@good_badge, @user)]}.to_json
+    end
   end  
   
   describe "awarded badges for course" do
@@ -71,6 +86,14 @@ describe 'Badges API' do
       get "/api/v1/badges/awarded/#{@badge_config.id}.json", {}, 'rack.session' => {"permission_for_#{@badge_config.course_id}" => 'edit', 'user_id' => @user.user_id}
       last_response.should be_ok
       last_response.body.should == {:meta => {:next => nil}, :objects => [badge_json(@badge, @user)]}.to_json      
+    end
+    it "should not return pending or revoked badges" do
+      award_badge(badge_config, user)
+      @badge.state = 'revoked'
+      @badge.save!
+      get "/api/v1/badges/awarded/#{@badge_config.id}.json", {}, 'rack.session' => {"permission_for_#{@badge_config.course_id}" => 'edit', 'user_id' => @user.user_id}
+      last_response.should be_ok
+      last_response.body.should == {:meta => {:next => nil}, :objects => []}.to_json      
     end
     it "should return paginated results" do
       award_badge(badge_config, user)

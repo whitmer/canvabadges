@@ -31,11 +31,11 @@ describe 'Badging OAuth' do
       ExternalConfig.create(:config_type => 'canvas_oauth', :value => '456')
       IMS::LTI::ToolProvider.any_instance.stub(:valid_request?).and_return(true)
       IMS::LTI::ToolProvider.any_instance.stub(:roles).and_return(['student'])
-      post "/placement_launch", {'oauth_consumer_key' => '123'}
+      post "/placement_launch", {'oauth_consumer_key' => '123', 'lis_person_contact_email_primary' => 'bob@example.com'}
       last_response.should_not be_ok
       assert_error_page("Course must be a Canvas course, and launched with public permission settings")
 
-      post "/placement_launch", {'oauth_consumer_key' => '123', 'tool_consumer_instance_guid' => 'something.bob.com', 'custom_canvas_user_id' => '1', 'custom_canvas_course_id' => '1', 'resource_link_id' => 'q2w3e4'}
+      post "/placement_launch", {'oauth_consumer_key' => '123', 'tool_consumer_instance_guid' => 'something.bob.com', 'custom_canvas_user_id' => '1', 'custom_canvas_course_id' => '1', 'resource_link_id' => 'q2w3e4', 'lis_person_contact_email_primary' => 'bob@example.com'}
       last_response.should be_redirect
       bc = BadgeConfig.last
       bc.placement_id.should == 'q2w3e4'
@@ -49,12 +49,12 @@ describe 'Badging OAuth' do
       ExternalConfig.create(:config_type => 'canvas_oauth', :value => '456')
       IMS::LTI::ToolProvider.any_instance.stub(:valid_request?).and_return(true)
       IMS::LTI::ToolProvider.any_instance.stub(:roles).and_return(['student'])
-      post "/placement_launch", {'oauth_consumer_key' => '123', 'tool_consumer_instance_guid' => 'something.bob.com', 'custom_canvas_user_id' => '1', 'custom_canvas_course_id' => '1'}
+      post "/placement_launch", {'oauth_consumer_key' => '123', 'tool_consumer_instance_guid' => 'something.bob.com', 'custom_canvas_user_id' => '1', 'custom_canvas_course_id' => '1', 'lis_person_contact_email_primary' => 'bob@example.com'}
       last_response.should be_redirect
       session['user_id'].should == '1'
       session['launch_course_id'].should == '1'
       session['permission_for_1'].should == 'view'
-      session['email'].should == nil
+      session['email'].should == 'bob@example.com'
       session['source_id'].should == 'cloud'
       session['name'].should == nil
       session['domain_id'].should == @domain.id.to_s
@@ -67,7 +67,7 @@ describe 'Badging OAuth' do
       IMS::LTI::ToolProvider.any_instance.stub(:valid_request?).and_return(true)
       IMS::LTI::ToolProvider.any_instance.stub(:roles).and_return(['student'])
       Domain.last.host.should_not == 'bob.org'
-      post "/placement_launch", {'oauth_consumer_key' => '123', 'tool_consumer_instance_guid' => 'something.bob.org', 'custom_canvas_user_id' => '1', 'custom_canvas_course_id' => '1'}
+      post "/placement_launch", {'oauth_consumer_key' => '123', 'tool_consumer_instance_guid' => 'something.bob.org', 'custom_canvas_user_id' => '1', 'custom_canvas_course_id' => '1', 'lis_person_contact_email_primary' => 'bob@example.com'}
       last_response.should be_redirect
       Domain.last.host.should == 'bob.org'
     end
@@ -79,7 +79,7 @@ describe 'Badging OAuth' do
       IMS::LTI::ToolProvider.any_instance.stub(:valid_request?).and_return(true)
       IMS::LTI::ToolProvider.any_instance.stub(:roles).and_return(['student'])
       Domain.last.host.should_not == 'bob.org'
-      post "/placement_launch", {'oauth_consumer_key' => '123', 'tool_consumer_instance_guid' => 'something.bob.org', 'custom_canvas_user_id' => '1', 'custom_canvas_course_id' => '1'}
+      post "/placement_launch", {'oauth_consumer_key' => '123', 'tool_consumer_instance_guid' => 'something.bob.org', 'custom_canvas_user_id' => '1', 'custom_canvas_course_id' => '1', 'lis_person_contact_email_primary' => 'bob@example.com'}
       last_response.should be_redirect
       BadgeConfig.last.organization_id.should == @org.id
     end
@@ -90,7 +90,7 @@ describe 'Badging OAuth' do
       ExternalConfig.create(:config_type => 'canvas_oauth', :value => '456')
       IMS::LTI::ToolProvider.any_instance.stub(:valid_request?).and_return(true)
       IMS::LTI::ToolProvider.any_instance.stub(:roles).and_return(['student'])
-      post "/placement_launch", {'oauth_consumer_key' => '123', 'tool_consumer_instance_guid' => 'something.bob.org', 'custom_canvas_user_id' => '1', 'custom_canvas_course_id' => '1'}
+      post "/placement_launch", {'oauth_consumer_key' => '123', 'tool_consumer_instance_guid' => 'something.bob.org', 'custom_canvas_user_id' => '1', 'custom_canvas_course_id' => '1', 'lis_person_contact_email_primary' => 'bob@example.com'}
       last_response.should be_redirect
       BadgeConfig.last.organization_id.should == @org.id
     end
@@ -102,7 +102,7 @@ describe 'Badging OAuth' do
       ExternalConfig.create(:config_type => 'canvas_oauth', :value => '456')
       IMS::LTI::ToolProvider.any_instance.stub(:valid_request?).and_return(true)
       IMS::LTI::ToolProvider.any_instance.stub(:roles).and_return(['student'])
-      post "/placement_launch", {'oauth_consumer_key' => '123', 'tool_consumer_instance_guid' => 'something.bob.com', 'custom_canvas_user_id' => '1', 'custom_canvas_course_id' => '1'}
+      post "/placement_launch", {'oauth_consumer_key' => '123', 'tool_consumer_instance_guid' => 'something.bob.com', 'custom_canvas_user_id' => '1', 'custom_canvas_course_id' => '1', 'lis_person_contact_email_primary' => 'bob@example.com'}
       last_response.should be_redirect
       BadgeConfig.last.organization_id.should == @org2.id
     end
@@ -114,7 +114,7 @@ describe 'Badging OAuth' do
       user
       IMS::LTI::ToolProvider.any_instance.stub(:valid_request?).and_return(true)
       IMS::LTI::ToolProvider.any_instance.stub(:roles).and_return(['student'])
-      post "/placement_launch", {'oauth_consumer_key' => '123', 'tool_consumer_instance_guid' => 'something.bob.com', 'resource_link_id' => '2s3d', 'custom_canvas_user_id' => @user.user_id, 'custom_canvas_course_id' => '1'}
+      post "/placement_launch", {'oauth_consumer_key' => '123', 'tool_consumer_instance_guid' => 'something.bob.com', 'resource_link_id' => '2s3d', 'custom_canvas_user_id' => @user.user_id, 'custom_canvas_course_id' => '1', 'lis_person_contact_email_primary' => 'bob@example.com'}
       last_response.should be_redirect
       bc = BadgeConfig.last
       last_response.location.should == "http://example.org/badges/check/#{bc.id}/#{@user.user_id}"

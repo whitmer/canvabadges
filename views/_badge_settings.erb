@@ -51,11 +51,22 @@
         </div>
       </div>
       <div class="control-group advanced">
+        <label class="control-label">Evidence: </label>
+        <div class="controls">
+          <div class="input-append">
+            <label>
+              <input id="require_evidence" type="checkbox" <%= 'checked' if settings['require_evidence'] %> name="require_evidence" value="1"/>
+              Require a URL as evidence before awarding
+            </label>
+          </div>
+        </div>
+      </div>
+      <div class="control-group advanced">
         <label class="control-label">Manual approval: </label>
         <div class="controls">
           <div class="input-append">
             <label>
-              <input type="checkbox" <%= 'checked' if settings['manual_approval'] %> name="manual_approval" value="1"/>
+              <input id="manual_approval" type="checkbox" <%= 'checked' if settings['manual_approval'] %> name="manual_approval" value="1"/>
               Require manual approval before awarding
             </label>
           </div>
@@ -106,13 +117,16 @@
         </div>
       </div>
       <div class="control-group verification">
-        <% org = (@badge_config.organization && @badge_config.organization.settings) || BadgeHelper.issuer %>
+        <% org = @badge_config.organization %>
+        <% settings = (org && org.settings) || BadgeHelper.issuer %>
         <p class="verification">
-          <img src='<%= org['image'] %>'/>
-          This badge was created at 
-          <%= request.host %>. It is associated with 
-          <a href="<%= org['url'] %>">
-          <%= org['name'] %></a>. If this association
+          <img src='<%= settings['image'] %>'/>
+          This badge is issued by 
+          <a href="<%= settings['url'] %>">
+          <%= settings['name'] %></a>.
+          It is hosted at 
+          <%= (org && org.host) || request.host %>.
+          If this association
           is incorrect, please <a href="<%= BadgeHelper.issuer['owner_url'] %>">contact the
           administrator of this site</a>.
           <span style="clear: left;"></span>

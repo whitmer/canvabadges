@@ -135,6 +135,7 @@ def badge_json(badge, user)
     :issued => badge.issued.strftime('%b %e, %Y'),
     :nonce => badge.nonce,
     :state => badge.state,
+    :evidence_url => badge.evidence_url,
     :config_id => badge.badge_config_id,
     :config_nonce => badge.config_nonce
   }
@@ -150,6 +151,7 @@ def fake_badge_json(badge_config, user_id, user_name)
     :issued => nil,
     :nonce => nil,
     :state => 'unissued',
+    :evidence_url => nil,
     :config_id => nil,
     :config_nonce => badge_config.nonce
   }

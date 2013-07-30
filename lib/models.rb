@@ -18,7 +18,7 @@ class Organization
   
   def as_json
     host_with_port = self.host
-    image = settings['image'] || "/badges/default.png"
+    image = (settings && settings['image']) || "/badges/default.png"
     if !image.match(/:\/\//)
       image = "#{BadgeHelper.protocol}://" + host_with_port + image
     end
@@ -164,6 +164,10 @@ class BadgeConfig
   
   def modules_required?
     settings && settings['modules']
+  end
+  
+  def evidence_required?
+    settings && settings['require_evidence']
   end
   
   def credit_based?
@@ -390,6 +394,7 @@ class Badge
     badge.badge_config = badge_config
     badge.name = settings['badge_name']
     badge.email = email
+    badge.state ||= 'unissued'
     badge.user_full_name = name || params['user_name']
     badge.description = settings['badge_description']
     badge.badge_url = settings['badge_url']
@@ -408,6 +413,7 @@ class Badge
   def self.complete(params, badge_config, name, email)
     settings = badge_config.settings || {}
     badge = generate_badge(params, badge_config, name, email)
+    badge.state = nil if badge.state == 'unissued'
     badge.state ||= settings['manual_approval'] ? 'pending' : 'awarded'
     badge.save
     badge

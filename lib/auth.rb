@@ -28,7 +28,10 @@ module Sinatra
         domain.save
         provider = IMS::LTI::ToolProvider.new(key, secret, params)
         if !params['custom_canvas_user_id'] || !params['custom_canvas_course_id']
-          halt 400, error("Course must be a Canvas course, and launched with public permission settings")
+          halt 400, error("This app appears to have been misconfigured, please contact your instructor or administrator. Course must be a Canvas course, and launched with public permission settings")
+        end
+        if !params['lis_person_contact_email_primary']
+          halt 400, error("This app appears to have been misconfigured, please contact your instructor or administrator. Email address is required on user launches.")
         end
         if provider.valid_request?(request)
           bc = BadgeConfig.first_or_new(:placement_id => params['resource_link_id'], :domain_id => domain.id, :course_id => params['custom_canvas_course_id'])
@@ -59,6 +62,7 @@ module Sinatra
             user_config.image = params['user_image']
             user_config.save
             session['user_id'] = user_config.user_id
+
             if params['custom_show_all']
               redirect to("/badges/all/#{user_config.user_id}")
             else

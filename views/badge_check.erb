@@ -32,7 +32,12 @@
         <div class='progress progress-warning progress-striped progress-big'><div class='tick' style='left: <%= (3 * settings['min_percent']).to_i.to_s %>px;'></div><div class='bar' style='width: <%= @student['computed_final_score'].to_i.to_s %>%;'></div></div>
       <% end %>
     <% end %>
-    <p><b>All you need now is to wait for your instructor's manual approval.</b></p>
+    <%= erb :_evidence_url %>
+    <% if @badge_config.requires_evidence? %>
+      <p><b>All you need now is to wait for your instructor to review your evidence URL and the approve the badge.</b></p>
+    <% else %>
+      <p><b>All you need now is to wait for your instructor's manual approval.</b></p>
+    <% end %>
   <% else %>
     <h3>You haven't earn this badge yet</h3>
     <% if @badge_config.credit_based? %>
@@ -65,6 +70,7 @@
       To earn this badge you need <%= settings['min_percent'] %>%, but you only have <%= @student['computed_final_score'].to_f %>% in this course right now.
       <div class='progress progress-danger progress-striped progress-big'><div class='tick' style='left: <%= (3 * settings['min_percent']).to_i.to_s %>px;'></div><div class='bar' style='width: <%= @student['computed_final_score'].to_i.to_s %>%;'></div></div>
     <% end %>
+    <%= erb :_evidence_url %>
     <a class='btn btn-primary btn-large' href='/badges/all/<%= @domain_id %>/<%= @user_id %>'>See All Your Badges</a>
   <% end %>
 <% else %>
