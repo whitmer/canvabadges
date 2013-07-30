@@ -18,12 +18,16 @@ class Organization
   
   def as_json
     host_with_port = self.host
+    image = settings['image'] || "/badges/default.png"
+    if !image.match(/:\/\//)
+      image = "#{BadgeHelper.protocol}://" + host_with_port + image
+    end
     settings = self.settings || BadgeHelper.issuer
     {
       'name' => settings['name'],
       'url' => settings['url'],
       'description' => settings['description'],
-      'image' => settings['image'],
+      'image' => image,
       'email' => settings['email'],
       'revocationList' => "#{BadgeHelper.protocol}://#{host_with_port}/api/v1/organizations/#{self.id || 'default'}/revocations.json"
     }
