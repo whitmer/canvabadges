@@ -33,6 +33,10 @@ class Organization
     }
   end
   
+  def default?
+    settings['default'] == true
+  end
+  
   def to_json
     as_json.to_json
   end

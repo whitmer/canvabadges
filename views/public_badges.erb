@@ -1,4 +1,4 @@
-<h2><img src="<%= @org.settings['image'] || "/organizations/default.png" %>" alt=""/> Recently-Awarded Public Badges</h2>
+<h2><a href="/"><img src="<%= @org.settings['image'] || "/organizations/default.png" %>" alt=""/></a> Recently-Awarded Public Badges</h2>
 <div class="row">
   <div class="span10 offset1" style="padding-top: 15px;">
     <% if @badges.length == 0 %><h3>Nothing to Show</h3><% end %>

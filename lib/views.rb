@@ -17,13 +17,21 @@ module Sinatra
       
       app.get "/badges/public" do
         org_check
-        @badge_configs = BadgeConfig.all(:public => true, :order => :updated_at.desc, :limit => 25)
+        if @org.default?
+          @badge_configs = BadgeConfig.all(:public => true, :order => :updated_at.desc, :limit => 25)
+        else
+          @badge_configs = BadgeConfig.all(:public => true, :order => :updated_at.desc, :limit => 25, :organization_id => @org.id)
+        end
         erb :public_badge_configs
       end
       
       app.get "/badges/public/awarded" do
         org_check
-        @badges = Badge.all(:state => 'awarded', :public => true, :order => :issued.desc, :limit => 25)
+        if @org.default?
+          @badges = Badge.all(:state => 'awarded', :public => true, :order => :issued.desc, :limit => 25)
+        else
+          @badges = Badge.all(Badge.badge_config.organization_id => @org.id, :state => 'awarded', :public => true, :order => :issued.desc, :limit => 25)
+        end
         erb :public_badges
       end
       
