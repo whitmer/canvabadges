@@ -17,7 +17,7 @@ module Sinatra
       
       app.get "/badges/public" do
         org_check
-        if @org.default?
+        if @org.default? && params['this_org_only']
           @badge_configs = BadgeConfig.all(:public => true, :order => :updated_at.desc, :limit => 25)
         else
           @badge_configs = BadgeConfig.all(:public => true, :order => :updated_at.desc, :limit => 25, :organization_id => @org.id)
@@ -27,7 +27,7 @@ module Sinatra
       
       app.get "/badges/public/awarded" do
         org_check
-        if @org.default?
+        if @org.default? && !params['this_org_only']
           @badges = Badge.all(:state => 'awarded', :public => true, :order => :issued.desc, :limit => 25)
         else
           @badges = Badge.all(Badge.badge_config.organization_id => @org.id, :state => 'awarded', :public => true, :order => :issued.desc, :limit => 25)
