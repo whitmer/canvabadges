@@ -91,6 +91,7 @@ module Sinatra
             
             if @student
               if @badge_config.requirements_met?(@student['computed_final_score'], @completed_module_ids)
+                params['credits_earned'] = @badge_config.credits_earned(@student['computed_final_score'], @completed_module_ids)
                 @badge = Badge.complete(params, @badge_config, session['name'], session['email'])
               elsif !@badge
                 @badge = Badge.generate_badge({'user_id' => @user_config.user_id}, @badge_config, session['name'], session['email'])

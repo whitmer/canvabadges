@@ -164,6 +164,10 @@ class BadgeConfig
     end
   end
   
+  def approve_to_pending?
+    settings && (settings['manual_approval'] || settings['require_evidence'])
+  end
+  
   def update_counts
     self.settings ||= {}
     self.settings['awarded_count'] = Badge.all(:badge_config_id => self.id, :state => 'awarded').count
@@ -203,14 +207,19 @@ class BadgeConfig
     settings && percent >= settings['min_percent']
   end
   
+  def credits_earned(percent, completed_module_ids)
+    credits = required_score_met?(percent) ? settings['credits_for_final_score'].to_f : 0
+    (settings['modules'] || []).each do |id, name, credit|
+      if completed_module_ids.include?(id.to_i)
+        credits += (credit || 0)
+      end
+    end
+    credits
+  end
+  
   def requirements_met?(percent, completed_module_ids)
     if credit_based?
-      credits = required_score_met?(percent) ? settings['credits_for_final_score'].to_f : 0
-      settings['modules'].each do |id, name, credit|
-        if completed_module_ids.include?(id.to_i)
-          credits += credit
-        end
-      end
+      credits = credits_earned(percent, completed_module_ids)
       credits > 0 && credits > settings['required_credits'].to_f
     else
       required_modules_completed?(completed_module_ids) && required_score_met?(percent)
@@ -231,6 +240,7 @@ class Badge
   property :name, String, :length => 256
   property :user_full_name, String, :length => 256
   property :description, Text
+  property :credits_earned, Integer
   property :recipient, String, :length => 512
   property :salt, String, :length => 256
   property :issued, DateTime
@@ -333,6 +343,7 @@ class Badge
     badge.name = settings['badge_name']
     badge.email = email
     badge.state ||= 'unissued'
+    badge.credits_earned = params['credits_earned'].to_i
     badge.user_full_name = name || params['user_name']
     badge.description = settings['badge_description']
     badge.badge_url = settings['badge_url']
@@ -353,7 +364,7 @@ class Badge
     settings = badge_config.settings || {}
     badge = generate_badge(params, badge_config, name, email)
     badge.state = nil if badge.state == 'unissued'
-    badge.state ||= settings['manual_approval'] ? 'pending' : 'awarded'
+    badge.state ||= badge_config.approve_to_pending? ? 'pending' : 'awarded'
     badge.save
     badge_config.update_counts
     badge

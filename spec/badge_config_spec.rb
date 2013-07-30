@@ -126,6 +126,54 @@ describe 'Badge Configuration' do
       json['public'].should == false
       @badge.reload.public.should == false
     end
+    
+    it "should allow setting the evidence URL for your badge" do
+      award_badge(badge_config, user)
+      @badge.state = 'pending'
+      @badge.save
+      @badge.public.should == nil
+      post "/badges/#{@badge.nonce}", {'evidence_url' => 'http://www.example.com'}, 'rack.session' => {'user_id' => @user.user_id}
+      last_response.should be_ok
+      json = JSON.parse(last_response.body)
+      json['id'].should == @badge.id
+      @badge.reload.evidence_url.should == 'http://www.example.com'
+      post "/badges/#{@badge.nonce}", {'evidence_url' => 'http://www.google.com'}, 'rack.session' => {'user_id' => @user.user_id}
+      last_response.should be_ok
+      json = JSON.parse(last_response.body)
+      json['id'].should == @badge.id
+      @badge.reload.evidence_url.should == 'http://www.google.com'
+    end
+    
+    it "should not impact public/private when setting the evidence URL" do
+      award_badge(badge_config, user)
+      @badge.state = 'pending'
+      @badge.public = true
+      @badge.save
+      post "/badges/#{@badge.nonce}", {'evidence_url' => 'http://www.example.com'}, 'rack.session' => {'user_id' => @user.user_id}
+      last_response.should be_ok
+      json = JSON.parse(last_response.body)
+      json['id'].should == @badge.id
+      @badge.reload.evidence_url.should == 'http://www.example.com'
+      @badge.public.should == true
+      post "/badges/#{@badge.nonce}", {'evidence_url' => 'http://www.google.com'}, 'rack.session' => {'user_id' => @user.user_id}
+      last_response.should be_ok
+      json = JSON.parse(last_response.body)
+      json['id'].should == @badge.id
+      @badge.reload.evidence_url.should == 'http://www.google.com'
+      @badge.public.should == true
+    end
+    
+    it "should not allow setting the evidence URL for an already-awarded badge" do
+      award_badge(badge_config, user)
+      @badge.state.should == 'awarded'
+      @badge.evidence_url.should == nil
+      
+      post "/badges/#{@badge.nonce}", {'evidence_url' => 'http://www.example.com'}, 'rack.session' => {'user_id' => @user.user_id}
+      last_response.should be_ok
+      json = JSON.parse(last_response.body)
+      json['id'].should == @badge.id
+      @badge.reload.evidence_url.should == nil
+    end
   end
   
   describe "manually awarding badges" do

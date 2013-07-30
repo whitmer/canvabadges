@@ -33,7 +33,7 @@
       <% end %>
     <% end %>
     <%= erb :_evidence_url %>
-    <% if @badge_config.requires_evidence? %>
+    <% if @badge_config.evidence_required? %>
       <p><b>All you need now is to wait for your instructor to review your evidence URL and the approve the badge.</b></p>
     <% else %>
       <p><b>All you need now is to wait for your instructor's manual approval.</b></p>
