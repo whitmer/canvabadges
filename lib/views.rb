@@ -6,16 +6,19 @@ module Sinatra
       app.helpers Views::Helpers
       
       app.get "/" do
+        @full_footer = true
         org_check
         erb :index
       end
       
       app.get "/stats" do
+        @full_footer = true
         org_check
         erb :stats
       end
       
       app.get "/badges/public" do
+        @full_footer = true
         org_check
         if @org.default? && params['this_org_only']
           @badge_configs = BadgeConfig.all(:public => true, :order => :updated_at.desc, :limit => 25)
@@ -26,6 +29,7 @@ module Sinatra
       end
       
       app.get "/badges/public/awarded" do
+        @full_footer = true
         org_check
         if @org.default? && !params['this_org_only']
           @badges = Badge.all(:state => 'awarded', :public => true, :order => :issued.desc, :limit => 25)

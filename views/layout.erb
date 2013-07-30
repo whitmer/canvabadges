@@ -70,6 +70,7 @@
           .footer {
             margin-top: 50px;
             font-style: italic;
+            color: #888;
           }
           .avatar {
             max-height: 50px;
@@ -117,6 +118,10 @@
           <footer class="footer">
             <% issuer = BadgeHelper.issuer %>
             powered by <a href="<%= issuer['url'] %>"><%= issuer['name'] %></a>
+            <% if @full_footer %>
+              | <a href="/">About</a>
+              | <a href="/stats">Stats</a>
+            <% end %>
           </footer>
         </div>
         <script src="/jquery.min.js"></script>
