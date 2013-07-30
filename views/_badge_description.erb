@@ -32,7 +32,7 @@
 <% settings = (org && org.settings) || BadgeHelper.issuer %>
 <p class="verification">
   <img src='<%= settings['image'] %>'/>
-  This badge was issued by <a href="<%= settings['url'] %>">
+  This badge <%= @current_badge && @current_badge.awarded? ? "was" : "is" %> issued by <a href="<%= settings['url'] %>">
   <%= settings['name'] %></a>. It is hosted at 
   <%= (org && org.host) || request.host %>.
   <span style="clear: left;"></span>
