@@ -51,3 +51,5 @@ shotgun
 ```
 
 Note that in a production environment you'll also need to set the SESSION_KEY environment variable or you'll get errors on boot.
+
+[![Build Status](https://travis-ci.org/whitmer/canvabadges.png)](https://travis-ci.org/whitmer/canvabadges)
