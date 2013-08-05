@@ -12,19 +12,19 @@
       </tr>
       <tr>
         <% if @org.default? && !params['this_org_only'] %>
-          <td><a href="/badges/public">Badges Configured</a></td>
+          <td>Badges Configured <a class="sub" href="/badges/public">see public badges</a></td>
           <td><%= BadgeConfig.count %></td>
         <% else %>
-          <td><a href="/badges/public?this_org_only=1">Badges Configured</a></td>
+          <td>Badges Configured <a class="sub" href="/badges/public?this_org_only=1">see public badges</a></td>
           <td><%= BadgeConfig.all(:organization_id => @org.id).count %></td>
         <% end %>
       </tr>
       <tr>
         <% if @org.default? && !params['this_org_only'] %>
-          <td><a href="/badges/public/awarded">Badges Awarded</a></td>
+          <td>Badges Awarded <a class="sub" href="/badges/public/awarded">see shared badges</a></td>
           <td><%= Badge.count %></td>
         <% else %>
-          <td><a href="/badges/public/awarded?this_org_only=1">Badges Awarded</a></td>
+          <td>Badges Awarded <a class="sub" href="/badges/public/awarded?this_org_only=1">see shared badges</a></td>
           <td><%= Badge.all(Badge.badge_config.organization_id => @org.id).count %></td>
         <% end %>
       </tr>
