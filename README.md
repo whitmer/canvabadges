@@ -33,7 +33,7 @@ ExternalConfig.create(:config_type => 'twitter_for_login', :value => "<twitter c
 #  create a record matching your domain
 #  set twitter_login to false if you only want LTI credentials created by hand
 #  (twitter_login lets anyone generate an LTI key and secret with a twitter login)
-d = Domain.create(:host => "https://yourdomain.com", :name => "Name Of Your Badging Thing", :settings => {:twitter_login => true})
+d = Domain.create(:host => "yourdomain.com", :name => "Name Of Your Badging Thing", :settings => {:twitter_login => true})
 exit
 
 # to create an LTI configuration by hand, do the following
