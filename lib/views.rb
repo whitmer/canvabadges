@@ -8,7 +8,7 @@ module Sinatra
       app.get "/" do
         @full_footer = true
         org_check
-        erb :index
+        erb (@org.settings['template'] || :index).to_sym
       end
       
       app.get "/stats" do
