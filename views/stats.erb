@@ -34,7 +34,18 @@
           <td><%= Domain.count %></td>
         </tr>
         <tr>
-          <td>Organizations</td>
+          <td>
+            Organizations
+            <ul style="padding-top: 10px;">
+              <% Organization.all.each do |org| %>
+                <li><a href="<%= org.settings['url'] %>"><%= org.settings['name'] %></a> <a class="sub" href="<%= BadgeHelper.protocol %>://<%= org.host %>">badge site</a></li>
+              <% end %>
+              <li>
+                <a href="<%= BadgeHelper.issuer['owner_url'] %>">Contact us</a> to add your own badging site
+              </li>
+            </ul>
+            
+          </td>
           <td><%= Organization.count %></td>
         </tr>
       <% end %>
