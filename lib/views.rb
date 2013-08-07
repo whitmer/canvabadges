@@ -11,6 +11,12 @@ module Sinatra
         erb (@org.settings['template'] || :index).to_sym
       end
       
+      app.get "/about" do
+        @full_footer = true
+        org_check
+        erb :about
+      end
+      
       app.get "/stats" do
         @full_footer = true
         org_check

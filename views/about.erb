@@ -1,0 +1,40 @@
+<h2><a href="/"><img src="<%= @org.settings['image'] || "/organizations/default.png" %>" alt=""/></a> What is Canvabadges?</h2>
+<div class="row">
+  <span class="span6">
+    <p>
+      Canvabadges let you award badges to students in courses based on their total
+      grade in the course and their completion of course modules. You can also put
+      a manual approval step on as well that requires your final sign-off before they
+      receive the badge.
+    </p>
+    <p>
+      Put it all together and you've got some lightweight course credentials!
+      Badges can be added to a <a href="http://openbadges.org/">Mozilla Backpack</a>,
+      or you can drop <a href="/canvas_profile_badges.js">this javascript file</a> in your
+      global Canvas scripts to let users add them to their Canvas 
+      profiles.
+    </p>
+    <p>
+      Setup and signup directions vary depending on the organization. You can 
+      also see the public and shared badges by checking out the
+      <a href="/stats">stats page</a>.
+      
+    </p>
+  </span>
+  <span class="span6">
+    <iframe width="420" height="315" src="https://www.youtube.com/embed/N-utskPWtG0?rel=0" frameborder="0" allowfullscreen></iframe>
+  </span>
+</div>
+  <hr/>
+  <p>
+    Lots of schools will probably want to host their 
+    own badge issuing server, so the domain matches their school
+    (i.e. badges.utah.edu instead of canvabadges.herokuapp.com).
+    Good news! You can now do that with Canvabadges! Just
+    <a href="<%= BadgeHelper.issuer['owner_url'] %>">contact
+    the site's owner</a> about getting a custom domain configured.
+    Or you can also run 
+    <a href="https://github.com/whitmer/canvabadges">the code</a>
+    yourself.
+  </p>
+  <a href="http://openbadges.org/"><img src="/OpenBadges_Insignia_WeIssue.png" alt="We issue open badges"/></a>
