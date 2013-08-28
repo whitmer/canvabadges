@@ -16,7 +16,7 @@
       <div class="control-group">
         <label class="control-label" for="badge_url">Badge icon: </label>
         <div class="controls">
-          <input type="text" <%= "disabled='true'" if disabled %> class="span2" placeholder="http://" id="badge_url" name="badge_url" value="<%= CGI.escapeHTML(settings['badge_url'] || "") %>"/>
+          <input type="text" <%= "disabled='true'" if disabled %> class="span2" placeholder="https://" id="badge_url" name="badge_url" value="<%= CGI.escapeHTML(settings['badge_url'] || "") %>"/>
           must be 72x72 pixels
         </div>
       </div>
