@@ -94,17 +94,54 @@ function program11(depth0,data) {
   tmp1.inverse = self.noop;
   stack1 = stack2.call(depth0, stack1, tmp1);
   if(stack1 || stack1 === 0) { buffer += stack1; }
-  buffer += "\n          <form class='form form-inline' method='POST' action='/badges/award/\" + badge_config_id + \"/\" + badge.id + \"' style='visibility: hidden; display: inline; margin-left: 10px;'>\n            <input type='hidden' name='user_name' value='\" + badge.name + \"'/>\n            <button class='btn btn-primary' type='submit'><span class='icon-check icon-white'></span> Award Badge</button>\n          </form>\n        ";
+  buffer += "\n          <form class='form form-inline' method='POST' action='/badges/award/";
+  foundHelper = helpers.badge_config_id;
+  stack1 = foundHelper || depth0.badge_config_id;
+  if(typeof stack1 === functionType) { stack1 = stack1.call(depth0, { hash: {} }); }
+  else if(stack1=== undef) { stack1 = helperMissing.call(depth0, "badge_config_id", { hash: {} }); }
+  buffer += escapeExpression(stack1) + "/";
+  foundHelper = helpers.id;
+  stack1 = foundHelper || depth0.id;
+  if(typeof stack1 === functionType) { stack1 = stack1.call(depth0, { hash: {} }); }
+  else if(stack1=== undef) { stack1 = helperMissing.call(depth0, "id", { hash: {} }); }
+  buffer += escapeExpression(stack1) + "' style='visibility: hidden; display: inline; margin-left: 10px;'>\n            <input type='hidden' name='user_name' value='";
+  foundHelper = helpers.name;
+  stack1 = foundHelper || depth0.name;
+  if(typeof stack1 === functionType) { stack1 = stack1.call(depth0, { hash: {} }); }
+  else if(stack1=== undef) { stack1 = helperMissing.call(depth0, "name", { hash: {} }); }
+  buffer += escapeExpression(stack1) + "'/>\n            <button class='btn btn-primary' type='submit'><span class='icon-check icon-white'></span> Award Badge</button>\n          </form>\n        ";
   return buffer;}
 function program12(depth0,data) {
   
-  
-  return "\n            <a href='\" + badge.evidence_url + \"' target='_blank' class='evidence_link label label-info'>evidence</a>&nbsp;\n          ";}
+  var buffer = "", stack1;
+  buffer += "\n            <a href='";
+  foundHelper = helpers.evidence_url;
+  stack1 = foundHelper || depth0.evidence_url;
+  if(typeof stack1 === functionType) { stack1 = stack1.call(depth0, { hash: {} }); }
+  else if(stack1=== undef) { stack1 = helperMissing.call(depth0, "evidence_url", { hash: {} }); }
+  buffer += escapeExpression(stack1) + "' target='_blank' class='evidence_link label label-info'>evidence</a>&nbsp;\n          ";
+  return buffer;}
 
 function program14(depth0,data) {
   
-  
-  return "\n          <img src='/redx.png' alt='not earned' class='earn_badge' title='not earned. click to manually award'/>\n          <form class='form form-inline' method='POST' action='/badges/award/\" + badge_config_id + \"/\" + badge.id + \"' style='visibility: hidden; display: inline; margin-left: 10px;'>\n            <input type='hidden' name='user_name' value='\" + badge.name + \"'/>\n            <button class='btn btn-primary' type='submit'><span class='icon-check icon-white'></span> Award Badge</button>\n          </form>\n        ";}
+  var buffer = "", stack1;
+  buffer += "\n          <img src='/redx.png' alt='not earned' class='earn_badge' title='not earned. click to manually award'/>\n          <form class='form form-inline' method='POST' action='/badges/award/";
+  foundHelper = helpers.badge_config_id;
+  stack1 = foundHelper || depth0.badge_config_id;
+  if(typeof stack1 === functionType) { stack1 = stack1.call(depth0, { hash: {} }); }
+  else if(stack1=== undef) { stack1 = helperMissing.call(depth0, "badge_config_id", { hash: {} }); }
+  buffer += escapeExpression(stack1) + "/";
+  foundHelper = helpers.id;
+  stack1 = foundHelper || depth0.id;
+  if(typeof stack1 === functionType) { stack1 = stack1.call(depth0, { hash: {} }); }
+  else if(stack1=== undef) { stack1 = helperMissing.call(depth0, "id", { hash: {} }); }
+  buffer += escapeExpression(stack1) + "' style='visibility: hidden; display: inline; margin-left: 10px;'>\n            <input type='hidden' name='user_name' value='";
+  foundHelper = helpers.name;
+  stack1 = foundHelper || depth0.name;
+  if(typeof stack1 === functionType) { stack1 = stack1.call(depth0, { hash: {} }); }
+  else if(stack1=== undef) { stack1 = helperMissing.call(depth0, "name", { hash: {} }); }
+  buffer += escapeExpression(stack1) + "'/>\n            <button class='btn btn-primary' type='submit'><span class='icon-check icon-white'></span> Award Badge</button>\n          </form>\n        ";
+  return buffer;}
 
 function program16(depth0,data) {
   

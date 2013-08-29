@@ -73,6 +73,7 @@ function loadResults(url) {
         badge.awarded = badge.issued && badge.state == 'awarded';
         badge.manually_awarded = badge.awarded && badge.manual;
         badge.pending = badge.state == 'pending';
+        badge.badge_config_id = badge_config_id;
         $("#badges tbody").append(Handlebars.templates['badge_row'](badge));
       }
       if(data['meta']['next']) {

@@ -16,16 +16,16 @@
         {{#if pending}}
           <img src='/warning.png' alt='pending approval' class='earn_badge' title='earned, needs approval. click to manually award'/>
           {{#if evidence_url}}
-            <a href='" + badge.evidence_url + "' target='_blank' class='evidence_link label label-info'>evidence</a>&nbsp;
+            <a href='{{ evidence_url }}' target='_blank' class='evidence_link label label-info'>evidence</a>&nbsp;
           {{/if}}
-          <form class='form form-inline' method='POST' action='/badges/award/" + badge_config_id + "/" + badge.id + "' style='visibility: hidden; display: inline; margin-left: 10px;'>
-            <input type='hidden' name='user_name' value='" + badge.name + "'/>
+          <form class='form form-inline' method='POST' action='/badges/award/{{ badge_config_id }}/{{ id }}' style='visibility: hidden; display: inline; margin-left: 10px;'>
+            <input type='hidden' name='user_name' value='{{ name }}'/>
             <button class='btn btn-primary' type='submit'><span class='icon-check icon-white'></span> Award Badge</button>
           </form>
         {{else}}
           <img src='/redx.png' alt='not earned' class='earn_badge' title='not earned. click to manually award'/>
-          <form class='form form-inline' method='POST' action='/badges/award/" + badge_config_id + "/" + badge.id + "' style='visibility: hidden; display: inline; margin-left: 10px;'>
-            <input type='hidden' name='user_name' value='" + badge.name + "'/>
+          <form class='form form-inline' method='POST' action='/badges/award/{{ badge_config_id }}/{{ id }}' style='visibility: hidden; display: inline; margin-left: 10px;'>
+            <input type='hidden' name='user_name' value='{{ name }}'/>
             <button class='btn btn-primary' type='submit'><span class='icon-check icon-white'></span> Award Badge</button>
           </form>
         {{/if}}
