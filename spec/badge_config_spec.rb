@@ -209,6 +209,15 @@ describe 'Badge Configuration' do
       assert_error_page("That user is not a student in this course")
     end
     
+    it "should fail on manual awarding if no email provided by api" do
+      user
+      configured_badge
+      Canvabadges.any_instance.should_receive(:api_call).and_return([{'id' => @user.user_id.to_i, 'name' => 'bob'}])
+      post "/badges/award/#{@badge_config.id}/#{@user.user_id}", {}, 'rack.session' => {"permission_for_#{@badge_config.course_id}" => 'edit', 'user_id' => @user.user_id}
+      last_response.should_not be_redirect
+      assert_error_page("That user doesn't have an email in Canvas")
+    end
+    
     it "should allow manual awarding" do
       user
       configured_badge

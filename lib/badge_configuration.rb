@@ -77,6 +77,9 @@ module Sinatra
           json = api_call("/api/v1/courses/#{@course_id}/users?enrollment_type=student&include[]=email&user_id=#{params['user_id']}", @user_config)
           student = json.detect{|e| e['id'] == params['user_id'].to_i }
           if student
+            if !student['email']
+              return error("That user doesn't have an email in Canvas, and so can't be awarded badges. Please notify the student that they need to set up an email address and then try again.")
+            end
             badge = Badge.manually_award(params, @badge_config, student['name'], student['email'])
             
             redirect to("/badges/check/#{@badge_config_id}/#{@user_id}")
