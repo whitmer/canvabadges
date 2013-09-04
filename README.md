@@ -37,6 +37,7 @@ ExternalConfig.create(:config_type => 'twitter_for_login', :value => "<twitter c
 d = Domain.create(:host => "badgemagic.yourdomain.com", :name => "Name Of Your Badging Thing")
 o = Organization.create(:host => "badgemagic.yourdomain.com", :settings => {
   'name' => "Name Of Your Badging Thing", 
+  'description' => "I just really like badging!",
   'twitter_login' => true,
   'url' => 'http://badgemagic.com',
   'image' => 'http://badgemagic.com/images/90x90.png',
