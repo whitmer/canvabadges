@@ -92,7 +92,7 @@ module Sinatra
               return error("No data")
             end
             
-            @student = scores_json['enrollments'].detect{|e| e['type'] == 'student' }
+            @student = scores_json['enrollments'].detect{|e|  e['role'].downcase == 'studentenrollment' }
             @student['computed_final_score'] ||= 0 if @student
             
             if @student
