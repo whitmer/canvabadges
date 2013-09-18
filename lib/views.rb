@@ -81,6 +81,20 @@ module Sinatra
       app.get "/badges/check/:badge_config_id/:user_id" do
         load_badge_config(params['badge_config_id'], 'view')
         if @badge_config && @badge_config.configured?
+          @student = {}
+          erb :badge_check
+        else
+          if session["permission_for_#{@course_id}"] == 'edit'
+            erb :manage_badge
+          else
+            return message("Your teacher hasn't set up this badge yet")
+          end
+        end
+      end
+
+      app.get "/badges/status/:badge_config_id/:user_id" do
+        load_badge_config(params['badge_config_id'], 'view')
+        if @badge_config && @badge_config.configured?
           if @badge && !@badge.needing_evaluation?
             @student = {}
           else
@@ -89,12 +103,11 @@ module Sinatra
             modules_json ||= []
             @completed_module_ids = modules_json.select{|m| m['completed_at'] }.map{|m| m['id'] }.compact
             unless scores_json
-              return error("No data")
+              return "<h3>Error getting data from Canvas</h3>"
             end
-            
             @student = scores_json['enrollments'].detect{|e|  e['role'].downcase == 'studentenrollment' }
             @student['computed_final_score'] ||= 0 if @student
-            
+          
             if @student
               if @badge_config.requirements_met?(@student['computed_final_score'], @completed_module_ids)
                 params['credits_earned'] = @badge_config.credits_earned(@student['computed_final_score'], @completed_module_ids)
@@ -108,16 +121,17 @@ module Sinatra
               end
             end
           end
-          erb :badge_check
-        else
-          if session["permission_for_#{@course_id}"] == 'edit'
-            erb :manage_badge
+          if @student
+            erb :_badge_status
           else
-            return message("Your teacher hasn't set up this badge yet")
+            return "<h3>You are not a student in this course, so you can't earn this badge</h3>"
           end
+        else
+          return "<h3>Error retrieving badge status</h3>"
         end
       end
     end
+    
     
     module Helpers
       def org_check

@@ -98,3 +98,18 @@ $(".nav-pills li").click(function(event) {
   }
 });
 $("#current_students").click();
+
+var badge_status = $("#student_badge").attr('rel');
+if(badge_status) {
+  $.ajax({
+    type: 'GET',
+    dataType: 'html',
+    url: badge_status,
+    success: function(data) {
+      $("#student_badge").html(data);
+    },
+    error: function(data) {
+      $("#student_badge").html("<h3>Error retrieving badge status</h3>");
+    }
+  });
+}
