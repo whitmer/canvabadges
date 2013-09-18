@@ -5,7 +5,7 @@
 %>
   <form class='well form-horizontal' style="margin-top: 15px;" method="post" action="/badges/settings/<%= @badge_config_id %>">
     <h2>Badge Settings</h2>
-    <img src="<%= settings['badge_url'] || '/badges/default.png' %>" style='float: left; margin-right: 10px;' class='thumbnail'/>
+    <img src="<%= settings['badge_url'] || '/badges/default.png' %>" style='float: left; margin-right: 10px; width: 90px; height: 90px;' class='thumbnail'/>
     <fieldset>
       <div class="control-group">
         <label class="control-label" for="badge_name">Badge name: </label>
@@ -17,7 +17,8 @@
         <label class="control-label" for="badge_url">Badge icon: </label>
         <div class="controls">
           <input type="text" <%= "disabled='true'" if disabled %> class="span2" placeholder="https://" id="badge_url" name="badge_url" value="<%= CGI.escapeHTML(settings['badge_url'] || "") %>"/>
-          must be 72x72 pixels
+          should be 90x90 pixels<br/>
+          <a href="https://www.openbadges.me/designer.html?origin=https://canvabadges.herokuapp.com&email=support@instructure.com" data-fancybox-type="iframe" id="badge_designer">use the badge designer</a>
         </div>
       </div>
       <div class="control-group">

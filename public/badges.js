@@ -113,3 +113,24 @@ if(badge_status) {
     }
   });
 }
+
+$(document).ready(function (){
+  window.onmessage = function(e){
+    if(e.origin=='https://www.openbadges.me'){
+      if(e.data!='cancelled')
+      $('#badge_url').val(e.data);
+      $.fancybox.close();
+    }
+  };
+  
+  $("#badge_designer").fancybox({
+    width		: '90%',
+    height	: '70%',
+    minHeight	: 600,
+    autoSize	: false,
+    closeClick	: false,
+    openEffect	: 'fade',
+    closeEffect	: 'none'
+  });
+
+});
