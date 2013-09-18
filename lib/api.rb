@@ -184,7 +184,13 @@ module Sinatra
       end
       
       def oauth_config
-        @oauth_config ||= ExternalConfig.first(:config_type => 'canvas_oauth')
+        get_org
+        if @org && @org.settings['oss_oauth']
+          @oauth_config ||= ExternalConfig.first(:config_type => 'canvas_oss_oauth', :organization_id => @org.id)
+        else
+          @oauth_config ||= ExternalConfig.first(:config_type => 'canvas_oauth')
+        end
+        
         raise "Missing oauth config" unless @oauth_config
         @oauth_config
       end
