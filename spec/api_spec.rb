@@ -213,7 +213,7 @@ describe 'Badges API' do
       
       json['name'].should == "Cool Badge"
       json['description'].should == "Badge for cool people"
-      json['image'].should == "http://example.com/badge"
+      json['image'].should == @badge_config.settings['badge_url']
       json['criteria'].should == "https://example.org/badges/criteria/#{@badge_config.id}/#{@badge_config.nonce}"
       json['issuer'].should == "https://example.org/api/v1/organizations/#{@org.org_id}.json"
       json['alignment'].should == []

@@ -25,6 +25,7 @@ module Sinatra
         settings['min_percent'] = params['min_percent'].to_f
         settings['hours'] = params['hours'].to_f.round(1)
         settings['hours'] = nil if settings['hours'] == 0
+        settings['pending'] = false
         settings['credits_for_final_score'] = params['credits_for_final_score'].to_f.round(1)
         total_credits = settings['credits_for_final_score']
         modules = []

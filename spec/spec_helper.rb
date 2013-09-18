@@ -56,7 +56,7 @@ def badge_config(org=nil)
   @badge_config.settings = {
     'badge_name' => "Cool Badge",
     'badge_description' => "Badge for cool people",
-    'badge_url' => "http://example.com/badge"
+    'badge_url' => "http://example.com/badge/#{rand(10000)}"
   }
   @org = org if org
   @badge_config.organization_id = @org && @org.id
@@ -78,31 +78,31 @@ def course
   @course
 end
 
-def configured_badge
+def configured_badge(min_percent=nil)
   badge_config
   hash = @badge_config.settings
-  hash['min_percent'] = 50
+  hash['min_percent'] = min_percent || rand(1000) / 10.0
   @badge_config.settings = hash
   @badge_config.save
   @badge_config.should be_configured
   @badge_config
 end
 
-def module_configured_badge
+def module_configured_badge(min_percent=nil)
   badge_config
   hash = @badge_config.settings
-  hash['min_percent'] = 50
-  hash['modules'] = {'1' => 'Module 1', '2' => 'Module 2'}
+  hash['min_percent'] = min_percent || rand(1000) / 10.0
+  hash['modules'] = [['1', 'Module 1', 0], ['2', 'Module 2', 0]]
   @badge_config.settings = hash
   @badge_config.save
   @badge_config.should be_configured
   @badge_config
 end
 
-def credit_configured_badge
+def credit_configured_badge(min_percent=nil)
   badge_config
   hash = @badge_config.settings
-  hash['min_percent'] = 50
+  hash['min_percent'] = min_percent || rand(1000) / 10.0
   hash['modules'] = [['1', 'Module 1', 3], ['2', 'Module 2', 3]]
   hash['credit_based'] = true
   hash['required_credits'] = 5

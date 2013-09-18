@@ -85,6 +85,9 @@ module Sinatra
           @badge_config.teacher_user_config_id = @user_config.id
           @badge_config.save
         end
+        if @badge_config && @badge_config.pending?
+          @badge_config.load_from_old_config(@user_config)
+        end
         
         if @badge_config && @badge_config.configured?
           @student = {}

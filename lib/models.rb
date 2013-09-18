@@ -165,6 +165,38 @@ class BadgeConfig
     end
   end
   
+  def load_from_old_config(user_config)
+    old_config = BadgeConfig.first(:placement_id => self.settings['prior_resource_link_id'], :domain_id => self.domain_id)
+    if old_config
+      # load config settings from previous badge config
+      self.settings = old_config.settings
+      
+      # set to pending unless
+      # able to get new module ids and map them correctly for module-configured badges
+      self.settings['pending'] = true if old_config.modules_required?
+      
+      api_user = UserConfig.first(:id => self.teacher_user_config_id) || user_config
+      if user_config && old_config.modules_required?
+        # make an API call to get the module ids and try to map from old to new
+        # map ids for module names and also credits_for values
+        new_modules = []
+        modules_json = CanvasAPI.api_call("/api/v1/courses/#{self.course_id}/modules", user_config) || []
+        all_found = true
+        old_config.settings['modules'].each do |id, str, credits|
+          new_module = modules_json.detect{|m| m['name'] == str}
+          if new_module
+            new_modules << [new_module['id'].to_s, str, credits]
+          else
+            all_found = false
+          end
+        end
+        self.settings['modules'] = new_modules
+        self.settings['pending'] = !all_found
+      end
+      self.save
+    end
+  end
+  
   def to_json(host_with_port)
     as_json(host_with_port).to_json
   end
@@ -217,8 +249,12 @@ class BadgeConfig
     self.save
   end
   
+  def pending?
+    settings && settings['pending']
+  end
+  
   def configured?
-    settings && settings['badge_url'] && settings['min_percent']
+    settings && settings['badge_url'] && settings['min_percent'] && !settings['pending']
   end
   
   def modules_required?

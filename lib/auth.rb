@@ -40,6 +40,10 @@ module Sinatra
           bc.organization_id ||= @org.id
           bc.settings ||= {}
           bc.settings['course_url'] ||= "#{BadgeHelper.protocol}://" + host + "/courses/" + params['custom_canvas_course_id']
+          bc.settings['pending'] = !bc.id
+          if !bc.settings['pending'] && params['custom_prior_resource_link_id']
+            bc.settings['prior_resource_link_id'] = params['custom_prior_resource_link_id']
+          end
           bc.save
           user_id = params['custom_canvas_user_id']
           user_config = UserConfig.first(:user_id => user_id, :domain_id => domain.id)

@@ -119,7 +119,6 @@ describe 'Badging OAuth' do
       bc = BadgeConfig.last
       last_response.location.should == "http://example.org/badges/check/#{bc.id}/#{@user.user_id}"
     end
-    
   end  
   
   describe "GET oauth_success" do

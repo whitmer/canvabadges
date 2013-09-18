@@ -147,7 +147,7 @@ describe 'Badging Models' do
         }
         hash[:badge].should == "https://bob.com/api/v1/badges/summary/#{@badge_config.id}/#{@badge_config.nonce}.json"
         hash[:evidence].should == "https://bob.com/badges/criteria/#{@badge_config.id}/#{@badge_config.nonce}?user=#{@badge.nonce}"
-        hash[:image].should == "http://example.com/badge"
+        hash[:image].should == @badge_config.settings['badge_url']
       end
       
       it "should not fail if invalid badge data crops up somehow" do
