@@ -37,7 +37,7 @@
     <p><b>All you need now is to wait for your instructor's manual approval.</b></p>
   <% end %>
 <% else %>
-  <h3>You haven't earn this badge yet</h3>
+  <h3>You haven't earned this badge yet</h3>
   <% if @badge_config.credit_based? %>
     To earn this badge you need to earn <%= settings['required_credits'] %> credits. Credits are available for the following activities:
     <% completed_score = @badge_config.required_score_met?(@student['computed_final_score']) %>

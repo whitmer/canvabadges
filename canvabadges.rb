@@ -14,7 +14,7 @@ require './lib/auth.rb'
 require './lib/api.rb'
 require './lib/badge_configuration.rb'
 require './lib/views.rb'
-require './lib/canvas_api.rb'
+require './lib/utils.rb'
 
 class Canvabadges < Sinatra::Base
   register Sinatra::Auth

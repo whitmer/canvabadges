@@ -131,7 +131,7 @@ module Sinatra
             result << badge_hash(badge.user_id, badge.user_name, badge, @badge_config && @badge_config.root_nonce)
           end
         else
-          json = CanvasAPI.api_call("/api/v1/courses/#{@course_id}/users?enrollment_type=student&per_page=50&page=#{params['page'].to_i}", @user_config)
+          json = api_call("/api/v1/courses/#{@course_id}/users?enrollment_type=student&per_page=50&page=#{params['page'].to_i}", @user_config)
           json.each do |student|
             badge = badges.detect{|b| b.user_id.to_i == student['id'] }
             result << badge_hash(student['id'], student['name'], badge, @badge_config && @badge_config.root_nonce)
@@ -183,16 +183,18 @@ module Sinatra
         ENV['RACK_ENV'].to_s == "development" ? "http" : "https"
       end
       
+      def api_call(path, user_config, post_params=nil)
+        res = CanvasApi.api_call(path, user_config, post_params)
+        if res == false
+          oauth_dance(request, user_config.host)
+        else
+          res
+        end
+      end
+      
       def oauth_config
         get_org
-        if @org && @org.settings['oss_oauth']
-          @oauth_config ||= ExternalConfig.first(:config_type => 'canvas_oss_oauth', :organization_id => @org.id)
-        else
-          @oauth_config ||= ExternalConfig.first(:config_type => 'canvas_oauth')
-        end
-        
-        raise "Missing oauth config" unless @oauth_config
-        @oauth_config
+        @oauth_config = OAuthConfig.oauth_config(@org)
       end
     end
   end

@@ -114,7 +114,7 @@ module Sinatra
             @badge = args[:badge]
           end
           if @student
-            erb :_badge_status
+            erb :_badge_status, :layout => false
           else
             return "<h3>You are not a student in this course, so you can't earn this badge</h3>"
           end

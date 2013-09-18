@@ -129,6 +129,7 @@ describe 'Badging OAuth' do
     end
       
     it "should error if token cannot be properly exchanged" do
+      example_org
       user
       fake_response = OpenStruct.new(:body => {}.to_json)
       Net::HTTP.any_instance.should_receive(:request).and_return(fake_response)
@@ -137,6 +138,7 @@ describe 'Badging OAuth' do
     end
     
     it "should provision a new user if successful" do
+      example_org
       fake_response = OpenStruct.new(:body => {:access_token => '1234', 'user' => {'id' => 'zxcv'}}.to_json)
       Net::HTTP.any_instance.should_receive(:request).and_return(fake_response)
       get "/oauth_success?code=asdfjkl", {}, 'rack.session' => {"domain_id" => @domain.id, 'user_id' => 'fghj', 'source_id' => 'cloud', 'launch_badge_config_id' => 'uiop'}
@@ -150,6 +152,7 @@ describe 'Badging OAuth' do
     end
     
     it "should update an existing user if successful" do
+      example_org
       user
       fake_response = OpenStruct.new(:body => {:access_token => '1234', 'user' => {'id' => 'zxcv'}}.to_json)
       Net::HTTP.any_instance.should_receive(:request).and_return(fake_response)
@@ -162,6 +165,7 @@ describe 'Badging OAuth' do
     end
     
     it "should redirect to the badge check endpoint if successful" do
+      example_org
       fake_response = OpenStruct.new(:body => {:access_token => '1234', 'user' => {'id' => 'zxcv'}}.to_json)
       Net::HTTP.any_instance.should_receive(:request).and_return(fake_response)
       get "/oauth_success?code=asdfjkl", {}, 'rack.session' => {"domain_id" => @domain.id, 'user_id' => 'fghj', 'source_id' => 'cloud', 'launch_badge_config_id' => 'uiop'}
@@ -175,4 +179,25 @@ describe 'Badging OAuth' do
       last_response.location.should == "http://example.org/badges/check/uiop/#{@user.user_id}"
     end
   end  
+  
+  describe "oauth_config" do
+    it "should raise if no config is found" do
+      ExternalConfig.first(:config_type => 'canvas_oauth').destroy
+      expect { OAuthConfig.oauth_config }.to raise_error("Missing oauth config")
+    end
+    
+    it "should return the default config if no org is found" do
+      example_org
+      c = ExternalConfig.create(:organization_id => @org.id + 1, :config_type => 'canvas_oss_oauth', :value => 'abc', :shared_secret => 'xyz')
+      OAuthConfig.oauth_config(@org).should == ExternalConfig.first(:config_type => 'canvas_oauth')
+    end
+    it "should return the org-specific config if found" do
+      example_org
+      c = ExternalConfig.create(:organization_id => @org.id, :config_type => 'canvas_oss_oauth', :value => 'abc', :shared_secret => 'xyz')
+      OAuthConfig.oauth_config(@org).should == ExternalConfig.first(:config_type => 'canvas_oauth')
+      @org.settings['oss_oauth'] = true
+      @org.save
+      OAuthConfig.oauth_config(@org).should == c
+    end
+  end
 end

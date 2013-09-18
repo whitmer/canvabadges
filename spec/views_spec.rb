@@ -117,7 +117,7 @@ describe 'Badging Models' do
     it "should allow instructors/admins to configure unconfigured badges" do
       badge_config
       user
-      Canvabadges.any_instance.should_receive(:api_call).with("/api/v1/courses/#{@badge_config.course_id}/modules", @user).and_return([])
+      CanvasAPI.should_receive(:api_call).with("/api/v1/courses/#{@badge_config.course_id}/modules", @user).and_return([])
       get "/badges/check/#{@badge_config.id}/#{@user.user_id}", {}, 'rack.session' => {'user_id' => @user.user_id, "permission_for_#{@badge_config.course_id}" => 'edit'}
       last_response.should be_ok
       last_response.body.should match(/Badge reference code/)
@@ -136,10 +136,13 @@ describe 'Badging Models' do
       user
       Badge.generate_badge({'user_id' => @user.user_id}, @badge_config, 'bob', 'bob@example.com')
 
-      Canvabadges.any_instance.should_receive(:api_call).with("/api/v1/courses/#{@badge_config.course_id}?include[]=total_scores", @user).and_return(enrollments)
+      CanvasAPI.should_receive(:api_call).with("/api/v1/courses/#{@badge_config.course_id}?include[]=total_scores", @user).and_return(enrollments)
       get "/badges/check/#{@badge_config.id}/#{@user.user_id}", {}, 'rack.session' => {'user_id' => @user.user_id, "permission_for_#{@badge_config.course_id}" => 'view', 'email' => 'bob@example.com'}
       last_response.should be_ok
       last_response.body.should match(/Cool Badge/)
+
+      get "/badges/status/#{@badge_config.id}/#{@user.user_id}", {}, 'rack.session' => {'user_id' => @user.user_id, "permission_for_#{@badge_config.course_id}" => 'view', 'email' => 'bob@example.com'}
+      last_response.should be_ok
     end
     
     describe "meeting completion criteria as a student" do
@@ -148,89 +151,119 @@ describe 'Badging Models' do
         get "/badges/check/#{@badge_config.id}/#{@user.user_id}", {}, 'rack.session' => {'user_id' => @user.user_id, "permission_for_#{@badge_config.course_id}" => 'view', 'email' => 'student@example.com'}
         last_response.should be_ok
         last_response.body.should match(/Cool Badge/)
+        last_response.body.should match(/Checking badge status/)
+        
+        get "/badges/status/#{@badge_config.id}/#{@user.user_id}", {}, 'rack.session' => {'user_id' => @user.user_id, "permission_for_#{@badge_config.course_id}" => 'view', 'email' => 'student@example.com'}
+        last_response.should be_ok
         last_response.body.should match(/You've earned this badge!/)
-      end
+      end      
       
       it "should award the badge if final grade is the only criteria and is met" do
         configured_badge
         user
         Badge.last.should be_nil
-        Canvabadges.any_instance.should_receive(:api_call).with("/api/v1/courses/#{@badge_config.course_id}?include[]=total_scores", @user).and_return(enrollments(60))
+        CanvasAPI.should_receive(:api_call).with("/api/v1/courses/#{@badge_config.course_id}?include[]=total_scores", @user).and_return(enrollments(60))
         get "/badges/check/#{@badge_config.id}/#{@user.user_id}", {}, 'rack.session' => {'user_id' => @user.user_id, "permission_for_#{@badge_config.course_id}" => 'view', 'email' => 'student@example.com'}
+        last_response.should be_ok
+        last_response.body.should match(/Cool Badge/)
+        get "/badges/status/#{@badge_config.id}/#{@user.user_id}", {}, 'rack.session' => {'user_id' => @user.user_id, "permission_for_#{@badge_config.course_id}" => 'view', 'email' => 'student@example.com'}
+        last_response.should be_ok
+        last_response.body.should match(/You've earned this badge!/)
+        
         @badge = Badge.last
         @badge.should_not be_nil
         @badge.user_id.should == @user.user_id
         @badge.state.should == 'awarded'
-        last_response.should be_ok
-        last_response.body.should match(/Cool Badge/)
       end
       
       it "should not award the badge if final grade criteria is not met" do
         configured_badge
         user
         Badge.last.should be_nil
-        Canvabadges.any_instance.should_receive(:api_call).with("/api/v1/courses/#{@badge_config.course_id}?include[]=total_scores", @user).and_return(enrollments)
+        CanvasAPI.should_receive(:api_call).with("/api/v1/courses/#{@badge_config.course_id}?include[]=total_scores", @user).and_return(enrollments)
         get "/badges/check/#{@badge_config.id}/#{@user.user_id}", {}, 'rack.session' => {'user_id' => @user.user_id, "permission_for_#{@badge_config.course_id}" => 'view', 'email' => 'student@example.com'}
-        Badge.last.should_not be_nil
-        Badge.last.state.should == 'unissued'
         last_response.should be_ok
         last_response.body.should match(/Cool Badge/)
+        get "/badges/status/#{@badge_config.id}/#{@user.user_id}", {}, 'rack.session' => {'user_id' => @user.user_id, "permission_for_#{@badge_config.course_id}" => 'view', 'email' => 'student@example.com'}
+        last_response.should be_ok
+        last_response.body.should match(/haven't earned/)
+        
+        Badge.last.should_not be_nil
+        Badge.last.state.should == 'unissued'
       end
       
       it "should award the badge if final grade and module completions are met" do
         module_configured_badge
         user
         Badge.last.should be_nil
-        Canvabadges.any_instance.should_receive(:api_call).with("/api/v1/courses/#{@badge_config.course_id}?include[]=total_scores", @user).and_return(enrollments(60))
-        Canvabadges.any_instance.should_receive(:api_call).with("/api/v1/courses/#{@badge_config.course_id}/modules", @user).and_return([{'id' => 1, 'completed_at' => 'now'}, {'id' => 2, 'completed_at' => 'now'}])
+        CanvasAPI.should_receive(:api_call).with("/api/v1/courses/#{@badge_config.course_id}?include[]=total_scores", @user).and_return(enrollments(60))
+        CanvasAPI.should_receive(:api_call).with("/api/v1/courses/#{@badge_config.course_id}/modules", @user).and_return([{'id' => 1, 'completed_at' => 'now'}, {'id' => 2, 'completed_at' => 'now'}])
         get "/badges/check/#{@badge_config.id}/#{@user.user_id}", {}, 'rack.session' => {'user_id' => @user.user_id, "permission_for_#{@badge_config.course_id}" => 'view', 'email' => 'student@example.com'}
+        last_response.should be_ok
+        last_response.body.should match(/Cool Badge/)
+        last_response.should be_ok
+        last_response.body.should match(/Cool Badge/)
+        get "/badges/status/#{@badge_config.id}/#{@user.user_id}", {}, 'rack.session' => {'user_id' => @user.user_id, "permission_for_#{@badge_config.course_id}" => 'view', 'email' => 'student@example.com'}
+        last_response.should be_ok
+        last_response.body.should match(/earned this badge!/)
+
         @badge = Badge.last
         @badge.should_not be_nil
         @badge.user_id.should == @user.user_id
         @badge.state.should == 'awarded'
-        last_response.should be_ok
-        last_response.body.should match(/Cool Badge/)
       end
       
       it "should not award the badge if final grade is met but not module completions" do
         module_configured_badge
         user
         Badge.last.should be_nil
-        Canvabadges.any_instance.should_receive(:api_call).with("/api/v1/courses/#{@badge_config.course_id}?include[]=total_scores", @user).and_return(enrollments(60))
-        Canvabadges.any_instance.should_receive(:api_call).with("/api/v1/courses/#{@badge_config.course_id}/modules", @user).and_return([])
+        CanvasAPI.should_receive(:api_call).with("/api/v1/courses/#{@badge_config.course_id}?include[]=total_scores", @user).and_return(enrollments(60))
+        CanvasAPI.should_receive(:api_call).with("/api/v1/courses/#{@badge_config.course_id}/modules", @user).and_return([])
         get "/badges/check/#{@badge_config.id}/#{@user.user_id}", {}, 'rack.session' => {'user_id' => @user.user_id, "permission_for_#{@badge_config.course_id}" => 'view', 'email' => 'student@example.com'}
-        Badge.last.should_not be_nil
-        Badge.last.state.should == 'unissued'
         last_response.should be_ok
         last_response.body.should match(/Cool Badge/)
+        get "/badges/status/#{@badge_config.id}/#{@user.user_id}", {}, 'rack.session' => {'user_id' => @user.user_id, "permission_for_#{@badge_config.course_id}" => 'view', 'email' => 'student@example.com'}
+        last_response.should be_ok
+        last_response.body.should match(/haven't earned/)
+
+        Badge.last.should_not be_nil
+        Badge.last.state.should == 'unissued'
       end
       
       it "should award the badge if enough credits are earned" do
         credit_configured_badge
         user
         Badge.last.should be_nil
-        Canvabadges.any_instance.should_receive(:api_call).with("/api/v1/courses/#{@badge_config.course_id}?include[]=total_scores", @user).and_return(enrollments(60))
-        Canvabadges.any_instance.should_receive(:api_call).with("/api/v1/courses/#{@badge_config.course_id}/modules", @user).and_return([{'id' => 1, 'completed_at' => 'now'}, {'id' => 2}])
+        CanvasAPI.should_receive(:api_call).with("/api/v1/courses/#{@badge_config.course_id}?include[]=total_scores", @user).and_return(enrollments(60))
+        CanvasAPI.should_receive(:api_call).with("/api/v1/courses/#{@badge_config.course_id}/modules", @user).and_return([{'id' => 1, 'completed_at' => 'now'}, {'id' => 2}])
         get "/badges/check/#{@badge_config.id}/#{@user.user_id}", {}, 'rack.session' => {'user_id' => @user.user_id, "permission_for_#{@badge_config.course_id}" => 'view', 'email' => 'student@example.com'}
+        last_response.should be_ok
+        last_response.body.should match(/Cool Badge/)
+        get "/badges/status/#{@badge_config.id}/#{@user.user_id}", {}, 'rack.session' => {'user_id' => @user.user_id, "permission_for_#{@badge_config.course_id}" => 'view', 'email' => 'student@example.com'}
+        last_response.should be_ok
+        last_response.body.should match(/earned this badge!/)
+
         @badge = Badge.last
         @badge.should_not be_nil
         @badge.user_id.should == @user.user_id
         @badge.state.should == 'awarded'
-        last_response.should be_ok
-        last_response.body.should match(/Cool Badge/)
       end
       
       it "should not award the badge if enough credits haven't been earned" do
         module_configured_badge
         user
         Badge.last.should be_nil
-        Canvabadges.any_instance.should_receive(:api_call).with("/api/v1/courses/#{@badge_config.course_id}?include[]=total_scores", @user).and_return(enrollments(60))
-        Canvabadges.any_instance.should_receive(:api_call).with("/api/v1/courses/#{@badge_config.course_id}/modules", @user).and_return([])
+        CanvasAPI.should_receive(:api_call).with("/api/v1/courses/#{@badge_config.course_id}?include[]=total_scores", @user).and_return(enrollments(60))
+        CanvasAPI.should_receive(:api_call).with("/api/v1/courses/#{@badge_config.course_id}/modules", @user).and_return([])
         get "/badges/check/#{@badge_config.id}/#{@user.user_id}", {}, 'rack.session' => {'user_id' => @user.user_id, "permission_for_#{@badge_config.course_id}" => 'view', 'email' => 'student@example.com'}
-        Badge.last.should_not be_nil
-        Badge.last.state.should == 'unissued'
         last_response.should be_ok
         last_response.body.should match(/Cool Badge/)
+        get "/badges/status/#{@badge_config.id}/#{@user.user_id}", {}, 'rack.session' => {'user_id' => @user.user_id, "permission_for_#{@badge_config.course_id}" => 'view', 'email' => 'student@example.com'}
+        last_response.should be_ok
+        last_response.body.should match(/haven't earned/)
+
+        Badge.last.should_not be_nil
+        Badge.last.state.should == 'unissued'
       end
     end
     
@@ -239,15 +272,18 @@ describe 'Badging Models' do
         module_configured_badge
         user
         Badge.last.should be_nil
-        Canvabadges.any_instance.should_receive(:api_call).with("/api/v1/courses/#{@badge_config.course_id}?include[]=total_scores", @user).and_return(enrollments(60))
-        Canvabadges.any_instance.should_receive(:api_call).with("/api/v1/courses/#{@badge_config.course_id}/modules", @user).and_return([])
+        CanvasAPI.should_receive(:api_call).with("/api/v1/courses/#{@badge_config.course_id}?include[]=total_scores", @user).and_return(enrollments(60))
+        CanvasAPI.should_receive(:api_call).with("/api/v1/courses/#{@badge_config.course_id}/modules", @user).and_return([])
         get "/badges/check/#{@badge_config.id}/#{@user.user_id}", {}, 'rack.session' => {'user_id' => @user.user_id, "permission_for_#{@badge_config.course_id}" => 'view', 'email' => 'student@example.com'}
-        Badge.last.should_not be_nil
-        Badge.last.state.should == 'unissued'
         last_response.should be_ok
         last_response.body.should match(/Cool Badge/)
-        last_response.body.should match(/You haven't earn this badge yet/)
+        get "/badges/status/#{@badge_config.id}/#{@user.user_id}", {}, 'rack.session' => {'user_id' => @user.user_id, "permission_for_#{@badge_config.course_id}" => 'view', 'email' => 'student@example.com'}
+        last_response.should be_ok
+        last_response.body.should match(/You haven't earned this badge yet/)
         last_response.body.should match(/URL showing evidence of work done for this badge \(optional\)/)
+        
+        Badge.last.should_not be_nil
+        Badge.last.state.should == 'unissued'
       end
       
       it "should show required evidence field for unawarded evidence-enabled badges" do
@@ -256,15 +292,18 @@ describe 'Badging Models' do
         @badge_config.save
         user
         Badge.last.should be_nil
-        Canvabadges.any_instance.should_receive(:api_call).with("/api/v1/courses/#{@badge_config.course_id}?include[]=total_scores", @user).and_return(enrollments(60))
-        Canvabadges.any_instance.should_receive(:api_call).with("/api/v1/courses/#{@badge_config.course_id}/modules", @user).and_return([])
+        CanvasAPI.should_receive(:api_call).with("/api/v1/courses/#{@badge_config.course_id}?include[]=total_scores", @user).and_return(enrollments(60))
+        CanvasAPI.should_receive(:api_call).with("/api/v1/courses/#{@badge_config.course_id}/modules", @user).and_return([])
         get "/badges/check/#{@badge_config.id}/#{@user.user_id}", {}, 'rack.session' => {'user_id' => @user.user_id, "permission_for_#{@badge_config.course_id}" => 'view', 'email' => 'student@example.com'}
-        Badge.last.should_not be_nil
-        Badge.last.state.should == 'unissued'
         last_response.should be_ok
         last_response.body.should match(/Cool Badge/)
-        last_response.body.should match(/You haven't earn this badge yet/)
+        get "/badges/status/#{@badge_config.id}/#{@user.user_id}", {}, 'rack.session' => {'user_id' => @user.user_id, "permission_for_#{@badge_config.course_id}" => 'view', 'email' => 'student@example.com'}
+        last_response.should be_ok
+        last_response.body.should match(/You haven't earned this badge yet/)
         last_response.body.should match(/URL showing what qualifies you to earn this badge \(required\)/)
+
+        Badge.last.should_not be_nil
+        Badge.last.state.should == 'unissued'
       end
       
       it "should show evidence field for pending badges" do
@@ -273,17 +312,20 @@ describe 'Badging Models' do
         @badge_config.save
         user
         Badge.last.should be_nil
-        Canvabadges.any_instance.should_receive(:api_call).with("/api/v1/courses/#{@badge_config.course_id}?include[]=total_scores", @user).and_return(enrollments(60))
-        Canvabadges.any_instance.should_receive(:api_call).with("/api/v1/courses/#{@badge_config.course_id}/modules", @user).and_return([{'id' => 1, 'completed_at' => 'now'}, {'id' => 2}])
+        CanvasAPI.should_receive(:api_call).with("/api/v1/courses/#{@badge_config.course_id}?include[]=total_scores", @user).and_return(enrollments(60))
+        CanvasAPI.should_receive(:api_call).with("/api/v1/courses/#{@badge_config.course_id}/modules", @user).and_return([{'id' => 1, 'completed_at' => 'now'}, {'id' => 2}])
         get "/badges/check/#{@badge_config.id}/#{@user.user_id}", {}, 'rack.session' => {'user_id' => @user.user_id, "permission_for_#{@badge_config.course_id}" => 'view', 'email' => 'student@example.com'}
+        last_response.should be_ok
+        last_response.body.should match(/Cool Badge/)
+        get "/badges/status/#{@badge_config.id}/#{@user.user_id}", {}, 'rack.session' => {'user_id' => @user.user_id, "permission_for_#{@badge_config.course_id}" => 'view', 'email' => 'student@example.com'}
+        last_response.should be_ok
+        last_response.body.should match(/You've almost earned this badge!/)
+        last_response.body.should match(/URL showing evidence of work done for this badge \(optional\)/)
+
         @badge = Badge.last
         @badge.should_not be_nil
         @badge.user_id.should == @user.user_id
         @badge.state.should == 'pending'
-        last_response.should be_ok
-        last_response.body.should match(/Cool Badge/)
-        last_response.body.should match(/You've almost earned this badge!/)
-        last_response.body.should match(/URL showing evidence of work done for this badge \(optional\)/)
       end
       
       it "should set an evidence-enabled badge to pending when all criteria are met" do
@@ -292,17 +334,20 @@ describe 'Badging Models' do
         @badge_config.save
         user
         Badge.last.should be_nil
-        Canvabadges.any_instance.should_receive(:api_call).with("/api/v1/courses/#{@badge_config.course_id}?include[]=total_scores", @user).and_return(enrollments(60))
-        Canvabadges.any_instance.should_receive(:api_call).with("/api/v1/courses/#{@badge_config.course_id}/modules", @user).and_return([{'id' => 1, 'completed_at' => 'now'}, {'id' => 2}])
+        CanvasAPI.should_receive(:api_call).with("/api/v1/courses/#{@badge_config.course_id}?include[]=total_scores", @user).and_return(enrollments(60))
+        CanvasAPI.should_receive(:api_call).with("/api/v1/courses/#{@badge_config.course_id}/modules", @user).and_return([{'id' => 1, 'completed_at' => 'now'}, {'id' => 2}])
         get "/badges/check/#{@badge_config.id}/#{@user.user_id}", {}, 'rack.session' => {'user_id' => @user.user_id, "permission_for_#{@badge_config.course_id}" => 'view', 'email' => 'student@example.com'}
+        last_response.should be_ok
+        last_response.body.should match(/Cool Badge/)
+        get "/badges/status/#{@badge_config.id}/#{@user.user_id}", {}, 'rack.session' => {'user_id' => @user.user_id, "permission_for_#{@badge_config.course_id}" => 'view', 'email' => 'student@example.com'}
+        last_response.should be_ok
+        last_response.body.should match(/You've almost earned this badge!/)
+        last_response.body.should match(/URL showing what qualifies you to earn this badge \(required\)/)
+        
         @badge = Badge.last
         @badge.should_not be_nil
         @badge.user_id.should == @user.user_id
         @badge.state.should == 'pending'
-        last_response.should be_ok
-        last_response.body.should match(/Cool Badge/)
-        last_response.body.should match(/You've almost earned this badge!/)
-        last_response.body.should match(/URL showing what qualifies you to earn this badge \(required\)/)
       end
     end
   end    
