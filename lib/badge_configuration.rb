@@ -74,7 +74,7 @@ module Sinatra
   
         settings = (@badge_config && @badge_config.settings) || {}
         if settings && settings['badge_url'] && settings['min_percent']
-          json = api_call("/api/v1/courses/#{@course_id}/users?enrollment_type=student&include[]=email&user_id=#{params['user_id']}", @user_config)
+          json = CanvasAPI.api_call("/api/v1/courses/#{@course_id}/users?enrollment_type=student&include[]=email&user_id=#{params['user_id']}", @user_config)
           student = json.detect{|e| e['id'] == params['user_id'].to_i }
           if student
             if !student['email']

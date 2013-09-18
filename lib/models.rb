@@ -86,6 +86,39 @@ class UserConfig
       "http://www.instructure.com"
     end
   end
+  
+  def check_badge_status(badge_config, params, name, email)
+    scores_json = CanvasAPI.api_call("/api/v1/courses/#{@course_id}?include[]=total_scores", self)
+    modules_json = CanvasAPI.api_call("/api/v1/courses/#{@course_id}/modules", self) if badge_config.modules_required?
+    modules_json ||= []
+    completed_module_ids = modules_json.select{|m| m['completed_at'] }.map{|m| m['id'] }.compact
+    unless scores_json
+      return "<h3>Error getting data from Canvas</h3>"
+    end
+  
+    student = scores_json['enrollments'].detect{|e|  e['role'].downcase == 'studentenrollment' }
+    student['computed_final_score'] ||= 0 if student
+  
+    if student
+      if badge_config.requirements_met?(student['computed_final_score'], completed_module_ids)
+        params['credits_earned'] = badge_config.credits_earned(student['computed_final_score'], completed_module_ids)
+        if !email
+          raise "You need to set an email address in Canvas before you can earn any badges."
+        end
+        badge = Badge.complete(params, badge_config, name, email)
+      elsif !badge
+        badge = Badge.generate_badge({'user_id' => self.user_id}, badge_config, name, email)
+        badge.save
+      end
+    end
+    return {
+      :completed_module_ids => completed_module_ids,
+      :badge_config => badge_config,
+      :user_config => self,
+      :badge => badge,
+      :student => student
+    }
+  end
 end
 
 class BadgeConfig
@@ -93,6 +126,7 @@ class BadgeConfig
   property :id, Serial
   property :course_id, String
   property :placement_id, String
+  property :teacher_user_config_id, Integer
   property :nonce, String
   property :external_config_id, Integer
   property :organization_id, Integer
@@ -120,6 +154,15 @@ class BadgeConfig
       :alignment => [], # TODO
       :tags => [] # TODO
     }
+  end
+  
+  def check_for_awardees
+    teacher_config = self.teacher_user_config_id && UserConfig.first(:id => self.teacher_user_config_id)
+    if teacher_config
+      # get the paginated list of students
+      # for each student, check if they already have a badge awarded
+      # if not, check on award status
+    end
   end
   
   def to_json(host_with_port)
@@ -258,6 +301,7 @@ class Badge
   
   belongs_to :badge_config
   before :save, :generate_defaults
+  after :save, :check_for_notify_on_award
   
   def open_badge_json(host_with_port)
     {
@@ -291,6 +335,10 @@ class Badge
     user_config = UserConfig.first(:user_id => self.user_id, :domain_id => self.domain_id)
     self.global_user_id = user_config.global_user_id if user_config
     true
+  end
+  
+  def check_for_notify_on_award
+    # check if state just changed to awarded or completed, notify via email if that's the case
   end
   
   def user_name

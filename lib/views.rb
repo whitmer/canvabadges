@@ -80,6 +80,12 @@ module Sinatra
       # shows the results and lets them add the badge if they're done
       app.get "/badges/check/:badge_config_id/:user_id" do
         load_badge_config(params['badge_config_id'], 'view')
+        
+        if @user_config && session["permission_for_#{@course_id}"] == 'edit'
+          @badge_config.teacher_user_config_id = @user_config.id
+          @badge_config.save
+        end
+        
         if @badge_config && @badge_config.configured?
           @student = {}
           erb :badge_check
@@ -98,28 +104,14 @@ module Sinatra
           if @badge && !@badge.needing_evaluation?
             @student = {}
           else
-            scores_json = api_call("/api/v1/courses/#{@course_id}?include[]=total_scores", @user_config)
-            modules_json = api_call("/api/v1/courses/#{@course_id}/modules", @user_config) if @badge_config.modules_required?
-            modules_json ||= []
-            @completed_module_ids = modules_json.select{|m| m['completed_at'] }.map{|m| m['id'] }.compact
-            unless scores_json
-              return "<h3>Error getting data from Canvas</h3>"
+            begin
+              args = @user_config.check_badge_status(@badge_config, params, session['name'], session['email'])
+            rescue => e
+              return "<h3>#{e.message}</h3>"
             end
-            @student = scores_json['enrollments'].detect{|e|  e['role'].downcase == 'studentenrollment' }
-            @student['computed_final_score'] ||= 0 if @student
-          
-            if @student
-              if @badge_config.requirements_met?(@student['computed_final_score'], @completed_module_ids)
-                params['credits_earned'] = @badge_config.credits_earned(@student['computed_final_score'], @completed_module_ids)
-                if !session['email']
-                  return error("You need to set an email address in Canvas before you can earn any badges.")
-                end
-                @badge = Badge.complete(params, @badge_config, session['name'], session['email'])
-              elsif !@badge
-                @badge = Badge.generate_badge({'user_id' => @user_config.user_id}, @badge_config, session['name'], session['email'])
-                @badge.save
-              end
-            end
+            @student = args[:student]
+            @completed_module_ids = args[:completed_module_ids]
+            @badge = args[:badge]
           end
           if @student
             erb :_badge_status
@@ -142,7 +134,7 @@ module Sinatra
       def edit_course_html
         raise "no user" unless @user_config
         raise "missing value" unless @domain_id && @badge_config_id && @course_id && @badge_config
-        @modules_json ||= api_call("/api/v1/courses/#{@course_id}/modules", @user_config)
+        @modules_json ||= CanvasAPI.api_call("/api/v1/courses/#{@course_id}/modules", @user_config)
         erb :_badge_settings
       end
       

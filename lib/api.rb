@@ -131,7 +131,7 @@ module Sinatra
             result << badge_hash(badge.user_id, badge.user_name, badge, @badge_config && @badge_config.root_nonce)
           end
         else
-          json = api_call("/api/v1/courses/#{@course_id}/users?enrollment_type=student&per_page=50&page=#{params['page'].to_i}", @user_config)
+          json = CanvasAPI.api_call("/api/v1/courses/#{@course_id}/users?enrollment_type=student&per_page=50&page=#{params['page'].to_i}", @user_config)
           json.each do |student|
             badge = badges.detect{|b| b.user_id.to_i == student['id'] }
             result << badge_hash(student['id'], student['name'], badge, @badge_config && @badge_config.root_nonce)
@@ -194,31 +194,6 @@ module Sinatra
         raise "Missing oauth config" unless @oauth_config
         @oauth_config
       end
-      
-      def api_call(path, user_config, post_params=nil)
-        protocol = 'https'
-        url = "#{protocol}://#{user_config.host}" + path
-        url += (url.match(/\?/) ? "&" : "?") + "access_token=#{user_config.access_token}"
-        uri = URI.parse(url)
-        http = Net::HTTP.new(uri.host, uri.port)
-        puts "API"
-        puts url
-        http.use_ssl = protocol == "https"
-        req = Net::HTTP::Get.new(uri.request_uri)
-        response = http.request(req)
-        json = JSON.parse(response.body)
-        puts response.body
-        json.instance_variable_set('@has_more', (response['Link'] || '').match(/rel=\"next\"/))
-        if response.code != "200"
-          puts "bad response"
-          puts response.body
-          oauth_dance(request, user_config.host)
-          false
-        else
-          json
-        end
-      end
-    
     end
   end
   
