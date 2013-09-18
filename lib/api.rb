@@ -184,7 +184,7 @@ module Sinatra
       end
       
       def api_call(path, user_config, post_params=nil)
-        res = CanvasApi.api_call(path, user_config, post_params)
+        res = CanvasAPI.api_call(path, user_config, post_params)
         if res == false
           oauth_dance(request, user_config.host)
         else
