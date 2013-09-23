@@ -40,7 +40,7 @@
               <% Organization.all.each do |org| %>
                 <li><a href="<%= org.settings['url'] %>"><%= org.settings['name'] %></a> <a class="sub" href="<%= BadgeHelper.protocol %>://<%= org.host %>">badge site</a></li>
               <% end %>
-              <li>
+              <li style="margin-top: 15px; font-size: 12px; list-style: none;">
                 <a href="<%= BadgeHelper.issuer['owner_url'] %>">Contact us</a> to add your own badging site
               </li>
             </ul>
