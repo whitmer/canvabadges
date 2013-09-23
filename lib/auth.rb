@@ -70,7 +70,7 @@ module Sinatra
             session['user_id'] = user_config.user_id
 
             if params['custom_show_all']
-              redirect to("/badges/all/#{user_config.user_id}")
+              redirect to("/badges/all/#{domain.id}/#{user_config.user_id}")
             else
               redirect to("/badges/check/#{bc.id}/#{user_config.user_id}")
             end

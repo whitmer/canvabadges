@@ -15,6 +15,11 @@
   <blti:extensions platform="canvas.instructure.com">
     <lticm:property name="privacy_level">public</lticm:property>
     <lticm:property name="tool_id">canvabadges</lticm:property>
+    <lticm:options name="user_navigation">
+      <lticm:property name="url"><%= url %>?custom_show_all=1</lticm:property>
+      <lticm:property name="text">My Badges</lticm:property>
+      <lticm:property name="enabled">true</lticm:property>
+    </lticm:options>
   </blti:extensions>
   <cartridge_bundle identifierref="BLTI001_Bundle"/>
   <cartridge_icon identifierref="BLTI001_Icon"/>
