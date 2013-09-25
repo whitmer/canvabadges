@@ -11,8 +11,8 @@ support for launching from multiple courses in the same session.
 
 ## Setup
 
-NOTE: If you are upgrading from a previous version of Canvabadges,
-you need to check out the migrations section of this page!
+**NOTE: If you are upgrading from a previous version of Canvabadges,
+you need to check out the migrations section of this page!**
 
 You need two configurations set up in order to run this app.
 First, you need to set up an application at dev.twitter.com. Write down your
