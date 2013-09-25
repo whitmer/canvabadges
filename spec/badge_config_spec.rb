@@ -67,6 +67,27 @@ describe 'Badge Configuration' do
     end
   end  
   
+  describe "badge picker" do
+    it "should error if not a valid user" do
+      example_org
+      get "/badges/pick"
+      assert_error_page("No user information found")
+    end
+    
+    it "should show matching badges for a valid user" do
+      example_org
+      user
+      badge_config
+      @badge_placement_config.author_user_config_id = @user.id
+      @badge_placement_config.save
+      BadgeConfigOwner.create(:user_config_id => @user.id, :badge_config_id => @badge_config.id, :badge_placement_config_id => @badge_placement_config.id)
+      get "/badges/pick", {}, 'rack.session' => {'domain_id' => @badge_placement_config.domain_id, 'user_id' => @user.user_id}
+      last_response.should be_ok
+      last_response.body.should match(@badge_placement_config.badge_config.settings['badge_url'])
+      last_response.body.should match(/Add a New Badge/)
+    end
+  end
+  
   describe "badge privacy" do
     it "should do nothing if an invalid badge" do
       award_badge(badge_config, user)

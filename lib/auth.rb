@@ -55,7 +55,11 @@ module Sinatra
             end
           end
           if !bc.badge_config
-            bc.badge_config = BadgeConfig.create(:organization_id => bc.organization_id)
+            conf = BadgeConfig.new(:organization_id => bc.organization_id)
+            conf.settings = {}
+            conf.settings['badge_name'] = params['badge_name'] if params['badge_name']
+            conf.save
+            bc.badge_config = conf
           end
           bc.save
           
@@ -85,6 +89,10 @@ module Sinatra
 
             if params['custom_show_all']
               redirect to("/badges/all/#{domain.id}/#{user_config.user_id}")
+            elsif params['ext_content_intended_use'] == 'navigation' || params['picker']
+              # TODO: as of right now this will create a junk config. Fix that.
+              return_url = params['ext_content_return_url'] || params['launch_presentation_return_url'] || ""
+              redirect to("/badges/pick?return_url=#{CGI.escape(return_url)}")
             else
               redirect to("/badges/check/#{bc.id}/#{user_config.user_id}")
             end

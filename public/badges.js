@@ -134,3 +134,33 @@ $(document).ready(function (){
   });
 
 });
+
+$(document).on('click', '.select_badge_config', function(event) {
+  event.preventDefault();
+
+  var url = location.href;
+  var args = (url.split(/#/)[0].split(/\?/)[1] || "").split(/\&/);
+  var params = {};
+  for(var idx in args) {
+    var arg = args[idx].split(/\=/);
+    var key = arg[0];
+    var value = arg[1];
+    if(key && value) {
+      params[key] = decodeURIComponent(value);
+    }
+  }
+
+  var host = location.origin || (location.protocol + "//" + location.host);
+  var launch = host + "/placement_launch";
+  var $config = $(this).closest(".badge_config");
+  var badge_id = $config.attr('data-id')
+  var badge_name = "Badge: " + $config.find(".name").val() || $config.find('h2 a').text() || "New Badge";
+  if(badge_id) {
+    launch = launch + "?badge_reuse_code=" + badge_id;
+  } else {
+    launch = launch + "?badge_name=" + encodeURIComponent(badge_name);
+  }
+  var return_url = params.return_url;
+  return_url = return_url + (return_url.match(/\?/) ? "&" : "?");
+  location.href = return_url + "return_type=lti_launch_url&url=" + encodeURIComponent(launch) + "&text=" + encodeURIComponent(badge_name) + "&title=" + encodeURIComponent(badge_name);
+});

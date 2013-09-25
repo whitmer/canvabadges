@@ -139,6 +139,19 @@ describe 'Badging OAuth' do
       last_response.body.should match(/Your Badges/)
     end
     
+    it "should redirect to picker page if specified" do
+      example_org
+      ExternalConfig.create(:config_type => 'lti', :value => '123')
+      ExternalConfig.create(:config_type => 'canvas_oauth', :value => '456')
+      user
+      IMS::LTI::ToolProvider.any_instance.stub(:valid_request?).and_return(true)
+      IMS::LTI::ToolProvider.any_instance.stub(:roles).and_return(['student'])
+      post "/placement_launch", {'ext_content_intended_use' => 'navigation', 'oauth_consumer_key' => '123', 'tool_consumer_instance_guid' => 'something.bob.com', 'resource_link_id' => '2s3d', 'custom_canvas_user_id' => @user.user_id, 'custom_canvas_course_id' => '1', 'lis_person_contact_email_primary' => 'bob@example.com', 'launch_presentation_return_url' => 'http://www.example.com'}
+      last_response.should be_redirect
+      bc = BadgePlacementConfig.last
+      last_response.location.should == "http://example.org/badges/pick?return_url=http%3A%2F%2Fwww.example.com"
+    end
+    
     describe "loading from existing badge" do
       it "should do nothing on an invalid badge config id" do
         example_org

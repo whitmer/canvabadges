@@ -145,7 +145,7 @@ module Sinatra
           :objects => result
         }
       end
-      def badge_hash(user_id, user_name, badge, root_nonce=nil)
+      def badge_hash(user_id, user_name, badge, nonce=nil)
         if badge
           abs_url = badge.badge_url || "/badges/default.png"
           abs_url = "#{protocol}://#{request.host_with_port}" + abs_url unless abs_url.match(/\:\/\//)
@@ -161,7 +161,7 @@ module Sinatra
             :evidence_url => badge.evidence_url,
             :config_id => badge.badge_config_id,
             :placement_config_id => badge.badge_placement_config_id,
-            :config_nonce => root_nonce || badge.config_nonce
+            :config_nonce => nonce || badge.config_nonce
           }
         else
           {
@@ -176,7 +176,7 @@ module Sinatra
             :evidence_url => nil,
             :config_id => nil,
             :placement_config_id => nil,
-            :config_nonce => root_nonce
+            :config_nonce => nonce
           }
         end
       end

@@ -122,6 +122,16 @@ class UserConfig
   end
 end
 
+class BadgeConfigOwner
+  include DataMapper::Resource
+  property :id, Serial
+  property :user_config_id, Integer
+  property :badge_config_id, Integer
+  property :badge_placement_config_id, Integer
+  belongs_to :badge_config
+  belongs_to :user_config
+end
+
 class BadgeConfig
   include DataMapper::Resource
   property :id, Serial
@@ -185,42 +195,10 @@ class BadgeConfig
     end
   end
 
-  def root_settings
-    conf = self
-    # TODO: remove this completely, this is the old badge inheritance model
-    # and it sucks.
-#     if self.root_id
-#       conf = BadgeConfig.first(:id => self.root_id) || self
-#     end
-    conf.settings || {}
-  end
-  
-  def root_nonce
-    conf = self
-    # TODO: remove this completely, this is the old badge inheritance model
-    # and it sucks.
-#     if self.root_id
-#       conf = BadgeConfig.first(:id => self.root_id) || self
-#     end
-    conf.nonce
-  end
-  
   def generate_nonce
     self.nonce ||= Digest::MD5.hexdigest(Time.now.to_i.to_s + rand.to_s)
     self.reuse_code ||= Digest::MD5.hexdigest(Time.now.to_i.to_s + rand.to_s)
   end
-  
-    # and it sucks.
-    # TODO: remove this completely, this is the old badge inheritance model
-    # and it sucks.
-#   def set_root_from_reference_code(code)
-#     root = BadgeConfig.first(:reference_code => code)
-#     if root
-#       self.root_id = root.id
-#     else
-#       self.root_id = nil
-#     end
-#   end
   
   def approve_to_pending?
     settings && (settings['manual_approval'] || settings['require_evidence'])
@@ -244,6 +222,7 @@ class BadgePlacementConfig
   property :course_id, String
   property :placement_id, String
   property :teacher_user_config_id, Integer
+  property :author_user_config_id, Integer
   property :nonce, String # deprecated
   property :external_config_id, Integer # deprecated
   property :organization_id, Integer # deprecated

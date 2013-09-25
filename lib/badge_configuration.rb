@@ -5,6 +5,15 @@ module Sinatra
     def self.registered(app)
       app.helpers BadgeConfiguration::Helpers
       
+      # Link selection page for picking from existing badges or making a new one
+      app.get "/badges/pick" do
+        org_check
+        load_user_config
+        halt 404, error("No user information found") unless @user_config
+        @badge_configs = BadgeConfigOwner.all(:user_config_id => @user_config.id, :order => :id.desc).map(&:badge_config).uniq
+        erb :badge_chooser        
+      end
+      
       # configure badge settings.
       # eventually the teacher will also use this to configure badge acceptance criteria
       app.post "/badges/settings/:badge_placement_config_id" do
@@ -47,6 +56,11 @@ module Sinatra
         
         @badge_placement_config.settings = placement_settings
         @badge_placement_config.updated_at = DateTime.now
+
+        if @user_config
+          BadgeConfigOwner.first_or_create(:user_config_id => @user_config.id, :badge_config_id => @badge_config.id, :badge_placement_config_id => @badge_placement_config.id)
+        end
+        @badge_placement_config.author_user_config_id ||= @user_config.id if @user_config
         @badge_placement_config.save
         @badge_config.settings = badge_settings
         @badge_config.updated_at = DateTime.now
@@ -100,10 +114,16 @@ module Sinatra
     end
   
     module Helpers
+      def load_user_config
+        domain_id = @badge_placement_config && @badge_placement_config.domain_id
+        domain_id ||= session['domain_id']
+        @user_config = UserConfig.first(:domain_id => domain_id, :user_id => session['user_id']) if domain_id
+      end
+      
       def load_badge_config(badge_placement_config_id, permission=nil)
         @badge_placement_config = BadgePlacementConfig.first(:id => badge_placement_config_id)
         domain_id = @badge_placement_config && @badge_placement_config.domain_id
-        @user_config = UserConfig.first(:domain_id => domain_id, :user_id => session['user_id'])
+        load_user_config
         if !@badge_placement_config
           halt 404, error("Configuration not found")
         end
