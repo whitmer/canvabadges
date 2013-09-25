@@ -265,6 +265,9 @@ class BadgePlacementConfig
     
       self.settings = placement_settings
     end
+    first_placement = badge_config.badge_placement_configs.first
+    self.settings['prior_resource_link_id'] = first_placement.placement_id if first_placement
+
     self.save
     Badge.all(:badge_config_id => badge_config.id, :badge_placement_config_id => nil).update(:badge_placement_config_id => self.id)
   end

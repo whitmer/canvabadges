@@ -40,8 +40,8 @@ module Sinatra
           bc.organization_id ||= @org.id
           bc.settings ||= {}
           bc.settings['course_url'] ||= "#{BadgeHelper.protocol}://" + host + "/courses/" + params['custom_canvas_course_id']
-          bc.settings['pending'] = !bc.id
           bc.settings['prior_resource_link_id'] = params['custom_prior_resource_link_id'] if params['custom_prior_resource_link_id']
+          bc.settings['pending'] = !bc.id
 
           if params['badge_reuse_code']
             specified_badge_config = BadgeConfig.first(:reuse_code => params['badge_reuse_code'])

@@ -200,6 +200,27 @@ describe 'Badging OAuth' do
         last_response.location.should == "http://example.org/badges/check/#{bc.id}/#{@user.user_id}"
       end
       
+      it "should set the prior link id for reusing course settings when the badge config id is for the same organization" do
+        example_org
+        configured_badge
+        @badge_config.reuse_code = 'abc123'
+        @badge_config.save
+        
+        ExternalConfig.create(:config_type => 'lti', :value => '123')
+        ExternalConfig.create(:config_type => 'canvas_oauth', :value => '456')
+        user
+        IMS::LTI::ToolProvider.any_instance.stub(:valid_request?).and_return(true)
+        IMS::LTI::ToolProvider.any_instance.stub(:roles).and_return(['student'])
+        post "/placement_launch", {'badge_reuse_code' => 'abc123', 'oauth_consumer_key' => '123', 'tool_consumer_instance_guid' => 'something.bob.com', 'resource_link_id' => '2s3d', 'custom_canvas_user_id' => @user.user_id, 'custom_canvas_course_id' => '1', 'lis_person_contact_email_primary' => 'bob@example.com'}
+        last_response.should be_redirect
+        bc = BadgePlacementConfig.last
+        bc.should_not == @badge_placement_config
+        bc.badge_config.should == @badge_config
+        bc.settings['prior_resource_link_id'].should == @badge_placement_config.placement_id
+        bc.settings['pending'].should == true
+        last_response.location.should == "http://example.org/badges/check/#{bc.id}/#{@user.user_id}"
+      end
+      
       it "should not link to the existing badge when the current badge is already configured" do
         example_org
         @bc = BadgeConfig.create(:organization_id => @org.id, :reuse_code => 'abc123')
