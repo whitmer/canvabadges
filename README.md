@@ -11,6 +11,9 @@ support for launching from multiple courses in the same session.
 
 ## Setup
 
+NOTE: If you are upgrading from a previous version of Canvabadges,
+you need to check out the migrations section of this page!
+
 You need two configurations set up in order to run this app.
 First, you need to set up an application at dev.twitter.com. Write down your
 key and secret. Next you'll need a developer key for the Canvas account
@@ -60,5 +63,21 @@ shotgun
 ```
 
 Note that in a production environment you'll also need to set the SESSION_KEY environment variable or you'll get errors on boot.
+
+## Migrations
+
+If you've been running Canvabadges for a little while, we've made a minor 
+change that will affect you. We have separated the badge configuration
+settings from badge completion settings, making it possible for two courses
+to use the same badge. This adds a lot of flexibility, and the migration
+isn't 100% required (the data should "catch up" on its own), but I'd suggest
+you get to a console and run the following command after updating your code:
+
+```ruby
+BadgeConfig.generate_badge_placement_configs
+```
+
+It may take a little while to run depending on how many badges you've got
+set up already.
 
 [![Build Status](https://travis-ci.org/whitmer/canvabadges.png)](https://travis-ci.org/whitmer/canvabadges)

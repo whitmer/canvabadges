@@ -189,10 +189,6 @@ class BadgeConfig
       bc.set_badge_config(self)
       bc.save
       bc
-      Badge.all(:badge_config_id => self.id, :badge_placement_config_id => nil).each do |badge|
-        badge.badge_placement_config_id = bc.id
-        badge.save
-      end
     end
   end
   
@@ -270,6 +266,7 @@ class BadgePlacementConfig
       self.settings = placement_settings
     end
     self.save
+    Badge.all(:badge_config_id => badge_config.id, :badge_placement_config_id => nil).update(:badge_placement_config_id => self.id)
   end
   
   def check_for_awardees
