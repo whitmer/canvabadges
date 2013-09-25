@@ -173,18 +173,23 @@ class BadgeConfig
     as_json(host_with_port).to_json
   end
   
+  def self.generate_badge_placement_configs
+    BadgeConfig.all.each{|bc| bc.generate_badge_placement_config }
+  end
+  
   def generate_badge_placement_config
-    bc = BadgePlacementConfig.new
-    bc.placement_id = self.placement_id
-    bc.course_id = self.course_id
-    bc.teacher_user_config_id = self.teacher_user_config_id
-    bc.external_config_id = self.external_config_id
-    bc.organization_id = self.organization_id
-    bc.domain_id = self.domain_id
-    bc.updated_at = DateTime.now
-    bc.set_badge_config(self)
-    bc.save
-    bc
+    if self.placement_id
+      bc = BadgePlacementConfig.first_or_new(:placement_id => self.placement_id, :domain_id => self.domain_id)
+      bc.course_id ||= self.course_id
+      bc.teacher_user_config_id ||= self.teacher_user_config_id
+      bc.external_config_id ||= self.external_config_id
+      bc.organization_id ||= self.organization_id
+      bc.domain_id ||= self.domain_id
+      bc.updated_at = DateTime.now
+      bc.set_badge_config(self)
+      bc.save
+      bc
+    end
   end
   
   def org_id
