@@ -3,7 +3,7 @@
 
 <% if @badge && @badge.evidence_url %>
   <h2>Evidence of completion:</h2>
-  <% if @badge_config.settings['manual_approval'] %>
+  <% if @badge_placement_config.settings['manual_approval'] %>
     <a href="<%= @badge.evidence_url %>" target="_blank">Link to evidence as approved by the learner and instructor</a>.
   <% else %>
     <a href="<%= @badge.evidence_url %>" target="_blank">Link to evidence as provided by the learner</a> (though not necessarily approved by the instructor).

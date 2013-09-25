@@ -1,8 +1,8 @@
-<% if !@badge.awarded? || !@badge_config.evidence_required? %>
+<% if !@badge.awarded? || !@badge_placement_config.evidence_required? %>
   <form class='well form-horizontal' style="margin-top: 15px;" rel="/badges/<%= @badge.id %>?badge_id=<%= @badge.nonce %>">
     <label>
       Evidence URL: 
-      <% label = @badge_config.evidence_required? ? "URL showing what qualifies you to earn this badge (required)" : "URL showing evidence of work done for this badge (optional)" %>
+      <% label = @badge_placement_config.evidence_required? ? "URL showing what qualifies you to earn this badge (required)" : "URL showing evidence of work done for this badge (optional)" %>
       <input id="evidence_url" type="text" value="<%= @badge.evidence_url %>" name="evidence_url" placeholder="<%= label %>" title="<%= label %>"/>
     </label>
   </form>

@@ -87,9 +87,9 @@ class UserConfig
     end
   end
   
-  def check_badge_status(badge_config, params, name, email)
-    scores_json = CanvasAPI.api_call("/api/v1/courses/#{badge_config.course_id}?include[]=total_scores", self)
-    modules_json = CanvasAPI.api_call("/api/v1/courses/#{badge_config.course_id}/modules", self) if badge_config.modules_required?
+  def check_badge_status(badge_placement_config, params, name, email)
+    scores_json = CanvasAPI.api_call("/api/v1/courses/#{badge_placement_config.course_id}?include[]=total_scores", self)
+    modules_json = CanvasAPI.api_call("/api/v1/courses/#{badge_placement_config.course_id}/modules", self) if badge_placement_config.modules_required?
     modules_json ||= []
     completed_module_ids = modules_json.select{|m| m['completed_at'] }.map{|m| m['id'] }.compact
     unless scores_json
@@ -100,20 +100,21 @@ class UserConfig
     student['computed_final_score'] ||= 0 if student
   
     if student
-      if badge_config.requirements_met?(student['computed_final_score'], completed_module_ids)
-        params['credits_earned'] = badge_config.credits_earned(student['computed_final_score'], completed_module_ids)
+      if badge_placement_config.requirements_met?(student['computed_final_score'], completed_module_ids)
+        params['credits_earned'] = badge_placement_config.credits_earned(student['computed_final_score'], completed_module_ids)
         if !email
           raise "You need to set an email address in Canvas before you can earn any badges."
         end
-        badge = Badge.complete(params, badge_config, name, email)
+        badge = Badge.complete(params, badge_placement_config, name, email)
       elsif !badge
-        badge = Badge.generate_badge({'user_id' => self.user_id}, badge_config, name, email)
+        badge = Badge.generate_badge({'user_id' => self.user_id}, badge_placement_config, name, email)
         badge.save
       end
     end
     return {
       :completed_module_ids => completed_module_ids,
-      :badge_config => badge_config,
+      :badge_config => badge_placement_config.badge_config,
+      :badge_placement_config => badge_placement_config,
       :user_config => self,
       :badge => badge,
       :student => student
@@ -124,22 +125,24 @@ end
 class BadgeConfig
   include DataMapper::Resource
   property :id, Serial
-  property :course_id, String
-  property :placement_id, String
-  property :teacher_user_config_id, Integer
+  property :course_id, String # deprecated
+  property :placement_id, String # deprecated
+  property :teacher_user_config_id, Integer # deprecated
   property :nonce, String
-  property :external_config_id, Integer
+  property :external_config_id, Integer # TODO: how is this used?
   property :organization_id, Integer
-  property :domain_id, Integer
-  property :settings, Json
-  property :root_id, Integer
-  property :reference_code, String
+  property :domain_id, Integer # deprecated
+  property :settings, Json # partially deprecated
+  property :root_id, Integer # deprecated
+  property :reference_code, String # deprecated
+  property :reuse_code, String
   property :public, Boolean
   property :updated_at, DateTime
   
   before :save, :generate_nonce
   belongs_to :external_config
   belongs_to :organization
+  has n, :badge_placement_configs
   
   def as_json(host_with_port)
     settings = self.settings || {}
@@ -156,49 +159,22 @@ class BadgeConfig
     }
   end
   
-  def check_for_awardees
-    teacher_config = self.teacher_user_config_id && UserConfig.first(:id => self.teacher_user_config_id)
-    if teacher_config
-      # get the paginated list of students
-      # for each student, check if they already have a badge awarded
-      # if not, check on award status
-    end
-  end
-  
-  def load_from_old_config(user_config)
-    old_config = BadgeConfig.first(:placement_id => self.settings['prior_resource_link_id'], :domain_id => self.domain_id)
-    if old_config
-      # load config settings from previous badge config
-      self.settings = old_config.settings
-      
-      # set to pending unless
-      # able to get new module ids and map them correctly for module-configured badges
-      self.settings['pending'] = true if old_config.modules_required?
-      
-      api_user = UserConfig.first(:id => self.teacher_user_config_id) || user_config
-      if user_config && old_config.modules_required?
-        # make an API call to get the module ids and try to map from old to new
-        # map ids for module names and also credits_for values
-        new_modules = []
-        modules_json = CanvasAPI.api_call("/api/v1/courses/#{self.course_id}/modules", user_config) || []
-        all_found = true
-        old_config.settings['modules'].each do |id, str, credits|
-          new_module = modules_json.detect{|m| m['name'] == str}
-          if new_module
-            new_modules << [new_module['id'].to_s, str, credits]
-          else
-            all_found = false
-          end
-        end
-        self.settings['modules'] = new_modules
-        self.settings['pending'] = !all_found
-      end
-      self.save
-    end
-  end
-  
   def to_json(host_with_port)
     as_json(host_with_port).to_json
+  end
+  
+  def generate_badge_placement_config
+    bc = BadgePlacementConfig.new
+    bc.placement_id = self.placement_id
+    bc.course_id = self.course_id
+    bc.teacher_user_config_id = self.teacher_user_config_id
+    bc.external_config_id = self.external_config_id
+    bc.organization_id = self.organization_id
+    bc.domain_id = self.domain_id
+    bc.updated_at = DateTime.now
+    bc.set_badge_config(self)
+    bc.save
+    bc
   end
   
   def org_id
@@ -211,33 +187,40 @@ class BadgeConfig
 
   def root_settings
     conf = self
-    if self.root_id
-      conf = BadgeConfig.first(:id => self.root_id) || self
-    end
+    # TODO: remove this completely, this is the old badge inheritance model
+    # and it sucks.
+#     if self.root_id
+#       conf = BadgeConfig.first(:id => self.root_id) || self
+#     end
     conf.settings || {}
   end
   
   def root_nonce
     conf = self
-    if self.root_id
-      conf = BadgeConfig.first(:id => self.root_id) || self
-    end
+    # TODO: remove this completely, this is the old badge inheritance model
+    # and it sucks.
+#     if self.root_id
+#       conf = BadgeConfig.first(:id => self.root_id) || self
+#     end
     conf.nonce
   end
   
   def generate_nonce
     self.nonce ||= Digest::MD5.hexdigest(Time.now.to_i.to_s + rand.to_s)
-    self.reference_code ||= Digest::MD5.hexdigest(Time.now.to_i.to_s + rand.to_s)
+    self.reuse_code ||= Digest::MD5.hexdigest(Time.now.to_i.to_s + rand.to_s)
   end
   
-  def set_root_from_reference_code(code)
-    root = BadgeConfig.first(:reference_code => code)
-    if root
-      self.root_id = root.id
-    else
-      self.root_id = nil
-    end
-  end
+    # and it sucks.
+    # TODO: remove this completely, this is the old badge inheritance model
+    # and it sucks.
+#   def set_root_from_reference_code(code)
+#     root = BadgeConfig.first(:reference_code => code)
+#     if root
+#       self.root_id = root.id
+#     else
+#       self.root_id = nil
+#     end
+#   end
   
   def approve_to_pending?
     settings && (settings['manual_approval'] || settings['require_evidence'])
@@ -249,12 +232,122 @@ class BadgeConfig
     self.save
   end
   
+  def configured?
+    settings && settings['badge_url']
+  end
+end
+
+class BadgePlacementConfig
+  include DataMapper::Resource
+  property :id, Serial
+  property :badge_config_id, Integer
+  property :course_id, String
+  property :placement_id, String
+  property :teacher_user_config_id, Integer
+  property :nonce, String # deprecated
+  property :external_config_id, Integer # deprecated
+  property :organization_id, Integer # deprecated
+  property :domain_id, Integer
+  property :settings, Json # partially deprecated
+  property :root_id, Integer # deprecated
+  property :reference_code, String # deprecated
+  property :public, Boolean
+  property :updated_at, DateTime
+  
+  belongs_to :badge_config
+  belongs_to :external_config
+  belongs_to :organization
+  
+  def merged_settings
+    settings = (self.badge_config && self.badge_config.settings) || {}
+    settings.merge(self.settings || {})
+  end
+  
+  def set_badge_config(badge_config)
+    self.badge_config_id = badge_config.id
+    badge_settings = badge_config.settings || {}
+    placement_settings = self.settings || {}
+    if badge_settings['min_percent'] != nil && placement_settings['min_percent'] == nil
+      placement_settings['manual_approval'] = badge_settings['manual_approval']
+      placement_settings['require_evidence'] = badge_settings['require_evidence']
+      placement_settings['credit_based'] = badge_settings['credit_based']
+      placement_settings['required_credits'] = badge_settings['requird_credits'].to_f.round(1)
+      placement_settings['min_percent'] = badge_settings['min_percent'].to_f
+      placement_settings['hours'] = badge_settings['hours'].to_f.round(1)
+      placement_settings['hours'] = nil if placement_settings['hours'] == 0
+      placement_settings['credits_for_final_score'] = badge_settings['credits_for_final_score'].to_f.round(1)
+      placement_settings['modules'] = badge_settings['modules']
+      placement_settings['total_credits'] = badge_settings['total_credits']
+    
+      self.settings = placement_settings
+    end
+    self.save
+  end
+  
+  def check_for_awardees
+    teacher_config = self.teacher_user_config_id && UserConfig.first(:id => self.teacher_user_config_id)
+    if teacher_config
+      # get the paginated list of students
+      # for each student, check if they already have a badge awarded
+      # if not, check on award status
+    end
+  end
+  
+  def load_from_old_config(user_config)
+    return nil if !self.settings['prior_resource_link_id'] || self.settings['already_loaded_from_old_config']
+    old_config = BadgePlacementConfig.first(:placement_id => self.settings['prior_resource_link_id'], :domain_id => self.domain_id)
+    if old_config
+      # load config settings from previous badge config
+      self.settings = old_config.settings
+      
+      # set to pending unless
+      # able to get new module ids and map them correctly for module-configured badges
+      self.settings['pending'] = true if old_config.modules_required?
+      
+      api_user = UserConfig.first(:id => self.teacher_user_config_id) || user_config
+      if api_user && old_config.modules_required?
+        # make an API call to get the module ids and try to map from old to new
+        # map ids for module names and also credits_for values
+        new_modules = []
+        modules_json = CanvasAPI.api_call("/api/v1/courses/#{self.course_id}/modules", api_user) || []
+        all_found = true
+        old_config.settings['modules'].each do |id, str, credits|
+          new_module = modules_json.detect{|m| m['name'] == str}
+          if new_module
+            new_modules << [new_module['id'].to_s, str, credits]
+          else
+            all_found = false
+          end
+        end
+        self.settings['modules'] = new_modules
+        self.settings['pending'] = !all_found
+      end
+      self.settings['already_loaded_from_old_config'] = true
+      self.save
+    end
+  end
+  
+  def to_json(host_with_port)
+    as_json(host_with_port).to_json
+  end
+  
+  def approve_to_pending?
+    settings && (settings['manual_approval'] || settings['require_evidence'])
+  end
+  
+  def update_counts
+    self.settings ||= {}
+    self.settings['awarded_count'] = Badge.all(:badge_placement_config_id => self.id, :state => 'awarded').count
+    self.save
+    self.badge_config.update_counts
+  end
+  
   def pending?
     settings && settings['pending']
   end
   
   def configured?
-    settings && settings['badge_url'] && settings['min_percent'] && !settings['pending']
+    !!(self.settings && self.badge_config && self.badge_config.settings && self.badge_config.settings['badge_url'] && self.settings['min_percent'] && !self.settings['pending'])
   end
   
   def modules_required?
@@ -316,6 +409,7 @@ class Badge
   property :badge_url, String, :length => 256
   property :nonce, String
   property :badge_config_id, Integer
+  property :badge_placement_config_id, Integer
   property :name, String, :length => 256
   property :user_full_name, String, :length => 256
   property :description, Text
@@ -336,6 +430,7 @@ class Badge
   property :issuer_email, String
   
   belongs_to :badge_config
+  belongs_to :badge_placement_config
   before :save, :generate_defaults
   after :save, :check_for_notify_on_award
   
@@ -367,7 +462,8 @@ class Badge
       sha = Digest::SHA256.hexdigest(self.email + self.salt)
       self.recipient = "sha256$#{sha}"
     end
-    self.badge_config ||= BadgeConfig.first(:placement_id => self.placement_id, :domain_id => self.domain_id)
+    self.badge_placement_config ||= BadgePlacementConfig.first(:placement_id => self.placement_id, :domain_id => self.domain_id)
+    self.badge_config ||= self.badge_placement_config && self.badge_placement_config.badge_config
     user_config = UserConfig.first(:user_id => self.user_id, :domain_id => self.domain_id)
     self.global_user_id = user_config.global_user_id if user_config
     true
@@ -383,8 +479,9 @@ class Badge
   end
   
   def config_nonce
-    self.badge_config ||= BadgeConfig.first(:placement_id => self.placement_id, :domain_id => self.domain_id)
-    self.badge_config && self.badge_config.root_nonce
+    self.badge_placement_config ||= BadgePlacementConfig.first(:placement_id => self.placement_id, :domain_id => self.domain_id)
+    self.badge_config ||= self.badge_placement_config && self.badge_placement_config.badge_config
+    self.badge_config && self.badge_config.nonce
   end
   
   def needing_evaluation?
@@ -409,21 +506,22 @@ class Badge
     save
   end
   
-  def self.generate_badge(params, badge_config, name, email)
-    settings = badge_config.settings || {}
-    badge = self.first_or_new(:user_id => params['user_id'], :badge_config_id => badge_config.id)
-    badge.placement_id = badge_config.placement_id
-    badge.domain_id = badge_config.domain_id
+  def self.generate_badge(params, badge_placement_config, name, email)
+    settings = badge_placement_config.merged_settings || {}
+    badge = self.first_or_new(:user_id => params['user_id'], :badge_config_id => badge_placement_config.badge_config_id)
+    badge.badge_placement_config = badge_placement_config
+    badge.placement_id = badge_placement_config.placement_id
+    badge.domain_id = badge_placement_config.domain_id
 
-    if badge_config.settings && badge_config.settings['org'] && badge_config.settings['org'].is_a?(Hash)
-      badge.issuer_image_url = badge_config.settings['org']['image']
-      badge.issuer_org = badge_config.settings['org']['name']
-      badge.issuer_url = badge_config.settings['org']['url']
-      badge.issuer_email = badge_config.settings['org']['email']
+    if settings && settings['org'] && settings['org'].is_a?(Hash)
+      badge.issuer_image_url = settings['org']['image']
+      badge.issuer_org = settings['org']['name']
+      badge.issuer_url = settings['org']['url']
+      badge.issuer_email = settings['org']['email']
     end
 
     badge.issuer_name = BadgeHelper.issuer['name']
-    badge.badge_config = badge_config
+    badge.badge_config = badge_placement_config.badge_config
     badge.name = settings['badge_name']
     badge.email = email
     badge.state ||= 'unissued'
@@ -434,23 +532,22 @@ class Badge
     badge
   end
   
-  def self.manually_award(params, badge_config, name, email)
-    badge = generate_badge(params, badge_config, name, email)
+  def self.manually_award(params, badge_placement_config, name, email)
+    badge = generate_badge(params, badge_placement_config, name, email)
     badge.manual_approval = true unless badge.pending?
     badge.state = 'awarded'
     badge.issued = DateTime.now
     badge.save
-    badge_config.update_counts
+    badge_placement_config.update_counts
     badge
   end
   
-  def self.complete(params, badge_config, name, email)
-    settings = badge_config.settings || {}
-    badge = generate_badge(params, badge_config, name, email)
+  def self.complete(params, badge_placement_config, name, email)
+    badge = generate_badge(params, badge_placement_config, name, email)
     badge.state = nil if badge.state == 'unissued'
-    badge.state ||= badge_config.approve_to_pending? ? 'pending' : 'awarded'
+    badge.state ||= badge_placement_config.approve_to_pending? ? 'pending' : 'awarded'
     badge.save
-    badge_config.update_counts
+    badge_placement_config.update_counts
     badge
   end
 end

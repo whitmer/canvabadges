@@ -24,111 +24,65 @@ describe 'Badging Models' do
       @bc = BadgeConfig.create
       @bc.nonce.should_not be_nil
     end
-
-    describe "root configuration" do
-      it "should allow setting root config from ref code" do
-        @bc = badge_config
-        @bc2 = badge_config
-        @bc2.set_root_from_reference_code(@bc.reference_code)
-        @bc2.root_id.should == @bc.id
-      end
-      
-      it "should not fail if root isn't found" do
-        badge_config
-        @badge_config.root_id.should == nil
-        @badge_config.set_root_from_reference_code("")
-        @badge_config.root_id.should == nil
-        @badge_config.set_root_from_reference_code(nil)
-        @badge_config.root_id.should == nil
-        @badge_config.set_root_from_reference_code("bunk")
-        @badge_config.root_id.should == nil
-      end
-      
-      it "should pull settings from root config if set" do
-        @bc1 = badge_config
-        @bc2 = badge_config
-        @bc1.settings = {
-          'badge_name' => "Cooler Badge",
-          'badge_description' => "Badge for cooler people",
-          'badge_url' => "http://example.com/badge/cooler"
-        }
-        @bc1.save
-        @bc2.set_root_from_reference_code(@bc1.reference_code)
-        @bc2.root_settings.should == @bc1.settings
-      end
-      
-      it "should return current config if no root config set" do
-        badge_config
-        @badge_config.root_settings.should == @badge_config.settings
-      end
-      
-      it "should pull nonce from root config if set" do
-        @bc1 = badge_config
-        @bc2 = badge_config
-        @bc2.set_root_from_reference_code(@bc1.reference_code)
-        @bc2.root_nonce.should == @bc1.nonce
-      end
-      
-      it "should return current nonce if no root config set" do
-        badge_config
-        @badge_config.root_nonce.should == @badge_config.nonce
-      end
-    end
     
     describe "configuration options" do
       it "should check if actually configured" do
         badge_config
+        @badge_placement_config.configured?.should be_false
         @badge_config.settings = {
           'badge_name' => "Cool Badge",
           'badge_description' => "Badge for cool people",
-          'badge_url' => "http://example.com/badge",
-          'min_percent' => 10
+          'badge_url' => "http://example.com/badge"
         }
+        @badge_placement_config.settings = {'min_percent' => 0}
         @badge_config.save
         @badge_config.configured?.should be_true
+        @badge_placement_config.save
+        @badge_placement_config.reload
+        @badge_placement_config.configured?.should be_true
         
-        BadgeConfig.create.configured?.should be_false
+        BadgePlacementConfig.create.configured?.should be_false
       end
       
       it "check if modules are required" do
         badge_config
-        @badge_config.modules_required?.should be_false
+        @badge_placement_config.modules_required?.should be_false
         
-        @badge_config.settings['modules'] = {
+        @badge_placement_config.settings['modules'] = {
           '1' => 'Module 1',
           '2' => 'Module 2',
         }.to_a
-        @badge_config.save
-        @badge_config.modules_required?.should be_true
+        @badge_placement_config.save
+        @badge_placement_config.modules_required?.should be_true
       end
       
       it "should return list of required modules" do
         badge_config
-        @badge_config.required_modules.should == []
+        @badge_placement_config.required_modules.should == []
         
-        @badge_config.settings['modules'] = {
+        @badge_placement_config.settings['modules'] = {
           '1' => 'Module 1',
           '2' => 'Module 2',
         }.to_a
-        @badge_config.save
-        @badge_config.required_modules.should == [['1', 'Module 1'], ['2', 'Module 2']]
+        @badge_placement_config.save
+        @badge_placement_config.required_modules.should == [['1', 'Module 1'], ['2', 'Module 2']]
       end
       
       it "should check if requirements are met" do
         badge_config
-        @badge_config.settings['min_percent'] = 10
-        @badge_config.settings['modules'] = {
+        @badge_placement_config.settings['min_percent'] = 10
+        @badge_placement_config.settings['modules'] = {
           '1' => 'Module 1',
           '2' => 'Module 2',
         }.to_a
-        @badge_config.save
-        @badge_config.requirements_met?(9, [1, 2]).should be_false
-        @badge_config.requirements_met?(11, [1, 2]).should be_true
-        @badge_config.requirements_met?(11, [nil, 1, 2, 3]).should be_true
-        @badge_config.requirements_met?(11, [1]).should be_false
-        @badge_config.requirements_met?(11, [2]).should be_false
-        @badge_config.requirements_met?(11, []).should be_false
-        @badge_config.requirements_met?(11, [nil, "1", "2"]).should be_false
+        @badge_placement_config.save
+        @badge_placement_config.requirements_met?(9, [1, 2]).should be_false
+        @badge_placement_config.requirements_met?(11, [1, 2]).should be_true
+        @badge_placement_config.requirements_met?(11, [nil, 1, 2, 3]).should be_true
+        @badge_placement_config.requirements_met?(11, [1]).should be_false
+        @badge_placement_config.requirements_met?(11, [2]).should be_false
+        @badge_placement_config.requirements_met?(11, []).should be_false
+        @badge_placement_config.requirements_met?(11, [nil, "1", "2"]).should be_false
       end
     end
   end  
@@ -199,16 +153,17 @@ describe 'Badging Models' do
 
       @badge.badge_config.destroy
       @badge.badge_config = nil
+      @badge.badge_placement_config = nil
       @badge.config_nonce.should == nil
     end
     
     it "should allow generating badges" do
       badge_config
       user
-      badge = Badge.generate_badge({'user_id' => @user.user_id, 'badge_config_id' => @badge_config.id}, @badge_config, @user.name, "email@email.com")
+      badge = Badge.generate_badge({'user_id' => @user.user_id, 'badge_placement_config_id' => @badge_placement_config.id}, @badge_placement_config, @user.name, "email@email.com")
       badge.user_id.should == @user.user_id
       badge.badge_config_id.should == @badge_config.id
-      badge.placement_id.should == @badge_config.placement_id
+      badge.placement_id.should == @badge_placement_config.placement_id
       badge.name.should == @badge_config.settings['badge_name']
       badge.email.should == "email@email.com"
       badge.user_full_name.should == @user.name
@@ -221,9 +176,9 @@ describe 'Badging Models' do
     it "should allow manually awarding new badges" do
       badge_config
       user
-      badge = Badge.manually_award({'user_id' => @user.user_id, 'badge_config_id' => @badge_config.id}, @badge_config, @user.name, "email@email.com")
+      badge = Badge.manually_award({'user_id' => @user.user_id, 'badge_placement_config_id' => @badge_placement_config.id}, @badge_placement_config, @user.name, "email@email.com")
       badge.user_id.should == @user.user_id
-      badge.placement_id.should == @badge_config.placement_id
+      badge.placement_id.should == @badge_placement_config.placement_id
       badge.name.should == @badge_config.settings['badge_name']
       badge.email.should == "email@email.com"
       badge.user_full_name.should == @user.name
@@ -235,10 +190,10 @@ describe 'Badging Models' do
     
     it "should allow manually awarding existing badges" do
       award_badge(badge_config, user)
-      badge = Badge.manually_award({'user_id' => @user.user_id, 'badge_config_id' => @badge_config.id}, @badge_config, @user.name, "email@email.com")
+      badge = Badge.manually_award({'user_id' => @user.user_id, 'badge_placement_config_id' => @badge_placement_config.id}, @badge_placement_config, @user.name, "email@email.com")
       badge.id.should == @badge.id
       badge.user_id.should == @user.user_id
-      badge.placement_id.should == @badge_config.placement_id
+      badge.placement_id.should == @badge_placement_config.placement_id
       badge.name.should == @badge_config.settings['badge_name']
       badge.email.should == "email@email.com"
       badge.user_full_name.should == @user.name
@@ -251,9 +206,9 @@ describe 'Badging Models' do
     it "should allow completing new badges" do
       badge_config
       user
-      badge = Badge.complete({'user_id' => @user.user_id, 'badge_config_id' => @badge_config.id}, @badge_config, @user.name, "email@email.com")
+      badge = Badge.complete({'user_id' => @user.user_id, 'badge_placement_config_id' => @badge_placement_config.id}, @badge_placement_config, @user.name, "email@email.com")
       badge.user_id.should == @user.user_id
-      badge.placement_id.should == @badge_config.placement_id
+      badge.placement_id.should == @badge_placement_config.placement_id
       badge.name.should == @badge_config.settings['badge_name']
       badge.email.should == "email@email.com"
       badge.user_full_name.should == @user.name
@@ -265,10 +220,10 @@ describe 'Badging Models' do
     
     it "should allow completing existing badges" do
       award_badge(badge_config, user)
-      badge = Badge.complete({'user_id' => @user.user_id, 'badge_config_id' => @badge_config.id}, @badge_config, @user.name, "email@email.com")
+      badge = Badge.complete({'user_id' => @user.user_id, 'badge_placement_config_id' => @badge_placement_config.id}, @badge_placement_config, @user.name, "email@email.com")
       badge.id.should == @badge.id
       badge.user_id.should == @user.user_id
-      badge.placement_id.should == @badge_config.placement_id
+      badge.placement_id.should == @badge_placement_config.placement_id
       badge.name.should == @badge_config.settings['badge_name']
       badge.email.should == "email@email.com"
       badge.user_full_name.should == @user.name
@@ -281,24 +236,24 @@ describe 'Badging Models' do
     it "should pend manual approval badges" do
       badge_config
       user
-      @badge_config.settings['manual_approval'] = true
-      @badge_config.save
-      badge = Badge.complete({'user_id' => @user.user_id, 'badge_config_id' => @badge_config.id}, @badge_config, @user.name, "email@email.com")
+      @badge_placement_config.settings['manual_approval'] = true
+      @badge_placement_config.save
+      badge = Badge.complete({'user_id' => @user.user_id, 'badge_placement_config_id' => @badge_placement_config.id}, @badge_placement_config, @user.name, "email@email.com")
       badge.user_id.should == @user.user_id
-      badge.placement_id.should == @badge_config.placement_id
+      badge.placement_id.should == @badge_placement_config.placement_id
       badge.name.should == @badge_config.settings['badge_name']
       badge.email.should == "email@email.com"
       badge.user_full_name.should == @user.name
       badge.description.should == @badge_config.settings['badge_description']
       badge.badge_url.should == @badge_config.settings['badge_url']
-      badge.issued.should be_nil
       badge.state.should == 'pending'
+      badge.issued.should be_nil
     end
     
     it "should include custom issuer information on badge awards" do
       badge_config
       user
-      badge = Badge.complete({'user_id' => @user.user_id, 'badge_config_id' => @badge_config.id}, @badge_config, @user.name, "email@email.com")
+      badge = Badge.complete({'user_id' => @user.user_id, 'badge_placement_config_id' => @badge_placement_config.id}, @badge_placement_config, @user.name, "email@email.com")
       json = badge.open_badge_json("example.com")
       json[:badge].should_not be_nil
       json[:badge].should == "https://example.com/api/v1/badges/summary/#{@badge_config.id}/#{@badge_config.nonce}.json"

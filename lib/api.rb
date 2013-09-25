@@ -54,7 +54,7 @@ module Sinatra
         domain = Domain.first(:host => params['host'])
         return "bad domain: #{params['host']}" unless domain
         user = UserConfig.first(:domain_id => domain.id, :user_id => params['user_id'])
-        badge_list = []
+        badges_list = []
         if domain
           if user && user.global_user_id
             badges = Badge.all(:state => 'awarded', :global_user_id => user.global_user_id, :public => true)
@@ -62,11 +62,11 @@ module Sinatra
             badges = Badge.all(:state => 'awarded', :user_id => params['user_id'], :domain_id => domain.id, :public => true)
           end
           badges.each do |badge|
-            badge_list << badge_hash(badge.user_id, badge.user_name, badge)
+            badges_list << badge_hash(badge.user_id, badge.user_name, badge)
           end
         end
         result = {
-          :objects => badge_list
+          :objects => badges_list
         }
         api_response(result)
       end
@@ -74,14 +74,14 @@ module Sinatra
       # list of students who have been awarded this badge, whether or not
       # they are currently active in the course
       # requires admin permissions
-      app.get "/api/v1/badges/awarded/:badge_config_id.json" do
+      app.get "/api/v1/badges/awarded/:badge_placement_config_id.json" do
         api_response(badge_list(true, params, session))
       end
       
       # list of students currently active in the course, showing whether
       # or not they have been awarded the badge
       # requires admin permissions
-      app.get "/api/v1/badges/current/:badge_config_id.json" do
+      app.get "/api/v1/badges/current/:badge_placement_config_id.json" do
         api_response(badge_list(false, params, session))
       end
     end
@@ -115,29 +115,29 @@ module Sinatra
       
       def badge_list(awarded, params, session)
         @api_request = true
-        load_badge_config(params['badge_config_id'], 'edit')
+        load_badge_config(params['badge_placement_config_id'], 'edit')
 
-        badges = Badge.all(:badge_config_id => @badge_config_id)
+        badges = Badge.all(:badge_config_id => @badge_placement_config_id)
         result = []
         next_url = nil
         params['page'] = '1' if params['page'].to_i == 0
         if awarded
           badges = badges.all(:state => 'awarded')
           if badges.length > (params['page'].to_i * 50)
-            next_url = "/api/v1/badges/awarded/#{@badge_config_id}.json?page=#{params['page'].to_i + 1}"
+            next_url = "/api/v1/badges/awarded/#{@badge_placement_config_id}.json?page=#{params['page'].to_i + 1}"
           end
           badges = badges[((params['page'].to_i - 1) * 50), 50]
           badges.each do |badge|
-            result << badge_hash(badge.user_id, badge.user_name, badge, @badge_config && @badge_config.root_nonce)
+            result << badge_hash(badge.user_id, badge.user_name, badge, @badge_placement_config && @badge_placement_config.nonce)
           end
         else
           json = api_call("/api/v1/courses/#{@course_id}/users?enrollment_type=student&per_page=50&page=#{params['page'].to_i}", @user_config)
           json.each do |student|
             badge = badges.detect{|b| b.user_id.to_i == student['id'] }
-            result << badge_hash(student['id'], student['name'], badge, @badge_config && @badge_config.root_nonce)
+            result << badge_hash(student['id'], student['name'], badge, @badge_placement_config && @badge_placement_config.nonce)
           end
           if json.instance_variable_get('@has_more')
-            next_url = "/api/v1/badges/current/#{@badge_config_id}.json?page=#{params['page'].to_i + 1}"
+            next_url = "/api/v1/badges/current/#{@badge_placement_config_id}.json?page=#{params['page'].to_i + 1}"
           end
         end
         return {
@@ -160,6 +160,7 @@ module Sinatra
             :state => badge.state,
             :evidence_url => badge.evidence_url,
             :config_id => badge.badge_config_id,
+            :placement_config_id => badge.badge_placement_config_id,
             :config_nonce => root_nonce || badge.config_nonce
           }
         else
@@ -174,6 +175,7 @@ module Sinatra
             :state => 'unissued',
             :evidence_url => nil,
             :config_id => nil,
+            :placement_config_id => nil,
             :config_nonce => root_nonce
           }
         end

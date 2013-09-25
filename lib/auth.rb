@@ -34,23 +34,37 @@ module Sinatra
           halt 400, error("This app appears to have been misconfigured, please contact your instructor or administrator. Email address is required on user launches.")
         end
         if provider.valid_request?(request)
-          bc = BadgeConfig.first_or_new(:placement_id => params['resource_link_id'], :domain_id => domain.id, :course_id => params['custom_canvas_course_id'])
+          bc = BadgePlacementConfig.first_or_new(:placement_id => params['resource_link_id'], :domain_id => domain.id, :course_id => params['custom_canvas_course_id'])
           bc.external_config_id ||= tool_config.id
           bc.organization_id = tool_config.organization_id if !bc.id
           bc.organization_id ||= @org.id
           bc.settings ||= {}
           bc.settings['course_url'] ||= "#{BadgeHelper.protocol}://" + host + "/courses/" + params['custom_canvas_course_id']
           bc.settings['pending'] = !bc.id
-          if !bc.settings['pending'] && params['custom_prior_resource_link_id']
-            bc.settings['prior_resource_link_id'] = params['custom_prior_resource_link_id']
+          bc.settings['prior_resource_link_id'] = params['custom_prior_resource_link_id'] if params['custom_prior_resource_link_id']
+
+          if params['badge_reuse_code']
+            specified_badge_config = BadgeConfig.first(:reuse_code => params['badge_reuse_code'])
+            if specified_badge_config && bc.organization_id == specified_badge_config.organization_id && bc.badge_config != specified_badge_config && !bc.configured?
+              bc.set_badge_config(specified_badge_config)
+            end
+          else
+            old_style_badge_config = BadgeConfig.first(:placement_id => params['resource_link_id'], :domain_id => domain.id, :course_id => params['custom_canvas_course_id'])
+            if old_style_badge_config
+              bc.set_badge_config(old_style_badge_config)
+            end
+          end
+          if !bc.badge_config
+            bc.badge_config = BadgeConfig.create(:organization_id => bc.organization_id)
           end
           bc.save
+          
           user_id = params['custom_canvas_user_id']
           user_config = UserConfig.first(:user_id => user_id, :domain_id => domain.id)
           session["user_id"] = user_id
           session["user_image"] = params['user_image']
           session["launch_placement_id"] = params['resource_link_id']
-          session["launch_badge_config_id"] = bc.id
+          session["launch_badge_placement_config_id"] = bc.id
           session["launch_course_id"] = params['custom_canvas_course_id']
           session["permission_for_#{params['custom_canvas_course_id']}"] = 'view'
           session['email'] = params['lis_person_contact_email_primary']
@@ -84,7 +98,7 @@ module Sinatra
       end
   
       app.get "/oauth_success" do
-        if !session['domain_id'] || !session['user_id'] || !session['launch_badge_config_id'] || !session['source_id']
+        if !session['domain_id'] || !session['user_id'] || !session['launch_badge_placement_config_id'] || !session['source_id']
           return error("Launch parameters lost")
         end
         domain = Domain.first(:id => session['domain_id'])
@@ -113,7 +127,7 @@ module Sinatra
           user_config.image = session['user_image']
           user_config.global_user_id = session['source_id'] + "_" + json['user']['id'].to_s
           user_config.save
-          redirect to("/badges/check/#{session['launch_badge_config_id']}/#{user_config.user_id}")
+          redirect to("/badges/check/#{session['launch_badge_placement_config_id']}/#{user_config.user_id}")
           session.destroy
           session['user_id'] = user_config.user_id.to_s
           session['domain_id'] = user_config.domain_id.to_s
