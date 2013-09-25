@@ -18,7 +18,7 @@
         <div class="controls">
           <input type="text" <%= "disabled='true'" if disabled %> class="span2" placeholder="https://" id="badge_url" name="badge_url" value="<%= CGI.escapeHTML(settings['badge_url'] || "") %>"/>
           should be 90x90 pixels<br/>
-          <a href="https://www.openbadges.me/designer.html?origin=https://canvabadges.herokuapp.com&email=support@instructure.com" data-fancybox-type="iframe" id="badge_designer">use the badge designer</a>
+          <a href="https://www.openbadges.me/designer.html?origin=<%= CGI.escape("#{BadgeHelper.protocol}://#{request.host_with_port}") %>&email=support@instructure.com" data-fancybox-type="iframe" id="badge_designer">use the badge designer</a>
         </div>
       </div>
       <div class="control-group">
