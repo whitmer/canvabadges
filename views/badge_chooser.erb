@@ -7,7 +7,7 @@
       <% settings = bc.settings || {} %>
       <a href="#"><img src='<%= settings['badge_url'] %>' style='float: left; margin-right: 10px;' class='thumbnail'/></a>
       <h2>
-        <a href="#"><%= settings['badge_name'] || "Unnamed Badge" %></a>
+        <a href="#" class='name'><%= settings['badge_name'] || "Unnamed Badge" %></a>
       </h2>
       <p class='desc'><%= settings['badge_description'] %></p>
 

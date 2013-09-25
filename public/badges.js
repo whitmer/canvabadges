@@ -155,7 +155,7 @@ $(document).on('click', '.select_badge_config', function(event) {
   var launch = host + "/placement_launch";
   var $config = $(this).closest(".badge_config");
   var badge_id = $config.attr('data-id')
-  var badge_name = "Badge: " + $config.find(".name").val() || $config.find('h2 a').text() || "New Badge";
+  var badge_name = "Badge: " + ($config.find(".name").val() || $config.find('.name').text() || "New Badge");
   if(badge_id) {
     launch = launch + "?badge_reuse_code=" + badge_id;
   } else {
