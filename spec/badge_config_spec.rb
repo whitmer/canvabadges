@@ -84,7 +84,7 @@ describe 'Badge Configuration' do
       get "/badges/pick", {}, 'rack.session' => {'domain_id' => @badge_placement_config.domain_id, 'user_id' => @user.user_id}
       last_response.should be_ok
       last_response.body.should match(@badge_placement_config.badge_config.settings['badge_url'])
-      last_response.body.should match(/Add a New Badge/)
+      last_response.body.should match(/Create a New Badge/)
     end
   end
   
