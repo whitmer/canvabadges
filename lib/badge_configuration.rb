@@ -128,7 +128,7 @@ module Sinatra
           halt 404, error("Configuration not found")
         end
 
-        @badge = Badge.first(:badge_config_id => @badge_placement_config.badge_config_id, :user_id => session['user_id'])
+        @badge = Badge.first(:badge_placement_config_id => @badge_placement_config.badge_config_id, :user_id => session['user_id'])
         @course_id = @badge_placement_config.course_id
         @earned_for_different_course = @badge && @badge.badge_placement_config_id != @badge_placement_config.id
         if permission

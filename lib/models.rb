@@ -189,6 +189,10 @@ class BadgeConfig
       bc.set_badge_config(self)
       bc.save
       bc
+      Badge.all(:badge_config_id => self.id, :badge_placement_config_id => nil).each do |badge|
+        badge.badge_placement_config_id = bc.id
+        badge.save
+      end
     end
   end
   

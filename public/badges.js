@@ -67,6 +67,7 @@ function loadResults(url) {
     url: url,
     success: function(data) {
       $("#badges tbody .loading").remove();
+      var badge_placement_config_id = $("#badges").attr('data-badge_placement_config_id');
       var badge_config_id = $("#badges").attr('data-badge_config_id');
       for(var idx in data['objects']) {
         var badge = data['objects'][idx];
@@ -90,11 +91,11 @@ $(".nav-pills li").click(function(event) {
   $(".nav-pills li").removeClass('active');
   $(this).addClass('active');
   $("#badges tbody").empty();
-  var badge_config_id = $("#badges").attr('data-badge_config_id');
+  var badge_placement_config_id = $("#badges").attr('data-badge_placement_config_id');
   if($(this).attr('id') == 'current_students') {
-    loadResults("/api/v1/badges/current/" + badge_config_id + ".json");          
+    loadResults("/api/v1/badges/current/" + badge_placement_config_id + ".json");          
   } else {
-    loadResults("/api/v1/badges/awarded/" + badge_config_id + ".json");          
+    loadResults("/api/v1/badges/awarded/" + badge_placement_config_id + ".json");          
   }
 });
 $("#current_students").click();

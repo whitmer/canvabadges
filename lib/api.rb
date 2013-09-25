@@ -117,7 +117,7 @@ module Sinatra
         @api_request = true
         load_badge_config(params['badge_placement_config_id'], 'edit')
 
-        badges = Badge.all(:badge_config_id => @badge_placement_config_id)
+        badges = Badge.all(:badge_placement_config_id => @badge_placement_config_id)
         result = []
         next_url = nil
         params['page'] = '1' if params['page'].to_i == 0
