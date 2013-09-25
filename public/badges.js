@@ -154,13 +154,14 @@ $(document).on('click', '.select_badge_config', function(event) {
   var host = location.origin || (location.protocol + "//" + location.host);
   var launch = host + "/placement_launch";
   var $config = $(this).closest(".badge_config");
-  var badge_id = $config.attr('data-id')
-  var badge_name = "Badge: " + ($config.find(".name").val() || $config.find('.name').text() || "New Badge");
-  if(badge_id) {
-    launch = launch + "?badge_reuse_code=" + badge_id;
-  } else {
-    launch = launch + "?badge_name=" + encodeURIComponent(badge_name);
+  var badge_id = $config.attr('data-id') || $config.attr('data-proposed_id')
+  var badge_name = ($config.find(".name").val() || $config.find('.name').text() || "New Badge");
+  launch = launch + "?badge_reuse_code=" + badge_id;
+  if(!$config.attr('data-id')) {
+    launch = launch + "&badge_name=" + encodeURIComponent(badge_name);
   }
+
+  badge_name = "Badge: " + badge_name;
   var return_url = params.return_url;
   return_url = return_url + (return_url.match(/\?/) ? "&" : "?");
   location.href = return_url + "return_type=lti_launch_url&url=" + encodeURIComponent(launch) + "&text=" + encodeURIComponent(badge_name) + "&title=" + encodeURIComponent(badge_name);
