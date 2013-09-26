@@ -1,0 +1,46 @@
+<h2>Badges for this Course</h2>
+<h3>Earned Badges</h3>
+<div style="margin: 5px 0 20px;">
+  <% if @badges.empty? %>
+    <p>No badges earned</p>
+  <% else %>
+    <table>
+      <% @badges.each do |badge| %>
+        <% badge_url = "/badges/check/#{badge.badge_config_id}/#{badge.user_id}" %>
+        <tr>
+        <td style='padding: 0 5px;'><a href='<%= badge_url %>'><img src='<%= badge.badge_url %>' class='thumbnail' alt='badge image'/></a></td>
+        <td style='padding: 0 5px;'><%= badge.name %>
+          <form class='form-inline' action='/badges/<% badge.nonce %>' style='margin: 0 0 0 15px;'>
+          <label><input class='public_badge' <%= 'checked' if badge.public %> type='checkbox'/> public</label>
+          </form>
+        </td>
+        </tr>
+      <% end %>
+    </table>
+  <% end %>
+  <a href='/badges/all/<%= session['domain_id'] %>/<%= session['user_id'] %>'>See All Your Badges</a>
+</div>
+
+<h3>All Course Badges</h3>
+<div style="margin: 5px 0 20px;">
+  <% if @badge_placements.empty? %>
+    <p>No Badges Configured</p>
+  <% else %>
+    <% @badge_placements.each do |bp| %>
+      <div class="badge_config">
+        <% settings = bp.merged_settings || {} %>
+        <img src='<%= settings['badge_url'] %>' style='float: left; margin-right: 10px;' class='thumbnail'/>
+        <h2>
+          <a href="/badges/check/<%= bp.id %>/<%= session['user_id'] %>"><%= settings['badge_name'] || "Unnamed Badge" %></a></h2>
+        </h2>
+        <p class='desc'><%= settings['badge_description'] %></p>
+
+        <% if settings['hours'] %>
+          <p>Approx hours: <%= settings['hours'] %></p>
+        <% end %>
+
+        <div style='clear: left;'></div>
+      </div>
+    <% end %>
+  <% end %>
+</div>

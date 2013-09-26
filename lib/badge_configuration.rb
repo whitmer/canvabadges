@@ -7,6 +7,7 @@ module Sinatra
       
       # Link selection page for picking from existing badges or making a new one
       app.get "/badges/pick" do
+        @padless = true
         org_check
         load_user_config
         halt 404, error("No user information found") unless @user_config
@@ -15,7 +16,6 @@ module Sinatra
       end
       
       # configure badge settings.
-      # eventually the teacher will also use this to configure badge acceptance criteria
       app.post "/badges/settings/:badge_placement_config_id" do
         load_badge_config(params['badge_placement_config_id'], 'edit')
         
@@ -86,6 +86,15 @@ module Sinatra
         else
           halt 400, {:error => "user mismatch"}.to_json
         end
+      end
+      
+      app.post "/badges/disable/:badge_placement_config_id" do
+        load_badge_config(params['badge_placement_config_id'], 'edit')
+        settings = @badge_placement_config.settings
+        settings['pending'] = true
+        @badge_placement_config.settings = settings
+        @badge_placement_config.save
+        {:disabled => true}.to_json
       end
       
       # manually award a user with the course's badge

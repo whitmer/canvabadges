@@ -1,4 +1,4 @@
-<% settings = (@badge_placement_config && @badge_placement_config.merged_settings) || {}
+<% settings = @badge_placement_config.merged_settings || {}
    ref_code = settings['reference_code']
    advanced = ref_code || settings['modules'] || settings['manual_approval']
    disabled = false
@@ -146,6 +146,7 @@
       </div>
       <div class="form-actions" style="border: 0; background: transparent;">
         <button type="submit" class='btn btn-primary'>Save Badge Settings</button>
+        <button type="button" class='btn' id="disable_badge" rel="/badges/disable/<%= @badge_placement_config.id %>">Disable This Badge</button>
       </div>
     </fieldset>
   </form> 

@@ -34,7 +34,7 @@ module Sinatra
           halt 400, error("This app appears to have been misconfigured, please contact your instructor or administrator. Email address is required on user launches.")
         end
         if provider.valid_request?(request)
-          badgeless_placement = params['custom_show_all'] || params['ext_content_intended_use'] == 'navigation' || params['picker']
+          badgeless_placement = params['custom_show_all'] || params['custom_show_course'] || params['ext_content_intended_use'] == 'navigation' || params['picker']
           unless badgeless_placement
             bc = BadgePlacementConfig.first_or_new(:placement_id => params['resource_link_id'], :domain_id => domain.id, :course_id => params['custom_canvas_course_id'])
             bc.external_config_id ||= tool_config.id
@@ -96,6 +96,8 @@ module Sinatra
 
             if params['custom_show_all']
               redirect to("/badges/all/#{domain.id}/#{user_config.user_id}")
+            elsif params['custom_show_course']
+              redirect to("/badges/course/#{params['custom_canvas_course_id']}")
             elsif params['ext_content_intended_use'] == 'navigation' || params['picker']
               return_url = params['ext_content_return_url'] || params['launch_presentation_return_url'] || ""
               redirect to("/badges/pick?return_url=#{CGI.escape(return_url)}")

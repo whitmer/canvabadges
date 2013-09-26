@@ -7,24 +7,28 @@ module Sinatra
       
       app.get "/" do
         @full_footer = true
+        @padless = true
         org_check
         erb (@org.settings['template'] || :index).to_sym
       end
       
       app.get "/about" do
         @full_footer = true
+        @padless = true
         org_check
         erb :about
       end
       
       app.get "/stats" do
         @full_footer = true
+        @padless = true
         org_check
         erb :stats
       end
       
       app.get "/badges/public" do
         @full_footer = true
+        @padless = true
         org_check
         if @org.default? && params['this_org_only']
           @badge_configs = BadgeConfig.all(:public => true, :order => :updated_at.desc, :limit => 25)
@@ -36,6 +40,7 @@ module Sinatra
       
       app.get "/badges/public/awarded" do
         @full_footer = true
+        @padless = true
         org_check
         if @org.default? && !params['this_org_only']
           @badges = Badge.all(:state => 'awarded', :public => true, :order => :issued.desc, :limit => 25)
@@ -74,6 +79,15 @@ module Sinatra
         @domain = Domain.first(:id => params['domain_id'])
         @user = UserConfig.first(:user_id => params['user_id'], :domain_id => params['domain_id'])
         erb :user_badges
+      end
+      
+      app.get "/badges/course/:course_id" do
+        halt 404, error("Insufficient permissions") if !session["permission_for_#{params['course_id']}"]
+        @badges = Badge.all(:state => 'awarded', :user_id => session['user_id'], :course_id => params['course_id'], :domain_id => session['domain_id'])
+        @user = UserConfig.first(:user_id => session['user_id'], :domain_id => session['domain_id'])
+        halt 400, error("No user information found") unless @user
+        @badge_placements = BadgePlacementConfig.all(:course_id => params['course_id'], :domain_id => session['domain_id'], :order => :id.desc).select(&:configured?).uniq{|p| p.badge_config_id }
+        erb :course_badges
       end
       
       # the magic page, APIs it up to make sure the user has done what they need to,

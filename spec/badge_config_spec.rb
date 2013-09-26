@@ -88,6 +88,43 @@ describe 'Badge Configuration' do
     end
   end
   
+  describe "disabling badges" do
+    it "should do nothing if an invalid badge" do
+      example_org
+      post "/badges/disable/123"
+      last_response.should_not be_ok
+      assert_error_page("Configuration not found")
+      
+      badge_config
+      post "/badges/disable/#{@badge_placement_config.id}"
+      last_response.should_not be_ok
+      assert_error_page("Session information lost")
+
+      user
+      post "/badges/disable/#{@badge_placement_config.id}", {}, {'rack.session' => {'user_id' => @user.user_id}}
+      last_response.should_not be_ok
+      assert_error_page("Insufficient permissions")
+    end
+    
+    it "should require edit permissions" do
+      example_org
+      user
+      badge_config
+      post "/badges/disable/#{@badge_placement_config.id}", {}, {'rack.session' => {'user_id' => @user.user_id, "permission_for_#{@badge_placement_config.course_id}" => 'view'}}
+      last_response.should_not be_ok
+      assert_error_page("Insufficient permissions")
+    end
+    
+    it "should disable the badge if allowed" do
+      example_org
+      user
+      badge_config
+      post "/badges/disable/#{@badge_placement_config.id}", {}, {'rack.session' => {'user_id' => @user.user_id, "permission_for_#{@badge_placement_config.course_id}" => 'edit'}}
+      last_response.should be_ok
+      last_response.body.should == {:disabled => true}.to_json
+    end
+  end
+  
   describe "badge privacy" do
     it "should do nothing if an invalid badge" do
       award_badge(badge_config, user)

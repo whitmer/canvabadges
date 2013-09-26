@@ -15,6 +15,22 @@ $(".public_badge").change(function() {
     }
   });
 });
+$("#disable_badge").click(function() {
+  var result = confirm("Are you sure you want to disable this badge?");
+  if(!result) { return; }
+  var url = $(this).attr('rel');
+  $.ajax({
+    type: 'POST',
+    dataType: 'json',
+    url: url,
+    success: function() {
+      location.reload();
+    },
+    error: function() {
+      alert("Disable failed. Please try again.");
+    }
+  });
+});
 $("#evidence_url").change(function() {
   var url = $(this).closest("form").attr('rel');
   $.ajax({
@@ -156,12 +172,17 @@ $(document).on('click', '.select_badge_config', function(event) {
   var $config = $(this).closest(".badge_config");
   var badge_id = $config.attr('data-id') || $config.attr('data-proposed_id')
   var badge_name = ($config.find(".name").val() || $config.find('.name').text() || "New Badge");
-  launch = launch + "?badge_reuse_code=" + badge_id;
-  if(!$config.attr('data-id')) {
-    launch = launch + "&badge_name=" + encodeURIComponent(badge_name);
+  if(badge_id == 'list') {
+    launch = launch + "?custom_show_course=1";
+    badge_name = "All Badges";
+  } else {
+    launch = launch + "?badge_reuse_code=" + badge_id;
+    if(!$config.attr('data-id')) {
+      launch = launch + "&badge_name=" + encodeURIComponent(badge_name);
+    }
+    badge_name = "Badge: " + badge_name;
   }
 
-  badge_name = "Badge: " + badge_name;
   var return_url = params.return_url;
   return_url = return_url + (return_url.match(/\?/) ? "&" : "?");
   location.href = return_url + "return_type=lti_launch_url&url=" + encodeURIComponent(launch) + "&text=" + encodeURIComponent(badge_name) + "&title=" + encodeURIComponent(badge_name);

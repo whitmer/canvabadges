@@ -35,9 +35,15 @@
             top: -2px;
             position: absolute;
           }
+          <% if @padless %>
           body {
             padding-top: 0px;
           }
+          <% else %>
+          body {
+            padding-top: 40px;
+          }
+          <% end %>
           .earn_badge {
             cursor: pointer;
           }

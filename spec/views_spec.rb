@@ -101,6 +101,60 @@ describe 'Badging Models' do
     end
   end  
   
+  describe "course badges page" do
+    it "should require user permission" do
+      get "/badges/course/123"
+      last_response.should_not be_ok
+      assert_error_page("Insufficient permissions")
+    end
+    
+    it "should show earned badges for the current user in the course" do
+      award_badge(badge_config, user)
+      get "/badges/course/#{@badge_placement_config.course_id}", {}, 'rack.session' => {'user_id' => @user.user_id, 'domain_id' => @user.domain_id, "permission_for_#{@badge_placement_config.course_id}" => 'view'}
+      last_response.should be_ok
+      last_response.body.should match(@badge_config.settings['badge_name'])
+    end
+    
+    it "should not show unearned badges" do
+      award_badge(badge_config, user)
+      @badge.state = nil
+      @badge.save
+      get "/badges/course/#{@badge_placement_config.course_id}", {}, 'rack.session' => {'user_id' => @user.user_id, 'domain_id' => @user.domain_id, "permission_for_#{@badge_placement_config.course_id}" => 'view'}
+      last_response.should be_ok
+      last_response.body.should match(/No badges earned/)
+    end
+    
+    it "should show configured badge placements" do
+      award_badge(configured_badge, user)
+      get "/badges/course/#{@badge_placement_config.course_id}", {}, 'rack.session' => {'user_id' => @user.user_id, 'domain_id' => @user.domain_id, "permission_for_#{@badge_placement_config.course_id}" => 'view'}
+      last_response.should be_ok
+      last_response.body.should match(@badge_config.settings['badge_description'])
+    end
+    
+    it "should not show unconfigured badge placements" do
+      award_badge(badge_config, user)
+      s = @badge_placement_config.settings
+      s['pending'] = true
+      @badge_placement_config.settings = s
+      @badge_placement_config.save
+      get "/badges/course/#{@badge_placement_config.course_id}", {}, 'rack.session' => {'user_id' => @user.user_id, 'domain_id' => @user.domain_id, "permission_for_#{@badge_placement_config.course_id}" => 'view'}
+      last_response.should be_ok
+      last_response.body.should match(/No Badges Configured/)
+    end
+    
+    it "should not show badge configurations multiple times" do
+      award_badge(configured_badge, user)
+      @badge.state = nil
+      @badge.save
+      @bpc2 = BadgePlacementConfig.create(:badge_config_id => @badge_config.id, :course_id => @badge_placement_config.course_id, :domain_id => @badge_placement_config.domain_id, :settings => {'min_percent' => 10.0})
+      @bpc2.configured?.should == true
+      get "/badges/course/#{@badge_placement_config.course_id}", {}, 'rack.session' => {'user_id' => @user.user_id, 'domain_id' => @user.domain_id, "permission_for_#{@badge_placement_config.course_id}" => 'view'}
+      last_response.should be_ok
+      last_response.body.should_not match("/badges/check/#{@badge_placement_config.id}")
+      last_response.body.should match("/badges/check/#{@bpc2.id}")
+    end
+  end
+  
   describe "badge launch page" do
     it "should fail gracefully on invalid course, user or domain parameters" do
       badge_config
