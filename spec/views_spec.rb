@@ -248,6 +248,23 @@ describe 'Badging Models' do
         last_response.body.should match(/You've earned this badge!/)
       end      
       
+      it "should point out if the badge was earned somewhere other than the current placement" do
+        award_badge(configured_badge, user)
+        @bpc = BadgePlacementConfig.create(:badge_config_id => @badge_config.id)
+        @badge.badge_placement_config_id = @bpc.id
+        @badge.save
+
+        get "/badges/check/#{@badge_placement_config.id}/#{@user.user_id}", {}, 'rack.session' => {'user_id' => @user.user_id, "permission_for_#{@badge_placement_config.course_id}" => 'view', 'email' => 'student@example.com'}
+        last_response.should be_ok
+        last_response.body.should match(/Cool Badge/)
+        last_response.body.should match(/Checking badge status/)
+        
+        get "/badges/status/#{@badge_placement_config.id}/#{@user.user_id}", {}, 'rack.session' => {'user_id' => @user.user_id, "permission_for_#{@badge_placement_config.course_id}" => 'view', 'email' => 'student@example.com'}
+        last_response.should be_ok
+        last_response.body.should match(/You've earned this badge!/)
+        last_response.body.should match(/You earned this badge somewhere else/)
+      end      
+      
       it "should award the badge if final grade is the only criteria and is met" do
         configured_badge(50)
         user

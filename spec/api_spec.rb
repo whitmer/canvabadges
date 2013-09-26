@@ -96,6 +96,7 @@ describe 'Badges API' do
       last_response.body.should == {:meta => {:next => nil}, :objects => []}.to_json      
     end
     it "should return paginated results" do
+      CanvasAPI.should_not_receive(:api_call)
       award_badge(badge_config, user)
       @admin = @user
       55.times do

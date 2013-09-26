@@ -270,6 +270,7 @@ class BadgePlacementConfig
 
     self.save
     Badge.all(:badge_config_id => badge_config.id, :badge_placement_config_id => nil).update(:badge_placement_config_id => self.id)
+    Badge.all(:badge_config_id => badge_config.id, :course_id => nil).update(:course_id => self.course_id)
   end
   
   def check_for_awardees
@@ -500,6 +501,7 @@ class Badge
     badge.badge_placement_config = badge_placement_config
     badge.placement_id = badge_placement_config.placement_id
     badge.domain_id = badge_placement_config.domain_id
+    badge.course_id = badge_placement_config.course_id
 
     if settings && settings['org'] && settings['org'].is_a?(Hash)
       badge.issuer_image_url = settings['org']['image']

@@ -1,7 +1,9 @@
 <% settings = @badge_placement_config.merged_settings || {} %>
 <% if @badge && @badge.awarded? %>
   <h3>You've earned this badge!</h3>
-  <% if !@badge.manual_approval %>
+  <% if @badge.badge_placement_config_id != @badge_placement_config.id %>
+    You earned this badge somewhere else than this spot in this course.
+  <% elsif !@badge.manual_approval %>
     <% if @badge_placement_config.credit_based? %>
       To earn this badge you needed <%= settings['required_credits'] %> credits, which you've now done.
     <% elsif @badge_placement_config.modules_required? %>
