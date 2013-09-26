@@ -3,6 +3,9 @@
    advanced = ref_code || settings['modules'] || settings['manual_approval']
    disabled = false
 %>
+<% if !@badge_placement_config.configured? %>
+  <h3>This badge won't be available to students until it is saved.</h3>
+<% end %>
   <form class='well form-horizontal' style="margin-top: 15px;" method="post" action="/badges/settings/<%= @badge_placement_config_id %>">
     <h2>Badge Settings</h2>
     <img src="<%= settings['badge_url'] || '/badges/default.png' %>" style='float: left; margin-right: 10px; width: 90px; height: 90px;' class='thumbnail'/>
@@ -146,7 +149,7 @@
       </div>
       <div class="form-actions" style="border: 0; background: transparent;">
         <button type="submit" class='btn btn-primary'>Save Badge Settings</button>
-        <button type="button" class='btn' id="disable_badge" rel="/badges/disable/<%= @badge_placement_config.id %>">Disable This Badge</button>
+        <button type="button" class='btn' id="disable_badge" rel="/badges/disable/<%= @badge_placement_config.id %>">Disable This Badge Location</button>
       </div>
     </fieldset>
   </form> 

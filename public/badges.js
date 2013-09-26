@@ -16,7 +16,7 @@ $(".public_badge").change(function() {
   });
 });
 $("#disable_badge").click(function() {
-  var result = confirm("Are you sure you want to disable this badge?");
+  var result = confirm("Are you sure you want to disable this badge? It may still appear to students if it is placed more than in time in the course.");
   if(!result) { return; }
   var url = $(this).attr('rel');
   $.ajax({
