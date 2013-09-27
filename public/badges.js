@@ -1,8 +1,8 @@
-$("#redeem").click(function(event) {
+$(document).on('click', '#redeem', function(event) {
   event.preventDefault();
   OpenBadges.issue([$(this).attr('rel')]);
 });
-$(".public_badge").change(function() {
+$(document).on('change', ".public_badge", function() {
   var url = $(this).closest("form").attr('action');
   $.ajax({
     type: 'POST',
@@ -15,7 +15,7 @@ $(".public_badge").change(function() {
     }
   });
 });
-$("#disable_badge").click(function() {
+$(document).on('click', "#disable_badge", function() {
   var result = confirm("Are you sure you want to disable this badge? It may still appear to students if it is placed more than in time in the course.");
   if(!result) { return; }
   var url = $(this).attr('rel');
@@ -31,7 +31,7 @@ $("#disable_badge").click(function() {
     }
   });
 });
-$("#evidence_url").change(function() {
+$(document).on('change', "#evidence_url", function() {
   var url = $(this).closest("form").attr('rel');
   $.ajax({
     type: 'POST',
@@ -45,21 +45,22 @@ $("#evidence_url").change(function() {
   });
 });
 
-$("input.credits").change(function() {
+$(document).on('change', "input.credits", function() {
   var total = 0;
   $("input.credits").each(function() {
     total = total + (parseFloat($(this).val()) || 0);
   });
   $(".total_credits").text(total);
-}).filter(":first").change();
-$("#require_evidence").change(function() {
+})
+$("input.credits:first").change();
+$(document).on('change', "#require_evidence", function() {
   if($(this).attr('checked')) {
     $("#manual_approval").attr('checked', true).attr('disabled', true);
   } else {
     $("#manual_approval").attr('disabled', false);
   }
 }).change();
-$("#credit_based").change(function() {
+$(document).on('change', "#credit_based", function() {
   $(".credits").toggle($(this).attr('checked'));
   $("input.credits").change();
 }).change();
