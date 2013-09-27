@@ -7,7 +7,6 @@ module Sinatra
       
       # Link selection page for picking from existing badges or making a new one
       app.get "/badges/pick" do
-        @padless = true
         org_check
         load_user_config
         halt 404, error("No user information found") unless @user_config
@@ -38,6 +37,7 @@ module Sinatra
         placement_settings['hours'] = params['hours'].to_f.round(1)
         placement_settings['hours'] = nil if placement_settings['hours'] == 0
         placement_settings['pending'] = false
+        placement_settings['award_only'] = false
         placement_settings['credits_for_final_score'] = params['credits_for_final_score'].to_f.round(1)
         total_credits = placement_settings['credits_for_final_score']
         modules = []
@@ -129,6 +129,18 @@ module Sinatra
         @user_config = UserConfig.first(:domain_id => domain_id, :user_id => session['user_id']) if domain_id
       end
       
+      def permission_check(course_id, permission)
+        if permission
+          if !session['user_id']
+            halt 400, error("Session information lost")
+          elsif permission == 'view'
+            halt 404, error("Insufficient permissions") if !session["permission_for_#{course_id}"]
+          elsif permission == 'edit'
+            halt 404, error("Insufficient permissions") if session["permission_for_#{course_id}"] != 'edit'
+          end
+        end
+      end
+      
       def load_badge_config(badge_placement_config_id, permission=nil)
         @badge_placement_config = BadgePlacementConfig.first(:id => badge_placement_config_id)
         domain_id = @badge_placement_config && @badge_placement_config.domain_id
@@ -140,15 +152,7 @@ module Sinatra
         @badge = Badge.first(:badge_config_id => @badge_placement_config.badge_config_id, :user_id => session['user_id'])
         @course_id = @badge_placement_config.course_id
         @earned_for_different_course = @badge && @badge.badge_placement_config_id != @badge_placement_config.id
-        if permission
-          if !session['user_id']
-            halt 400, error("Session information lost")
-          elsif permission == 'view'
-            halt 404, error("Insufficient permissions") if !session["permission_for_#{@course_id}"]
-          elsif permission == 'edit'
-            halt 404, error("Insufficient permissions") if session["permission_for_#{@course_id}"] != 'edit'
-          end
-        end
+        permission_check(@course_id, permission)
         @admin = session["permission_for_#{@course_id}"] == 'edit'
         @placement_id = @badge_placement_config.placement_id
         @badge_placement_config_id = @badge_placement_config.id

@@ -5,5 +5,7 @@
 </div>
 <% if session["permission_for_#{@course_id}"] == 'edit' %>
   <%= erb :_student_list %>
-  <%= edit_course_html %>
+  <% if !@badge_placement_config.award_only? %>
+    <%= edit_course_html %>
+  <% end %>
 <% end %>

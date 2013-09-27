@@ -1,4 +1,7 @@
-<h2>Badges for this Course</h2>
+<h2 class="with_tall_image">
+  <img src="<%= @org.settings['image'] || "/organizations/default.png" %>" alt=""/>
+  Badges for this Course
+</h2>  
 <h3>Earned Badges</h3>
 <div style="margin: 5px 0 20px;">
   <% if @badges.empty? %>
@@ -44,3 +47,28 @@
     <% end %>
   <% end %>
 </div>
+
+<% if @other_badge_placements.length > 0 %>
+  <a href="#" id="show_other_badges">award a badge from another course</a>
+  <div style="display_none;" id="other_badges">
+    <h3>Award Other Badges</h3>
+    <div style="margin: 5px 0 20px;">
+      <% @other_placements.each do |bp| %>
+        <div class="badge_config">
+          <% settings = bp.merged_settings || {} %>
+          <img src='<%= settings['badge_url'] %>' style='float: left; margin-right: 10px;' class='thumbnail'/>
+          <h2>
+            <a href="/badges/add_to_course/<%= bp.id %>/<%= @course_id %>"><%= settings['badge_name'] || "Unnamed Badge" %></a></h2>
+          </h2>
+          <p class='desc'><%= settings['badge_description'] %></p>
+
+          <% if settings['hours'] %>
+            <p>Approx hours: <%= settings['hours'] %></p>
+          <% end %>
+
+          <div style='clear: left;'></div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+<% end %>

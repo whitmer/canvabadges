@@ -7,28 +7,24 @@ module Sinatra
       
       app.get "/" do
         @full_footer = true
-        @padless = true
         org_check
         erb (@org.settings['template'] || :index).to_sym
       end
       
       app.get "/about" do
         @full_footer = true
-        @padless = true
         org_check
         erb :about
       end
       
       app.get "/stats" do
         @full_footer = true
-        @padless = true
         org_check
         erb :stats
       end
       
       app.get "/badges/public" do
         @full_footer = true
-        @padless = true
         org_check
         if @org.default? && params['this_org_only']
           @badge_configs = BadgeConfig.all(:public => true, :order => :updated_at.desc, :limit => 25)
@@ -40,7 +36,6 @@ module Sinatra
       
       app.get "/badges/public/awarded" do
         @full_footer = true
-        @padless = true
         org_check
         if @org.default? && !params['this_org_only']
           @badges = Badge.all(:state => 'awarded', :public => true, :order => :issued.desc, :limit => 25)
@@ -81,13 +76,33 @@ module Sinatra
         erb :user_badges
       end
       
-      app.get "/badges/course/:course_id" do
-        halt 404, error("Insufficient permissions") if !session["permission_for_#{params['course_id']}"]
+      app.get "/badges/course/:course_id" do  
+        get_org
+        permission_check(params['course_id'], 'edit')
         @badges = Badge.all(:state => 'awarded', :user_id => session['user_id'], :course_id => params['course_id'], :domain_id => session['domain_id'])
         @user = UserConfig.first(:user_id => session['user_id'], :domain_id => session['domain_id'])
         halt 400, error("No user information found") unless @user
         @badge_placements = BadgePlacementConfig.all(:course_id => params['course_id'], :domain_id => session['domain_id'], :order => :id.desc).select(&:configured?).uniq{|p| p.badge_config_id }
+        @other_badge_placements = BadgeConfigOwner.all(:user_config_id => @user.id, BadgeConfigOwner.badge_placement_config.course_id.not => params['course_id']).map(&:badge_placement_config).select(&:configured?)
         erb :course_badges
+      end
+      
+      app.get "/badges/add_to_course/:badge_placement_id/:course_id" do
+        load_badge_config(params['badge_placement_id'], 'edit')
+        permission_check(params['course_id'], 'edit')
+        if @badge_placement_config.course_id == params['course_id']
+          @bp = @badge_placement_config
+        else
+          id = "#{params['course_id']}-#{session['domain_id']}"
+          @bp = BadgePlacementConfig.first_or_new(:course_id => params['course_id'], :domain_id => session['domain_id'], :placement_id => id)
+          @bp.badge_config_id = @badge_placement_config.badge_config_id
+          @bp.external_config_id = @badge_placement_config.external_config_id
+          @bp.organization_id = @badge_placement_config.organization_id
+          @bp.load_from_old_config(@user_config, @badge_placement_config)
+          @bp.settings['award_only'] = true
+          @bp.save
+        end
+        redirect to("/badges/check/#{@bp.id}/#{session['user_id']}")
       end
       
       # the magic page, APIs it up to make sure the user has done what they need to,
@@ -108,7 +123,11 @@ module Sinatra
           erb :badge_check
         else
           if session["permission_for_#{@course_id}"] == 'edit'
-            erb :manage_badge
+            if @badge_placement_config.award_only?
+              erb :badge_check
+            else
+              erb :manage_badge
+            end
           else
             return message("Your teacher hasn't set up this badge yet")
           end

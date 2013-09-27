@@ -130,6 +130,7 @@ class BadgeConfigOwner
   property :badge_placement_config_id, Integer
   belongs_to :badge_config
   belongs_to :user_config
+  belongs_to :badge_placement_config
 end
 
 class BadgeConfig
@@ -282,7 +283,7 @@ class BadgePlacementConfig
     end
   end
   
-  def load_from_old_config(user_config)
+  def load_from_old_config(user_config, old_config=nil)
     return nil if !self.settings['prior_resource_link_id'] || self.settings['already_loaded_from_old_config']
     old_config = BadgePlacementConfig.first(:placement_id => self.settings['prior_resource_link_id'], :domain_id => self.domain_id)
     if old_config
@@ -335,8 +336,12 @@ class BadgePlacementConfig
     settings && settings['pending']
   end
   
+  def award_only?
+    settings && settings['award_only']
+  end
+  
   def configured?
-    !!(self.settings && self.badge_config && self.badge_config.settings && self.badge_config.settings['badge_url'] && self.settings['min_percent'] && !self.settings['pending'])
+    !!(self.settings && self.badge_config && self.badge_config.settings && self.badge_config.settings['badge_url'] && self.settings['min_percent'] && !self.pending? && !self.award_only?)
   end
   
   def modules_required?

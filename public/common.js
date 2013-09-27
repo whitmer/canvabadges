@@ -410,10 +410,10 @@ function program11(depth0,data) {
   stack1 = stack2.call(depth0, stack1, tmp1);
   if(stack1 || stack1 === 0) { buffer += stack1; }
   buffer += "\n          <form class='form form-inline' method='POST' action='/badges/award/";
-  foundHelper = helpers.badge_config_id;
-  stack1 = foundHelper || depth0.badge_config_id;
+  foundHelper = helpers.badge_placement_config_id;
+  stack1 = foundHelper || depth0.badge_placement_config_id;
   if(typeof stack1 === functionType) { stack1 = stack1.call(depth0, { hash: {} }); }
-  else if(stack1=== undef) { stack1 = helperMissing.call(depth0, "badge_config_id", { hash: {} }); }
+  else if(stack1=== undef) { stack1 = helperMissing.call(depth0, "badge_placement_config_id", { hash: {} }); }
   buffer += escapeExpression(stack1) + "/";
   foundHelper = helpers.id;
   stack1 = foundHelper || depth0.id;
@@ -441,10 +441,10 @@ function program14(depth0,data) {
   
   var buffer = "", stack1;
   buffer += "\n          <img src='/redx.png' alt='not earned' class='earn_badge' title='not earned. click to manually award'/>\n          <form class='form form-inline' method='POST' action='/badges/award/";
-  foundHelper = helpers.badge_config_id;
-  stack1 = foundHelper || depth0.badge_config_id;
+  foundHelper = helpers.badge_placement_config_id;
+  stack1 = foundHelper || depth0.badge_placement_config_id;
   if(typeof stack1 === functionType) { stack1 = stack1.call(depth0, { hash: {} }); }
-  else if(stack1=== undef) { stack1 = helperMissing.call(depth0, "badge_config_id", { hash: {} }); }
+  else if(stack1=== undef) { stack1 = helperMissing.call(depth0, "badge_placement_config_id", { hash: {} }); }
   buffer += escapeExpression(stack1) + "/";
   foundHelper = helpers.id;
   stack1 = foundHelper || depth0.id;
