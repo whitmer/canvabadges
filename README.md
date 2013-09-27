@@ -69,12 +69,13 @@ Note that in a production environment you'll also need to set the SESSION_KEY en
 If you've been running Canvabadges for a little while, we've made a minor 
 change that will affect you. We have separated the badge configuration
 settings from badge completion settings, making it possible for two courses
-to use the same badge. This adds a lot of flexibility, and the migration
-isn't 100% required (the data should "catch up" on its own), but I'd suggest
+to use the same badge. This adds a lot of flexibility and will fix an
+unexpected error with large badge URLs (i.e. data-uri), so I'd suggest
 you get to a console and run the following command after updating your code:
 
 ```ruby
 BadgeConfig.generate_badge_placement_configs
+FixupMigration.enlarge_columns
 ```
 
 It may take a little while to run depending on how many badges you've got

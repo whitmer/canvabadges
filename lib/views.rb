@@ -78,7 +78,7 @@ module Sinatra
       
       app.get "/badges/course/:course_id" do  
         get_org
-        permission_check(params['course_id'], 'edit')
+        permission_check(params['course_id'], 'view')
         @badges = Badge.all(:state => 'awarded', :user_id => session['user_id'], :course_id => params['course_id'], :domain_id => session['domain_id'])
         @user = UserConfig.first(:user_id => session['user_id'], :domain_id => session['domain_id'])
         halt 400, error("No user information found") unless @user

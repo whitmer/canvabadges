@@ -30,3 +30,38 @@ module OAuthConfig
     oauth_config
   end
 end
+
+require 'dm-migrations/migration_runner'
+require 'dm-types'
+# I can never find good documentation on migrations for datamapper, don't judge
+module  FixupMigration
+  def self.enlarge_columns
+    migration 1, :enlarge_small_columns do
+      up do
+        # user config
+        modify_table :user_configs do
+          add_column :temp_access_token, String, :length => 512
+        end
+        adapter.execute("UPDATE user_configs SET temp_access_token=access_token")
+        modify_table :user_configs do
+          drop_column :access_token
+          rename_column :temp_access_token, :access_token
+        end
+
+        # badges
+        modify_table :badges do
+          add_column :temp_badge_url, DataMapper::Property::Text
+          add_column :temp_salt, String, :length => 512
+        end
+        adapter.execute("UPDATE badges SET temp_badge_url=badge_url, temp_salt=salt")
+        modify_table :badges do
+          drop_column :badge_url
+          drop_column :salt
+          rename_column :temp_badge_url, :badge_url
+          rename_column :temp_salt, :salt
+        end
+      end
+    end
+    migrate_up!
+  end
+end

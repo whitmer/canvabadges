@@ -100,9 +100,10 @@ module Sinatra
       # manually award a user with the course's badge
       app.post "/badges/award/:badge_placement_config_id/:user_id" do
         load_badge_config(params['badge_placement_config_id'], 'edit')
+        @badge_config = @badge_placement_config.badge_config
   
         settings = (@badge_placement_config && @badge_placement_config.merged_settings) || {}
-        if settings && settings['badge_url'] && settings['min_percent']
+        if @badge_config && @badge_config.configured? && (@badge_placement_config.configured? || @badge_placement_config.award_only?)
           json = api_call("/api/v1/courses/#{@course_id}/users?enrollment_type=student&include[]=email&user_id=#{params['user_id']}", @user_config)
           student = json.detect{|e| e['id'] == params['user_id'].to_i }
           if student

@@ -103,12 +103,15 @@ describe 'Badging Models' do
   
   describe "course badges page" do
     it "should require user permission" do
-      get "/badges/course/123"
+      example_org
+      user
+      get "/badges/course/123", {}, 'rack.session' => {'user_id' => @user.user_id}
       last_response.should_not be_ok
       assert_error_page("Insufficient permissions")
     end
     
     it "should show earned badges for the current user in the course" do
+      example_org
       award_badge(badge_config, user)
       get "/badges/course/#{@badge_placement_config.course_id}", {}, 'rack.session' => {'user_id' => @user.user_id, 'domain_id' => @user.domain_id, "permission_for_#{@badge_placement_config.course_id}" => 'view'}
       last_response.should be_ok
@@ -116,6 +119,7 @@ describe 'Badging Models' do
     end
     
     it "should not show unearned badges" do
+      example_org
       award_badge(badge_config, user)
       @badge.state = nil
       @badge.save
@@ -125,6 +129,7 @@ describe 'Badging Models' do
     end
     
     it "should show configured badge placements" do
+      example_org
       award_badge(configured_badge, user)
       get "/badges/course/#{@badge_placement_config.course_id}", {}, 'rack.session' => {'user_id' => @user.user_id, 'domain_id' => @user.domain_id, "permission_for_#{@badge_placement_config.course_id}" => 'view'}
       last_response.should be_ok
@@ -132,6 +137,7 @@ describe 'Badging Models' do
     end
     
     it "should not show unconfigured badge placements" do
+      example_org
       award_badge(badge_config, user)
       s = @badge_placement_config.settings
       s['pending'] = true
@@ -143,6 +149,7 @@ describe 'Badging Models' do
     end
     
     it "should not show badge configurations multiple times" do
+      example_org
       award_badge(configured_badge, user)
       @badge.state = nil
       @badge.save

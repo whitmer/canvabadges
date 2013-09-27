@@ -68,7 +68,7 @@ class UserConfig
   include DataMapper::Resource
   property :id, Serial
   property :user_id, String
-  property :access_token, String, :length => 256
+  property :access_token, String, :length => 512
   property :domain_id, Integer
   property :name, String, :length => 256
   property :image, String, :length => 512
@@ -400,7 +400,7 @@ class Badge
   property :course_id, String
   property :user_id, String
   property :domain_id, Integer
-  property :badge_url, String, :length => 256
+  property :badge_url, Text
   property :nonce, String
   property :badge_config_id, Integer
   property :badge_placement_config_id, Integer
@@ -409,7 +409,7 @@ class Badge
   property :description, Text
   property :credits_earned, Integer
   property :recipient, String, :length => 512
-  property :salt, String, :length => 256
+  property :salt, String, :length => 512
   property :issued, DateTime
   property :email, String
   property :evidence_url, String, :length => 4096
