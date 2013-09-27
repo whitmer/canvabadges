@@ -154,6 +154,8 @@ module Sinatra
           else
             return "<h3>You are not a student in this course, so you can't earn this badge</h3>"
           end
+        elsif @badge_placement_config && @badge_placement_config.award_only?
+          return ""
         else
           return "<h3>Error retrieving badge status</h3>"
         end

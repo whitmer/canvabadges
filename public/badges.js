@@ -77,6 +77,10 @@ $(".more").live('click', function(event) {
 $('.evidence_link').live('click', function(event) {
   $(this).closest("tr").addClass('selected_row');
 });
+$("#show_other_badges").live('click', function(event) {
+  $(this).hide();
+  $("#other_badges").show();
+});
 function loadResults(url) {
   $("#badges tbody").append("<tr class='loading'><td colspan='3'>Loading...</td></tr>");
   $.ajax({

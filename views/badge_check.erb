@@ -1,8 +1,10 @@
 <% @badge_config = @badge_placement_config.badge_config %>
 <%= erb :_badge_description %>
-<div id="student_badge" rel="/badges/status/<%= @badge_placement_config_id %>/<%= params['user_id'] %>">
-  <h3>Checking badge status...</h3>
-</div>
+<% unless @badge_placement_config.award_only? %>
+  <div id="student_badge" rel="/badges/status/<%= @badge_placement_config_id %>/<%= params['user_id'] %>">
+    <h3>Checking badge status...</h3>
+  </div>
+<% end %>
 <% if session["permission_for_#{@course_id}"] == 'edit' %>
   <%= erb :_student_list %>
   <% if !@badge_placement_config.award_only? %>
