@@ -12,7 +12,7 @@
 <% end %>
 <table>
   <% @badges.each do |badge| %>
-    <% badge_url = @for_current_user ? "/badges/check/#{badge.badge_config_id}/#{badge.user_id}" : "/badges/criteria/#{badge.badge_config_id}/#{badge.config_nonce}?user=#{badge.nonce}" %>
+    <% badge_url = @for_current_user ? "/badges/check/#{badge.badge_placement_config_id}/#{badge.user_id}" : "/badges/criteria/#{badge.badge_config_id}/#{badge.config_nonce}?user=#{badge.nonce}" %>
     <tr>
     <td style='padding: 0 5px;'><a href='<%= badge_url %>'><img src='<%= badge.badge_url %>' class='thumbnail' alt='badge image'/></a></td>
     <td style='padding: 0 5px;'><%= badge.name %>
