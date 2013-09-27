@@ -63,7 +63,8 @@ $(document).on('change', "#require_evidence", function() {
 $(document).on('change', "#credit_based", function() {
   $(".credits").toggle($(this).attr('checked'));
   $("input.credits").change();
-}).change();
+})
+$("#credit_based").change();
 
 $(".earn_badge").live('click', function() {
   $(this).parent().find("form").css('visibility', 'visible');
