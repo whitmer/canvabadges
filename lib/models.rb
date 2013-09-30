@@ -158,6 +158,9 @@ class BadgeConfig
   def as_json(host_with_port)
     settings = self.settings || {}
     image = settings['badge_url'] || "/badges/default.png"
+    if settings['badge_url'].match(/^data:/)
+      image = "/badges/from_config/#{self.id}/#{self.nonce}/badge.png"
+    end
     image = "#{BadgeHelper.protocol}://" + host_with_port + image if image.match(/^\//)
     {
       :name => settings['badge_name'],
@@ -430,6 +433,13 @@ class Badge
   after :save, :check_for_notify_on_award
   
   def open_badge_json(host_with_port)
+    image = self.badge_url
+    if image && image.match(/^data:/) && self.badge_config
+      bc = self.badge_config
+      image = "/badges/from_badge/#{self.id}/#{self.nonce}/badge.png"
+      image = "#{BadgeHelper.protocol}://" + host_with_port + image
+    end
+
     {
       :uid => self.id.to_s,
       :recipient => {
@@ -444,7 +454,7 @@ class Badge
         :url => "#{BadgeHelper.protocol}://#{host_with_port}/api/v1/badges/data/#{self.badge_config_id}/#{self.user_id}/#{self.nonce}.json"
       },
       :issuedOn => (self.issued && self.issued.strftime("%Y-%m-%d")),
-      :image => self.badge_url,
+      :image => image,
       :evidence => (self.evidence_url || "#{BadgeHelper.protocol}://#{host_with_port}/badges/criteria/#{self.badge_config_id}/#{self.config_nonce}?user=#{self.nonce}")
     }
   end

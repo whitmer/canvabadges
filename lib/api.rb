@@ -84,6 +84,24 @@ module Sinatra
       app.get "/api/v1/badges/current/:badge_placement_config_id.json" do
         api_response(badge_list(false, params, session))
       end
+      
+      app.get "/badges/from_:type/:id/:nonce/badge.png" do
+        url = nil
+        if params['type'] == 'config'
+          bc = BadgeConfig.first(:id => params['id'], :nonce => params['nonce'])
+          url = bc && bc.settings && bc.settings['badge_url']
+        elsif params['type'] == 'badge'
+          b = Badge.first(:id => params['id'], :nonce => params['nonce'])
+          url = b && b.badge_url
+        end
+        if url && url.match(/^data/)
+          str = url.sub(/^data:image\/png;base64,/, '')
+          content_type "image/png"
+          Base64.strict_decode64(str)
+        else
+          "Badge image not found"
+        end
+      end
     end
     
     module Helpers
