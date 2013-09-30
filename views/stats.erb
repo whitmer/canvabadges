@@ -12,25 +12,25 @@
       </tr>
       <tr>
         <% if @org.default? && !params['this_org_only'] %>
-          <td>Badges Configured <a class="sub" href="/badges/public">see public badges</a></td>
+          <td>Badges Configured <a class="sub" href="/badges/public">see earnable public badges</a></td>
           <td><%= BadgeConfig.count %></td>
         <% else %>
-          <td>Badges Configured <a class="sub" href="/badges/public?this_org_only=1">see public badges</a></td>
+          <td>Badges Configured <a class="sub" href="/badges/public?this_org_only=1">see earnable public badges</a></td>
           <td><%= BadgeConfig.all(:organization_id => @org.id).count %></td>
         <% end %>
       </tr>
       <tr>
         <% if @org.default? && !params['this_org_only'] %>
-          <td>Badges Awarded <a class="sub" href="/badges/public/awarded">see shared badges</a></td>
+          <td>Badges Awarded <a class="sub" href="/badges/public/awarded">see learner-shared badges</a></td>
           <td><%= Badge.count %></td>
         <% else %>
-          <td>Badges Awarded <a class="sub" href="/badges/public/awarded?this_org_only=1">see shared badges</a></td>
+          <td>Badges Awarded <a class="sub" href="/badges/public/awarded?this_org_only=1">see learner-shared badges</a></td>
           <td><%= Badge.all(Badge.badge_config.organization_id => @org.id).count %></td>
         <% end %>
       </tr>
       <% if @org.default? && !params['this_org_only'] %>
         <tr>
-          <td>Domains</td>
+          <td>Canvas Domains</td>
           <td><%= Domain.count %></td>
         </tr>
         <tr>
