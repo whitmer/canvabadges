@@ -33,12 +33,18 @@ def configured_school
 end
 
 def get_with_session(path, hash={}, args={})
-  args['rack.session'] = session.merge(args['rack.session'] || {})
+  args['rack.session'] ||= {}
+  session.keys.each do |k, v|
+    args['rack.session'][k] = v unless args['rack.session'][k] == nil
+  end
   get path, hash, args
 end
 
 def post_with_session(path, hash={}, args={})
-  args['rack.session'] = session.merge(args['rack.session'] || {})
+  args['rack.session'] ||= {}
+  session.keys.each do |k, v|
+    args['rack.session'][k] = v unless args['rack.session'][k] == nil
+  end
   post path, hash, args
 end
 
