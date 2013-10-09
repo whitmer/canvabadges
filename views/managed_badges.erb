@@ -1,0 +1,32 @@
+<h2><img src="<%= @org.settings['image'] || "/organizations/default.png" %>" alt=""/> Manage Your Badges</h2>
+<p style="margin-top: -35px; padding-left: 95px;">...which really just means you can delete badges you don't use anymore</p>
+
+<div class="row">
+<div class="span10 offset1" style="padding-top: 15px;">
+  <% @badge_configs.each do |bc| %>
+    <div class="badge_config select_badge_config" data-id="<%= bc.reuse_code %>" style="cursor: pointer;">
+      <% settings = bc.settings || {} %>
+      <img src='<%= settings['badge_url'] %>' style='float: left; margin-right: 10px;' class='thumbnail'/>
+      <h2>
+        <a href="#" class='name'><%= settings['badge_name'] || "Unnamed Badge" %></a>
+      </h2>
+      <p class='desc'><%= settings['badge_description'] %></p>
+
+      <a href="#" class="btn unlink">Unlink This Badge</a>
+      <div style='clear: left;'></div>
+    </div>
+  <% end %>  
+  <div class="badge_config" data-proposed_id="<%= code %>">
+    <img src='data:image/png;base64,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' style='float: left; margin-right: 10px;' class='thumbnail'/>
+    <h2>
+    Create a New Badge (not tied to a specific course)
+    </h2>
+    <p class='desc' style="max-height: none; margin-top: -20px; padding-bottom: 5px;">
+      <input type="text" name="name" placeholder="Badge Name" class="name"/>
+      <button type="button" class="select_badge_config btn">Add Badge</button>
+      ... with a lot more settings as well
+    </p>
+    <div style='clear: left;'></div>
+  </div>
+</div>
+</div>
