@@ -98,7 +98,7 @@ describe 'Badge Configuration' do
       badge_config
       post "/badges/disable/#{@badge_placement_config.id}"
       last_response.should_not be_ok
-      assert_error_page("Session information lost")
+      assert_error_page("Session Information Lost")
 
       user
       post "/badges/disable/#{@badge_placement_config.id}", {}, {'rack.session' => {'user_id' => @user.user_id}}
@@ -223,14 +223,14 @@ describe 'Badge Configuration' do
       user
       post "/badges/award/#{@badge_placement_config.id}/#{@user.user_id}", {}, 'rack.session' => {}
       last_response.should_not be_ok
-      assert_error_page("Session information lost")
+      assert_error_page("Session Information Lost")
     end
     
     it "should do nothing for an invalid course or user" do
       badge_config
       post "/badges/award/#{@badge_placement_config.id}/asdfjkl", {}, 'rack.session' => {"permission_for_#{@badge_placement_config.course_id}" => 'edit'}
       last_response.should_not be_ok
-      assert_error_page("Session information lost")
+      assert_error_page("Session Information Lost")
 
       post "/badges/award/asdf/asdfjkl", {}, 'rack.session' => {'permission_for_asdf' => 'edit', 'user_id' => 'asdf'}
       last_response.should_not be_ok

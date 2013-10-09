@@ -179,6 +179,8 @@ module Sinatra
       def error(text)
         if @api_request
           halt 400, {:error => true, :message => text}.to_json
+        elsif text == "Session information lost" 
+          halt 400, erb(:session_lost)
         else
           halt 400, message(text)
         end

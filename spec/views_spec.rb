@@ -172,7 +172,7 @@ describe 'Badging Models' do
       
       get "/badges/check/#{@badge_config.id}/00"
       last_response.should_not be_ok
-      assert_error_page("Session information lost")
+      assert_error_page("Session Information Lost")
     end
     
     it "should allow instructors/admins to configure unconfigured badges" do

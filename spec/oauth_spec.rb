@@ -393,4 +393,12 @@ describe 'Badging OAuth' do
       OAuthConfig.oauth_config(@org).should == c
     end
   end
+  
+  describe "session fix" do
+    it "should set session" do
+      get "/session_fix"
+      last_response.body.should match(/Session Fixer/)
+      session['has_session'].should == true
+    end
+  end
 end

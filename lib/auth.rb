@@ -184,6 +184,11 @@ module Sinatra
         @conf = ExternalConfig.generate(screen_name)
         erb :config_tokens
       end
+      
+      app.get "/session_fix" do
+        session['has_session'] = true
+        erb :session_fixed
+      end
     end
     module Helpers
       def consumer
