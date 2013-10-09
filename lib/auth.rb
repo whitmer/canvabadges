@@ -110,7 +110,7 @@ module Sinatra
   
       app.get "/oauth_success" do
         if !session['domain_id'] || !session['user_id'] || !session['source_id']
-          return error("Launch parameters lost")
+          halt 400, erb(:session_lost)
         end
         domain = Domain.first(:id => session['domain_id'])
         return_url = "#{protocol}://#{request.host_with_port}/oauth_success"
@@ -215,7 +215,7 @@ module Sinatra
           redirect to("/badges/pick?return_url=#{CGI.escape(return_url)}")
         else
           if !config_id
-            return error("Launch parameters lost")
+            halt 400, erb(:session_lost)
           end
           redirect to("/badges/check/#{config_id}/#{user_id}")
         end

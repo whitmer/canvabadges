@@ -194,3 +194,6 @@ $(document).on('click', '.select_badge_config', function(event) {
   return_url = return_url + (return_url.match(/\?/) ? "&" : "?");
   location.href = return_url + "return_type=lti_launch_url&url=" + encodeURIComponent(launch) + "&text=" + encodeURIComponent(badge_name) + "&title=" + encodeURIComponent(badge_name);
 });
+$(document).on('click', '#session_fixer', function(event) {
+  window.open("/session_fix", "Session Fixer", "width=400,height=300,resizable=no,menubar=no,location=no,toolbar=no");
+});

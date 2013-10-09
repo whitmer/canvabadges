@@ -318,7 +318,7 @@ describe 'Badging OAuth' do
   describe "GET oauth_success" do
     it "should error if session details are not preserved" do
       get "/oauth_success"
-      assert_error_page("Launch parameters lost")
+      assert_error_page("Session Information Lost")
     end
       
     it "should error if token cannot be properly exchanged" do
