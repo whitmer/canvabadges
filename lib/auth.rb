@@ -49,10 +49,6 @@ module Sinatra
               specified_badge_config = BadgeConfig.first(:reuse_code => params['badge_reuse_code'])
               if specified_badge_config && bc.organization_id == specified_badge_config.organization_id && bc.badge_config != specified_badge_config && !bc.configured?
                 bc.set_badge_config(specified_badge_config)
-              elsif !specified_badge_config && params['badge_reuse_code'].length > 20
-                config = bc.badge_config
-                config.reuse_code ||= params['badge_reuse_code']
-                config.save
               end
             else
               old_style_badge_config = BadgeConfig.first(:placement_id => params['resource_link_id'], :domain_id => domain.id, :course_id => params['custom_canvas_course_id'])
@@ -64,6 +60,7 @@ module Sinatra
               conf = BadgeConfig.new(:organization_id => bc.organization_id)
               conf.settings = {}
               conf.settings['badge_name'] = params['badge_name'] if params['badge_name']
+              conf.reuse_code = params['badge_reuse_code'] if params['badge_reuse_code'] && params['badge_reuse_code'].length > 20
               conf.save
               bc.badge_config = conf
             end
