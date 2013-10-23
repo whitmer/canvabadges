@@ -27,8 +27,8 @@ module Sinatra
         domain.name = params['tool_consumer_instance_name']
         domain.save
         provider = IMS::LTI::ToolProvider.new(key, secret, params)
-        if !params['custom_canvas_user_id'] || !params['custom_canvas_course_id']
-          halt 400, error("This app appears to have been misconfigured, please contact your instructor or administrator. Course must be a Canvas course, and launched with public permission settings")
+        if !params['custom_canvas_user_id']
+          halt 400, error("This app appears to have been misconfigured, please contact your instructor or administrator. App must be launched with public permission settings.")
         end
         if !params['lis_person_contact_email_primary']
           halt 400, error("This app appears to have been misconfigured, please contact your instructor or administrator. Email address is required on user launches.")
@@ -36,6 +36,9 @@ module Sinatra
         if provider.valid_request?(request)
           badgeless_placement = params['custom_show_all'] || params['custom_show_course'] || params['ext_content_intended_use'] == 'navigation' || params['picker']
           unless badgeless_placement
+            if !params['custom_canvas_course_id']
+              halt 400, error("This app appears to have been misconfigured, please contact your instructor or administrator. Course must be a Canvas course, and launched with public permission settings.")
+            end
             bc = BadgePlacementConfig.first_or_new(:placement_id => params['resource_link_id'], :domain_id => domain.id, :course_id => params['custom_canvas_course_id'])
             bc.external_config_id ||= tool_config.id
             bc.organization_id = tool_config.organization_id if !bc.id
