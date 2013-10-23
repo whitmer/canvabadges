@@ -1,4 +1,7 @@
 $(function() {
+  // NOTE: if pasting this code into another script, you'll need to manually change the
+  // next line. Instead of assigning the value null, you need to assign the value of
+  // the Canvabadges domain, i.e. "https://canvabadges.herokuapp.com"
   var protocol_and_host = null;
   var $scripts = $("script");
   $("script").each(function() {
@@ -8,6 +11,9 @@ $(function() {
       protocol_and_host = splits[0] + "//" + splits[2];
     }
   });
+  if(!protocol_and_host) {
+    console.log("Couldn't find a valid protocol and host. Canvabadges will not appear on profile pages until this is fixed.");
+  }
   var match = location.href.match(/\/users\/(\d+)$/);
   if(match && protocol_and_host) {
     var user_id = match[1];
