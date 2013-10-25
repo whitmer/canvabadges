@@ -92,8 +92,10 @@ module Sinatra
           session['domain_id'] = domain.id.to_s
           session['params_stash'] = hash_slice(params, 'custom_show_all', 'custom_show_course', 'ext_content_intended_use', 'picker', 'custom_canvas_course_id', 'launch_presentation_return_url', 'ext_content_return_url')
           session['custom_show_all'] = params['custom_show_all']
-          # if we already have an oauth token then we're good
-          if user_config
+
+          # if we already have an oauth token then make sure it works
+          json = CanvasAPI.api_call("/api/v1/users/self/profile", user_config) if user_config
+          if user_config && json && json['id']
             user_config.image = params['user_image']
             user_config.save
             session['user_id'] = user_config.user_id
