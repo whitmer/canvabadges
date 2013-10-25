@@ -8,6 +8,7 @@ require 'oauth/request_proxy/rack_request'
 require 'ims/lti'
 require 'digest/md5'
 require 'net/http'
+require 'rack/iframe'
 
 require './lib/models.rb'
 require './lib/auth.rb'
@@ -21,6 +22,8 @@ class Canvabadges < Sinatra::Base
   register Sinatra::Api
   register Sinatra::BadgeConfiguration
   register Sinatra::Views
+  
+  use Rack::Iframe
   
   # sinatra wants to set x-frame-options by default, disable it
   disable :protection
