@@ -65,6 +65,7 @@ class ExternalConfig
 end
 
 class UserConfig
+  # NOTE: Right now the code assumes if a UserConfig exists then there is an access token attached.
   include DataMapper::Resource
   property :id, Serial
   property :user_id, String
