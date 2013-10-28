@@ -289,7 +289,8 @@ class BadgePlacementConfig
   def load_from_old_config(user_config, old_config=nil)
     self.settings ||= {}
     return nil if !self.settings['prior_resource_link_id'] || self.settings['already_loaded_from_old_config']
-    old_config = BadgePlacementConfig.first(:placement_id => self.settings['prior_resource_link_id'], :domain_id => self.domain_id)
+    old_config ||= BadgePlacementConfig.first(:placement_id => self.settings['prior_resource_link_id'], :domain_id => self.domain_id)
+    old_config ||= BadgePlacementConfig.first(:placement_id => self.settings['prior_resource_link_id'], :badge_config_id => self.badge_config_id)
     if old_config
       # load config settings from previous badge config
       self.settings = old_config.settings
