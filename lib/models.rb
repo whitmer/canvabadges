@@ -308,7 +308,7 @@ class BadgePlacementConfig
         old_config.settings['modules'].each do |id, str, credits|
           new_module = modules_json.detect{|m| m['name'] == str}
           if new_module
-            new_modules << [new_module['id'].to_s, str, credits]
+            new_modules << [new_module['id'].to_s.to_i, str, credits]
           else
             all_found = false
           end

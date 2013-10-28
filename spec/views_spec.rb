@@ -268,7 +268,7 @@ describe 'Badging Models' do
         bc2.reload
         bc2.should be_pending
         bc2.settings['badge_url'].should == bc1.settings['badge_url']
-        bc2.settings['modules'][0].should == ['4', "Module 1", 0]
+        bc2.settings['modules'][0].should == [4, "Module 1", 0]
         bc2.settings['modules'][1].should == nil
       end
     
@@ -291,8 +291,8 @@ describe 'Badging Models' do
         bc2.reload
         bc2.should_not be_pending
         bc2.settings['badge_url'].should == bc1.settings['badge_url']
-        bc2.settings['modules'][0].should == ['4', "Module 1", 0]
-        bc2.settings['modules'][1].should == ['5', "Module 2", 0]
+        bc2.settings['modules'][0].should == [4, "Module 1", 0]
+        bc2.settings['modules'][1].should == [5, "Module 2", 0]
       end
     end
     
