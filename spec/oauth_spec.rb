@@ -451,6 +451,27 @@ describe 'Badging OAuth' do
       last_response.should be_redirect
       last_response.location.should == "http://example.org/badges/course/1"
     end
+    
+    it "should maintaint session variables across oauth flow" do
+      example_org
+      user
+      ExternalConfig.create(:config_type => 'lti', :value => '123', :organization_id => @org.id)
+      ExternalConfig.create(:config_type => 'canvas_oauth', :value => '456')
+      IMS::LTI::ToolProvider.any_instance.stub(:valid_request?).and_return(true)
+      IMS::LTI::ToolProvider.any_instance.stub(:roles).and_return(['instructor'])
+      CanvasAPI.should_receive(:api_call).and_return({'id' => '123'})
+      post "/placement_launch", {'custom_show_course' => '1', 'oauth_consumer_key' => '123', 'tool_consumer_instance_guid' => 'something.bob.com', 'resource_link_id' => '2s3d', 'custom_canvas_user_id' => @user.user_id, 'custom_canvas_course_id' => '1', 'lis_person_contact_email_primary' => 'bob@example.com', 'launch_presentation_return_url' => 'http://www.example.com'}
+      last_response.should be_redirect
+
+      fake_response = OpenStruct.new(:body => {:access_token => '1234', 'user' => {'id' => 'zxcv'}}.to_json)
+      Net::HTTP.any_instance.should_receive(:request).and_return(fake_response)
+      get "/oauth_success?code=asdfjkl", {}, 'rack.session' => session
+      last_response.should be_redirect
+      last_response.location.should == "http://example.org/badges/course/1"
+      session['domain_id'].should == @domain.id
+      session['user_id'].should == @user.user_id
+      session['permission_for_1'].should == 'edit'
+    end
   end  
   
   describe "oauth_config" do

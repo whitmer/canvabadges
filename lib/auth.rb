@@ -142,10 +142,13 @@ module Sinatra
           user_config.save
           params_stash = session['params_stash']
           launch_badge_placement_config_id = session['launch_badge_placement_config_id']
+          launch_course_id = session["launch_course_id"]
+          permission = session["permission_for_#{launch_course_id}"]
 
           session.destroy
           session['user_id'] = user_config.user_id.to_s
           session['domain_id'] = user_config.domain_id.to_s.to_i
+          session["permission_for_#{launch_course_id}"] = permission
 
           launch_redirect(launch_badge_placement_config_id, user_config.domain_id, user_config.user_id, params_stash)
         else
