@@ -143,6 +143,8 @@ module Sinatra
             begin
               args = @user_config.check_badge_status(@badge_placement_config, params, session['name'], session['email'])
             rescue => e
+              puts e.message
+              puts e.backtrace
               return "<h3>#{e.message}</h3>"
             end
             @student = args[:student]
