@@ -62,7 +62,7 @@
     To earn this badge you need to earn <%= settings['required_credits'] %> credits. Credits are available for the following activities:
     <% completed_score = @badge_placement_config.required_score_met?(@student['computed_final_score']) %>
     <% credits = completed_score ? settings['credits_for_final_score'] : 0 %>
-    <ul style='list-style-type: none;'>
+    <ul class="badge_earn_list">
       <li><img src='<%= completed_score ? '/check.gif' : '/redx.png' %>'/> Final score of at least <%= settings['min_percent'] %>% (currently <%= @student['computed_final_score'].to_f %>%): <%= settings['credits_for_final_score'] %> credits</li>
     <% @badge_placement_config.required_modules.each do |id, name, credit| %>
       <% complete = @completed_module_ids.include?(id.to_i) %>
@@ -82,7 +82,7 @@
         achieved = completed_score ? 1 : 0 
       end
     %>
-    <ul style='list-style-type: none;'>
+    <ul class="badge_earn_list">
     <% if settings['min_percent'] && settings['min_percent'] > 0 %>
       <li><img src='<%= completed_score ? '/check.gif' : '/redx.png' %>'/> Final score of at least <%= settings['min_percent'] %>% (currently <%= @student['computed_final_score'].to_f %>%)</li>
     <% end %>
