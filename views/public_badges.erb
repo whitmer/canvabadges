@@ -4,6 +4,7 @@
     <% if @badges.length == 0 %><h3>Nothing to Show</h3><% end %>
     <% @badges.each do |badge| %>
       <% bc = badge.badge_config %>
+      <% bpc = badge.badge_placement_config %>
       <% if bc %>
         <div class="badge_config">
           <% badge_url = "#{BadgeHelper.protocol}://" + bc.organization.host + 
@@ -13,14 +14,14 @@
             <img src='<%= badge.badge_url %>' style='float: left; margin-right: 10px;' class='thumbnail'/>
           </a>
           <h2><%= badge.user_full_name %>, 
-          <% if bc.settings['course_url'] %>
-            <a href="<%= bc.settings['course_url'] %>"><%= badge.name %></a></h2>
+          <% if bpc.settings['course_url'] %>
+            <a href="<%= bpc.settings['course_url'] %>"><%= badge.name %></a></h2>
           <% else %>
             <%= badge.name %></h2>
           <% end %>
           <p class='desc'><%= badge.description %></p>
 
-          <% if bc.settings['hours'] %>
+          <% if bpc.settings['hours'] %>
             <p>Approx hours: <%= bc.settings['hours'] %></p>
           <% end %>
           <% org = bc.organization %>

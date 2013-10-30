@@ -5,18 +5,20 @@
     <% @badge_configs.each do |bc| %>
       <div class="badge_config">
         <% settings = bc.settings || {} %>
+        <% placements = bc.badge_placement_configs.select{|c| !c.award_only? } %>
+        <% bpc = placements.last %>
         <img src='<%= settings['badge_url'] %>' style='float: left; margin-right: 10px;' class='thumbnail'/>
         <h2>
-        <% if settings['course_url'] %>
-          <a href="<%= settings['course_url'] %>"><%= settings['badge_name'] || "Unnamed Badge" %></a></h2>
+        <% if bpc && bpc.settings && bpc.settings['course_url'] %>
+          <a href="<%= bpc.settings['course_url'] %>"><%= settings['badge_name'] || "Unnamed Badge" %></a></h2>
         <% else %>
           <%= settings['badge_name'] || "Unnamed Badge" %></h2>
         <% end %>
         </h2>
         <p class='desc'><%= settings['badge_description'] %></p>
 
-        <% if settings['hours'] %>
-          <p>Approx hours: <%= settings['hours'] %></p>
+        <% if bpc && bpc.settings && bpc.settings['hours'] %>
+          <p>Approx hours: <%= bpc.settings['hours'] %></p>
         <% end %>
         <% org = bc.organization %>
         <% settings = (org && org.settings) || BadgeHelper.issuer %>
