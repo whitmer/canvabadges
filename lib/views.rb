@@ -52,6 +52,7 @@ module Sinatra
   
       # public page that shows requirements for badge completion
       app.get "/badges/criteria/:id/:nonce" do
+        org_check
         @badge_config = BadgeConfig.first(:id => params['id'], :nonce => params['nonce'])
         if !@badge_config
           return error("Badge not found")
@@ -68,6 +69,7 @@ module Sinatra
       
       # show all public badges for the specified user
       app.get "/badges/all/:domain_id/:user_id" do
+        org_check
         @for_current_user = session['user_id'] == params['user_id'] && session['domain_id'] == params['domain_id']
         @badges = Badge.all(:user_id => params['user_id'], :domain_id => params['domain_id'], :state => 'awarded')
         @badges = @badges.select{|b| b.public } unless @for_current_user
@@ -88,6 +90,7 @@ module Sinatra
       end
       
       app.get "/badges/add_to_course/:badge_placement_id/:course_id" do
+        org_check
         load_badge_config(params['badge_placement_id'], 'edit')
         permission_check(params['course_id'], 'edit')
         if @badge_placement_config.course_id == params['course_id']
@@ -108,6 +111,7 @@ module Sinatra
       # the magic page, APIs it up to make sure the user has done what they need to,
       # shows the results and lets them add the badge if they're done
       app.get "/badges/check/:badge_placement_config_id/:user_id" do
+        org_check
         load_badge_config(params['badge_placement_config_id'], 'view')
         
         if @user_config && session["permission_for_#{@course_id}"] == 'edit'
@@ -135,6 +139,7 @@ module Sinatra
       end
 
       app.get "/badges/status/:badge_placement_config_id/:user_id" do
+        org_check
         load_badge_config(params['badge_placement_config_id'], 'view')
         if @badge_placement_config && @badge_placement_config.configured?
           if @badge && !@badge.needing_evaluation?

@@ -14,7 +14,7 @@ RSpec.configure do |config|
 end
 
 def example_org
-  @org = Organization.create(:host => "example.org", :settings => {'name' => 'Canvabadges'})
+  @org ||= Organization.create(:host => "example.org", :settings => {'name' => 'Canvabadges'})
 end
 
 def configured_school

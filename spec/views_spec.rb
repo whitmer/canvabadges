@@ -11,8 +11,13 @@ describe 'Badging Models' do
     {'enrollments' => [{'type' => 'student', 'role' => 'StudentEnrollment', 'computed_final_score' => score}]}
   end
   
+  before :each do
+    example_org
+  end
+  
   describe "index" do
     it "should error on unconfigured domain" do
+      @org.destroy
       get "/"
       assert_error_page("Domain not properly configured.")
     end
