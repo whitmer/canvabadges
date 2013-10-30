@@ -6,14 +6,14 @@ require 'sinatra/base'
 class Domain
   include DataMapper::Resource
   property :id, Serial
-  property :host, String
+  property :host, String, :index => true
   property :name, String
 end
 
 class Organization
   include DataMapper::Resource
   property :id, Serial
-  property :host, String
+  property :host, String, :index => true
   property :settings, Json
   
   def as_json
@@ -228,7 +228,7 @@ end
 class BadgePlacementConfig
   include DataMapper::Resource
   property :id, Serial
-  property :badge_config_id, Integer
+  property :badge_config_id, Integer, :index => true
   property :course_id, String
   property :placement_id, String
   property :teacher_user_config_id, Integer
@@ -403,12 +403,11 @@ class Badge
   include DataMapper::Resource
   property :id, Serial
   property :placement_id, String
-  property :course_id, String
-  property :user_id, String
-  property :domain_id, Integer
+  property :user_id, String, :index => [:user_badge, :earned_badge]
+  property :domain_id, Integer, :index => :earned_badge
   property :badge_url, Text
   property :nonce, String
-  property :badge_config_id, Integer
+  property :badge_config_id, Integer, :index => :user_badge
   property :badge_placement_config_id, Integer
   property :name, String, :length => 256
   property :user_full_name, String, :length => 256
@@ -421,7 +420,8 @@ class Badge
   property :evidence_url, String, :length => 4096
   property :manual_approval, Boolean
   property :public, Boolean
-  property :state, String
+  property :state, String, :index => :earned_badge
+  property :course_id, String, :index => :earned_badge
   property :global_user_id, String, :length => 256
   property :issuer_name, String
   property :issuer_image_url, String
