@@ -460,7 +460,7 @@ describe 'Badging OAuth' do
       IMS::LTI::ToolProvider.any_instance.stub(:valid_request?).and_return(true)
       IMS::LTI::ToolProvider.any_instance.stub(:roles).and_return(['instructor'])
       CanvasAPI.should_receive(:api_call).and_return({'id' => '123'})
-      post "/placement_launch", {'custom_show_course' => '1', 'oauth_consumer_key' => '123', 'tool_consumer_instance_guid' => 'something.bob.com', 'resource_link_id' => '2s3d', 'custom_canvas_user_id' => @user.user_id, 'custom_canvas_course_id' => '1', 'lis_person_contact_email_primary' => 'bob@example.com', 'launch_presentation_return_url' => 'http://www.example.com'}
+      post "/placement_launch", {'custom_show_course' => '1', 'oauth_consumer_key' => '123', 'tool_consumer_instance_guid' => 'something.bob.com', 'resource_link_id' => '2s3d', 'custom_canvas_user_id' => @user.user_id, 'custom_canvas_course_id' => '1', 'lis_person_contact_email_primary' => 'bob@example.com', 'lis_person_name_full' => 'bob', 'launch_presentation_return_url' => 'http://www.example.com'}
       last_response.should be_redirect
 
       fake_response = OpenStruct.new(:body => {:access_token => '1234', 'user' => {'id' => 'zxcv'}}.to_json)
@@ -471,6 +471,8 @@ describe 'Badging OAuth' do
       session['domain_id'].should == @domain.id
       session['user_id'].should == @user.user_id
       session['permission_for_1'].should == 'edit'
+      session['email'].should == 'bob@example.com'
+      session['name'].should == 'bob'
     end
   end  
   
