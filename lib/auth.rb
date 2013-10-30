@@ -50,7 +50,7 @@ module Sinatra
 
             if params['badge_reuse_code']
               specified_badge_config = BadgeConfig.first(:reuse_code => params['badge_reuse_code'])
-              if specified_badge_config && bc.organization_id == specified_badge_config.organization_id && bc.badge_config != specified_badge_config && !bc.configured?
+              if specified_badge_config && bc.badge_config != specified_badge_config && !bc.configured?
                 bc.set_badge_config(specified_badge_config)
               end
             else
