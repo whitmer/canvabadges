@@ -253,9 +253,6 @@ class BadgePlacementConfig
   end
   
   def set_badge_config(badge_config)
-    if self.badge_config_id == badge_config.id && self.settings && self.settings['badge_config_already_set']
-      return
-    end
     self.badge_config_id = badge_config.id
     badge_settings = badge_config.settings || {}
     placement_settings = self.settings || {}
@@ -274,7 +271,6 @@ class BadgePlacementConfig
       self.settings = placement_settings
     end
     first_placement = badge_config.badge_placement_configs.first
-    self.settings['badge_config_already_set'] = true
     self.settings['prior_resource_link_id'] = first_placement.placement_id if first_placement
 
     self.save

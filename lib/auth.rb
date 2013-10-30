@@ -48,15 +48,18 @@ module Sinatra
             bc.settings['prior_resource_link_id'] = params['custom_prior_resource_link_id'] if params['custom_prior_resource_link_id']
             bc.settings['pending'] = !bc.id
 
-            if params['badge_reuse_code']
-              specified_badge_config = BadgeConfig.first(:reuse_code => params['badge_reuse_code'])
-              if specified_badge_config && bc.badge_config != specified_badge_config && !bc.configured?
-                bc.set_badge_config(specified_badge_config)
-              end
-            else
-              old_style_badge_config = BadgeConfig.first(:placement_id => params['resource_link_id'], :domain_id => domain.id, :course_id => params['custom_canvas_course_id'])
-              if old_style_badge_config
-                bc.set_badge_config(old_style_badge_config)
+            unless bc.settings['badge_config_already_checked']
+              bc.settings['badge_config_already_checked'] = true
+              if params['badge_reuse_code']
+                specified_badge_config = BadgeConfig.first(:reuse_code => params['badge_reuse_code'])
+                if specified_badge_config && bc.badge_config != specified_badge_config && !bc.configured?
+                  bc.set_badge_config(specified_badge_config)
+                end
+              else
+                old_style_badge_config = BadgeConfig.first(:placement_id => params['resource_link_id'], :domain_id => domain.id, :course_id => params['custom_canvas_course_id'])
+                if old_style_badge_config
+                  bc.set_badge_config(old_style_badge_config)
+                end
               end
             end
             if !bc.badge_config
