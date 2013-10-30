@@ -23,7 +23,7 @@
   <% end %>
   <% host = (@badge.badge_config && @badge.badge_config.organization && @badge.badge_config.organization.host) || request.host_with_port %>
   <% url = "#{protocol}://#{host}/api/v1/badges/data/#{@badge_config_id}/#{@user_id}/#{@badge.nonce}.json" %>
-  <form class='form-inline' action='/badges/<%= @badge.nonce %>'><label><input class='public_badge' <%= 'checked' if @badge.public %> type='checkbox'/> Let others see this badge</label><br/>
+  <form class='form-inline' action='/badges/<%= @badge.nonce %>'><label><input class='public_badge' <%= 'checked' if @badge.public %> type='checkbox'/> show this badge on my Canvas profile</label><br/>
     <a class='btn btn-primary btn-large' href='/badges/all/<%= @domain_id %>/<%= @user_id %>'>See All Your Badges</a>
     &nbsp;<a class='btn' style='background: #4a4842;' id='redeem' href='#' rel='<%= url %>'><span class='icon-plus icon-white'></span><img src='/mozilla-backpack.png' alt='Add this badge to your Mozilla backpack'/></a>
     <span style="vertical-align: bottom; color: #888;">earned for email: <%= @badge.email %></span>

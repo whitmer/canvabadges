@@ -18,7 +18,7 @@
     <td style='padding: 0 5px;'><%= badge.name %>
       <% if @for_current_user %>
         <form class='form-inline' action='/badges/<% badge.nonce %>' style='margin: 0 0 0 15px;'>
-        <label><input class='public_badge' <%= 'checked' if badge.public %> type='checkbox'/> public</label>
+        <label><input class='public_badge' <%= 'checked' if badge.public %> type='checkbox'/> show on my Canvas profile</label>
         </form>
       <% end %>
     </td>
