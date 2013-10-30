@@ -147,7 +147,7 @@ class BadgeConfig
   property :settings, Json # partially deprecated
   property :root_id, Integer # deprecated
   property :reference_code, String # deprecated
-  property :reuse_code, String
+  property :reuse_code, String, :index => true
   property :public, Boolean
   property :updated_at, DateTime
   
