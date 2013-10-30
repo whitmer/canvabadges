@@ -19,7 +19,7 @@
     <% else %>
       To earn this badge you needed a final score of <%= settings['min_percent'] %>%, and you have <%= @student['computed_final_score'].to_f %>% in this course right now.
     <% end %>
-    <div class='progress progress-success progress-striped progress-big'><div class='tick' style='left: 100px;'></div><div class='bar' style='width: 100%;'></div></div>
+    <div class='progress progress-success progress-striped progress-big'><div class='bar' style='width: 100%;'></div></div>
   <% end %>
   <% host = (@badge.badge_config && @badge.badge_config.organization && @badge.badge_config.organization.host) || request.host_with_port %>
   <% url = "#{protocol}://#{host}/api/v1/badges/data/#{@badge_config_id}/#{@user_id}/#{@badge.nonce}.json" %>
