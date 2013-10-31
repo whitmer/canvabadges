@@ -428,7 +428,7 @@ class Badge
   property :evidence_url, String, :length => 4096
   property :manual_approval, Boolean
   property :public, Boolean
-  property :state, String, :index => :earned_badge
+  property :state, String, :index => [:earned_badge, :awarded_counter]
   property :course_id, String, :index => :earned_badge
   property :global_user_id, String, :length => 256
   property :issuer_name, String
