@@ -44,7 +44,7 @@ module Sinatra
             bc.organization_id = tool_config.organization_id if !bc.id
             bc.organization_id ||= @org.id
             bc.settings ||= {}
-            bc.settings['course_url'] ||= "#{BadgeHelper.protocol}://" + host + "/courses/" + params['custom_canvas_course_id']
+            bc.settings['course_url'] = "#{BadgeHelper.protocol}://" + host + "/courses/" + params['custom_canvas_course_id']
             bc.settings['prior_resource_link_id'] = params['custom_prior_resource_link_id'] if params['custom_prior_resource_link_id']
             bc.settings['pending'] = true if !bc.id
 

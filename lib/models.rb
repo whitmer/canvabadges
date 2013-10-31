@@ -294,11 +294,13 @@ class BadgePlacementConfig
     old_config ||= BadgePlacementConfig.first(:placement_id => self.settings['prior_resource_link_id'], :badge_config_id => self.badge_config_id)
     if old_config
       # load config settings from previous badge config
+      existing_settings = self.settings
       self.settings = old_config.settings
       
       # set to pending unless
       # able to get new module ids and map them correctly for module-configured badges
       self.settings['pending'] = true if old_config.modules_required?
+      self.settings['course_url'] = existing_settings['course_url'] if existing_settings
       
       api_user = UserConfig.first(:id => self.teacher_user_config_id) || user_config
       if api_user && old_config.modules_required?
