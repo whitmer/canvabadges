@@ -21,6 +21,15 @@
       </tr>
       <tr>
         <% if @org.default? && !params['this_org_only'] %>
+          <td>Badge Placements
+          <td><%= BadgePlacementConfig.count %></td>
+        <% else %>
+          <td>Badge Placements
+          <td><%= BadgePlacementConfig.all(BadgePlacementConfig.badge_config.organization_id => @org.id).count %></td>
+        <% end %>
+      </tr>
+      <tr>
+        <% if @org.default? && !params['this_org_only'] %>
           <td>Badges Awarded <a class="sub" href="/badges/public/awarded">see learner-shared badges</a></td>
           <td><%= Badge.all(:state => 'awarded').count %></td>
         <% else %>
