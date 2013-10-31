@@ -22,10 +22,10 @@
       <tr>
         <% if @org.default? && !params['this_org_only'] %>
           <td>Badges Awarded <a class="sub" href="/badges/public/awarded">see learner-shared badges</a></td>
-          <td><%= Badge.count %></td>
+          <td><%= Badge.all(:state => 'awarded').count %></td>
         <% else %>
           <td>Badges Awarded <a class="sub" href="/badges/public/awarded?this_org_only=1">see learner-shared badges</a></td>
-          <td><%= Badge.all(Badge.badge_config.organization_id => @org.id).count %></td>
+          <td><%= Badge.all(:state => 'awarded', Badge.badge_config.organization_id => @org.id).count %></td>
         <% end %>
       </tr>
       <% if @org.default? && !params['this_org_only'] %>
