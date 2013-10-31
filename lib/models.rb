@@ -342,6 +342,10 @@ class BadgePlacementConfig
     settings && settings['pending']
   end
   
+  def needs_old_config_load?
+    settings && !settings['min_percent'] && settings['prior_resource_link_id']
+  end
+  
   def award_only?
     settings && settings['award_only']
   end

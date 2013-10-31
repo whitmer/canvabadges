@@ -118,7 +118,7 @@ module Sinatra
           @badge_placement_config.teacher_user_config_id = @user_config.id
           @badge_placement_config.save
         end
-        if @badge_placement_config && @badge_placement_config.pending?
+        if @badge_placement_config && (@badge_placement_config.pending? || @badge_placement_config.needs_old_config_load?)
           @badge_placement_config.load_from_old_config(@user_config)
         end
         

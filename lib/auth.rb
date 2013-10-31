@@ -46,7 +46,7 @@ module Sinatra
             bc.settings ||= {}
             bc.settings['course_url'] ||= "#{BadgeHelper.protocol}://" + host + "/courses/" + params['custom_canvas_course_id']
             bc.settings['prior_resource_link_id'] = params['custom_prior_resource_link_id'] if params['custom_prior_resource_link_id']
-            bc.settings['pending'] = !bc.id
+            bc.settings['pending'] = true if !bc.id
 
             unless bc.settings['badge_config_already_checked']
               bc.settings['badge_config_already_checked'] = true
