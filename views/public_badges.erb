@@ -22,7 +22,7 @@
           <p class='desc'><%= badge.description %></p>
 
           <% if bpc.settings['hours'] %>
-            <p>Approx hours: <%= bc.settings['hours'] %></p>
+            <p>Approx hours: <%= bpc.settings['hours'] %></p>
           <% end %>
           <% org = bc.organization %>
           <% settings = (org && org.settings) || BadgeHelper.issuer %>
