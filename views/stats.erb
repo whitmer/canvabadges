@@ -13,10 +13,10 @@
       <tr>
         <% if @org.default? && !params['this_org_only'] %>
           <td>Badges Configured <a class="sub" href="/badges/public">see earnable public badges</a></td>
-          <td><%= BadgeConfig.count %></td>
+          <td><%= BadgeConfig.all(:configured => true).count %></td>
         <% else %>
           <td>Badges Configured <a class="sub" href="/badges/public?this_org_only=1">see earnable public badges</a></td>
-          <td><%= BadgeConfig.all(:organization_id => @org.id).count %></td>
+          <td><%= BadgeConfig.all(:configured => true, :organization_id => @org.id).count %></td>
         <% end %>
       </tr>
       <tr>

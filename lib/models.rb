@@ -149,6 +149,7 @@ class BadgeConfig
   property :reference_code, String # deprecated
   property :reuse_code, String, :index => true
   property :public, Boolean
+  property :configured, Boolean, :index => true
   property :updated_at, DateTime
   
   before :save, :generate_nonce
@@ -206,6 +207,7 @@ class BadgeConfig
   end
 
   def generate_nonce
+    self.configured = self.configured?
     self.nonce ||= Digest::MD5.hexdigest(Time.now.to_i.to_s + rand.to_s)
     self.reuse_code ||= Digest::MD5.hexdigest(Time.now.to_i.to_s + rand.to_s)
   end
@@ -221,7 +223,7 @@ class BadgeConfig
   end
   
   def configured?
-    settings && settings['badge_url']
+    !!(settings && settings['badge_url'])
   end
 end
 
