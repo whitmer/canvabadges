@@ -20,6 +20,9 @@ module Sinatra
       app.get "/stats" do
         @full_footer = true
         org_check
+        @stats_org = @org
+        @stats_org = nil if @org.default? && !params['this_org_only']
+        @stats = Stats.check(@stats_org)
         erb :stats
       end
       

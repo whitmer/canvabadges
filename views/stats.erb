@@ -4,43 +4,24 @@
     <table class='table table-bordered table-striped'>
       <tr>
         <td>Authorized Badge Issuers</td>
-        <% if @org.default? && !params['this_org_only'] %>
-          <td><%= ExternalConfig.count %></td>
-        <% else %>
-          <td><%= ExternalConfig.all(:organization_id => @org.id).count %></td>
-        <% end %>
+        <td><%= @stats['issuers'] %></td>
       </tr>
       <tr>
-        <% if @org.default? && !params['this_org_only'] %>
-          <td>Badges Configured <a class="sub" href="/badges/public">see earnable public badges</a></td>
-          <td><%= BadgeConfig.all(:configured => true).count %></td>
-        <% else %>
-          <td>Badges Configured <a class="sub" href="/badges/public?this_org_only=1">see earnable public badges</a></td>
-          <td><%= BadgeConfig.all(:configured => true, :organization_id => @org.id).count %></td>
-        <% end %>
+        <td>Badges Configured <a class="sub" href="/badges/public<%= "?this_org_only=1" if @stats_org %>">see earnable public badges</a></td>
+        <td><%= @stats['badge_configs'] %></td>
       </tr>
       <tr>
-        <% if @org.default? && !params['this_org_only'] %>
-          <td>Badge Placements
-          <td><%= BadgePlacementConfig.count %></td>
-        <% else %>
-          <td>Badge Placements
-          <td><%= BadgePlacementConfig.all(BadgePlacementConfig.badge_config.organization_id => @org.id).count %></td>
-        <% end %>
+        <td>Badge Placements</td>
+        <td><%= @stats['badge_placement_configs'] %></td>
       </tr>
       <tr>
-        <% if @org.default? && !params['this_org_only'] %>
-          <td>Badges Awarded <a class="sub" href="/badges/public/awarded">see learner-shared badges</a></td>
-          <td><%= Badge.all(:state => 'awarded').count %></td>
-        <% else %>
-          <td>Badges Awarded <a class="sub" href="/badges/public/awarded?this_org_only=1">see learner-shared badges</a></td>
-          <td><%= Badge.all(:state => 'awarded', Badge.badge_config.organization_id => @org.id).count %></td>
-        <% end %>
+        <td>Badges Awarded <a class="sub" href="/badges/public/awarded<%= "?this_org_only=1" if @stats_org %>">see learner-shared badges</a></td>
+        <td><%= @stats['badges'] %></td>
       </tr>
-      <% if @org.default? && !params['this_org_only'] %>
+      <% unless @stats_org %>
         <tr>
           <td>Canvas Domains</td>
-          <td><%= Domain.count %></td>
+          <td><%= @stats['domains'] %></td>
         </tr>
         <tr>
           <td>
@@ -55,7 +36,7 @@
             </ul>
             
           </td>
-          <td><%= Organization.count %></td>
+          <td><%= @stats['organizations'] %></td>
         </tr>
       <% end %>
     </table>
