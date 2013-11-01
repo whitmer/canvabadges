@@ -38,4 +38,38 @@
   <span style="clear: left;"></span>
 </p>
 
+<% if @stats %>
+  <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+  <script type="text/javascript">
+    google.load("visualization", "1", {packages:["corechart"]});
+    google.setOnLoadCallback(drawChart);
+    var stats = <%= @stats.to_json %>;
+    function drawChart() {
+      var table = [['Week', 'Earnings']];
+      var first = stats['start'];
+      var last = stats['end'];
+      
+      for(var idx = first; idx <= last;) {
+        var year = Math.floor(idx / 100).toString();
+        var week = (idx % 100).toString();
+        table.push([week + "-" + year, (stats[idx] || 0)]);
+        idx = idx + 1;
+        if(idx % 100 > 52) {
+          idx = idx - (idx % 100) + 100;
+        }
+      }
+      var data = google.visualization.arrayToDataTable(table);
+      var options = {
+        title: 'Badge Earnings Over Time',
+        hAxis: {title: 'Year',  titleTextStyle: {color: '#333'}},
+        vAxis: {minValue: 0}
+      };
+
+      var chart = new google.visualization.ColumnChart(document.getElementById('chart_div'));
+      chart.draw(data, options);
+    }
+  </script>
+  <div id="chart_div" style="width: 900px; height: 300px;"></div>
+<% end %>
+
 <div style='clear: left; padding-bottom: 10px;'></div>

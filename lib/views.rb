@@ -22,7 +22,7 @@ module Sinatra
         org_check
         @stats_org = @org
         @stats_org = nil if @org.default? && !params['this_org_only']
-        @stats = Stats.check(@stats_org)
+        @stats = Stats.general(@stats_org)
         erb :stats
       end
       
@@ -64,6 +64,9 @@ module Sinatra
         if @badge
           @user_config = UserConfig.first(:user_id => @badge.user_id, :domain_id => @badge.domain_id)
           @user_config ||= UserConfig.first(:global_user_id => @badge.global_user_id)
+        end
+        if !params['user']
+          @stats = Stats.badge_earnings(@badge_config)
         end
 
         @earned = params['user'] && @badge && @badge.awarded? && @badge.config_nonce == params['nonce']

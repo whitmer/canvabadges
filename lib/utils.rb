@@ -32,7 +32,7 @@ module OAuthConfig
 end
 
 module Stats
-  def self.check(org)
+  def self.general(org)
     res = {}
     if org
       res['issuers'] = ExternalConfig.all(:organization_id => org.id).count
@@ -51,6 +51,17 @@ module Stats
     end
     res
   end
+  
+  def self.badge_earnings(bc)
+    weeks = Badge.all(:badge_config_id => bc.id, :state => 'awarded').group_by{|b| (b.issued.year * 100) + b.issued.cweek }.map{|wk, badges| [wk, badges.length] }
+    hash = {}
+    weeks = weeks.sort_by{|wk, cnt| wk }
+    weeks.each{|wk, cnt| hash[wk] = cnt }
+    hash['start'] = weeks[0][0]
+    hash['end'] = weeks[-1][0]
+    hash
+  end
+  
 end
 
 require 'dm-migrations/migration_runner'
