@@ -57,8 +57,10 @@ module Stats
     hash = {}
     weeks = weeks.sort_by{|wk, cnt| wk }
     weeks.each{|wk, cnt| hash[wk] = cnt }
-    hash['start'] = weeks[0][0]
-    hash['end'] = weeks[-1][0]
+    if weeks.length > 0
+      hash['start'] = weeks[0][0]
+      hash['end'] = weeks[-1][0]
+    end
     hash
   end
   

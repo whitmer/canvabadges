@@ -473,10 +473,10 @@ class Badge
     self.salt ||= Time.now.to_i.to_s
     self.nonce ||= Digest::MD5.hexdigest(self.salt + rand.to_s)
     self.issued ||= DateTime.now if self.awarded?
-    if !self.recipient
-      sha = Digest::SHA256.hexdigest(self.email + self.salt)
-      self.recipient = "sha256$#{sha}"
-    end
+
+    sha = Digest::SHA256.hexdigest(self.email + self.salt)
+    self.recipient = "sha256$#{sha}"
+
     self.badge_placement_config ||= BadgePlacementConfig.first(:placement_id => self.placement_id, :domain_id => self.domain_id)
     self.badge_config ||= self.badge_placement_config && self.badge_placement_config.badge_config
     user_config = UserConfig.first(:user_id => self.user_id, :domain_id => self.domain_id)
