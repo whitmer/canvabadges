@@ -45,7 +45,7 @@
     google.setOnLoadCallback(drawChart);
     var stats = <%= @stats.to_json %>;
     function drawChart() {
-      var table = [['Week', 'Earnings']];
+      var table = [['Week', 'Recipients']];
       var first = stats['start'];
       var last = stats['end'];
       
@@ -60,8 +60,8 @@
       }
       var data = google.visualization.arrayToDataTable(table);
       var options = {
-        title: 'Badge Earnings Over Time',
-        hAxis: {title: 'Year',  titleTextStyle: {color: '#333'}},
+        title: 'Badge Recipients Over Time',
+        hAxis: {title: 'Week-Year',  titleTextStyle: {color: '#333'}},
         vAxis: {minValue: 0}
       };
 
