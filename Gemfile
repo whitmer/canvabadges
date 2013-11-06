@@ -5,6 +5,7 @@ gem "sinatra"
 gem "oauth",   "0.4.5"
 gem "json"
 gem "ims-lti"
+gem "canvas-api"
 gem "nokogiri"
 gem 'dm-core'
 gem 'dm-migrations'

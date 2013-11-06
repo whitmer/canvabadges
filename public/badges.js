@@ -61,7 +61,7 @@ $(document).on('change', "#require_evidence", function() {
   }
 }).change();
 $(document).on('change', "#credit_based", function() {
-  $(".credits").toggle($(this).attr('checked'));
+  $(".credits").toggle(!!$(this).attr('checked'));
   $("input.credits").change();
 })
 $("#credit_based").change();
@@ -134,6 +134,23 @@ if(badge_status) {
     },
     error: function(data) {
       $("#student_badge").html("<h3>Error retrieving badge status</h3>");
+    }
+  });
+}
+
+var modules = $("#modules_settings").attr('rel');
+if(modules) {
+  $.ajax({
+    type: 'GET',
+    dataType: 'html',
+    url: modules,
+    success: function(data) {
+      $("#modules_settings").html(data);
+      $("#badge_settings .form-actions button[type='submit']").attr('disabled', false);
+      $("#credit_based").change();
+    },
+    error: function(data) {
+      $("#modules_settings .controls").html("Error retrieving course modules. Please reload.");
     }
   });
 }

@@ -6,7 +6,7 @@
 <% if !@badge_placement_config.configured? %>
   <h3>This badge won't be available to students until it is saved.</h3>
 <% end %>
-  <form class='well form-horizontal' style="margin-top: 15px;" method="post" action="/badges/settings/<%= @badge_placement_config_id %>">
+  <form class='well form-horizontal' id="badge_settings" style="margin-top: 15px;" method="post" action="/badges/settings/<%= @badge_placement_config_id %>">
     <h2>Badge Settings</h2>
     <img src="<%= settings['badge_url'] || '/badges/default.png' %>" style='float: left; margin-right: 10px; width: 90px; height: 90px;' class='thumbnail'/>
     <fieldset>
@@ -97,23 +97,14 @@
           </div>
         </div>
       </div>
-      <% if @modules_json && @modules_json.length > 0 %>
+      <div id="modules_settings" rel="/badges/modules/<%= @badge_placement_config_id %>/<%= params['user_id'] %>">
         <div class="control-group advanced">
           <label class="control-label">Modules requiring completion:</label>
           <div class="controls">
-            <% @modules_json.each do |mod| %>
-              <% checked = (settings['modules'] || []).map(&:first).include?(mod['id']) %>
-              <div class='module'>
-                <label style='display: inline-block'>
-                  <input type="checkbox" <%= 'checked' if checked %> name="module_<%= mod['id'] %>" value="<%= CGI.escape(mod['name']) %>"/>
-                  <%= mod['name'] %>
-                </label>
-                <input name="credits_for_<%= mod['id'] %>" class="credits span1" title="Credits for <%= mod['name'] %>" placeholder="credits"/>
-              </div>
-            <% end %>
+            Checking for course modules...
           </div>
         </div>
-      <%  end %>
+      </div>
       <div class="control-group credits">
         <label class="control-label" for="required_credits">Credits needed for completion: </label>
         <div class="controls">
@@ -149,7 +140,7 @@
         </div>
       </div>
       <div class="form-actions" style="border: 0; background: transparent;">
-        <button type="submit" class='btn btn-primary'>Save Badge Settings</button>
+        <button type="submit" class='btn btn-primary' disabled="true">Save Badge Settings</button>
         <button type="button" class='btn' id="disable_badge" rel="/badges/disable/<%= @badge_placement_config.id %>">Disable This Badge Location</button>
       </div>
     </fieldset>

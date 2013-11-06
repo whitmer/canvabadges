@@ -4,6 +4,8 @@ GEM
     addressable (2.3.5)
     bcrypt-ruby (3.0.1)
     builder (3.2.2)
+    canvas-api (0.5)
+      json
     capybara (2.1.0)
       mime-types (>= 1.16)
       nokogiri (>= 1.3.3)
@@ -98,6 +100,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  canvas-api
   capybara
   dm-aggregates
   dm-core

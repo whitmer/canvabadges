@@ -144,6 +144,13 @@ module Sinatra
         end
       end
 
+      app.get "/badges/modules/:badge_placement_config_id/:user_id" do
+        org_check
+        load_badge_config(params['badge_placement_config_id'], 'edit')
+        @modules_json ||= CanvasAPI.api_call("/api/v1/courses/#{@course_id}/modules", @user_config, true)
+        erb :_badge_modules, :layout => false
+      end
+      
       app.get "/badges/status/:badge_placement_config_id/:user_id" do
         org_check
         load_badge_config(params['badge_placement_config_id'], 'view')
@@ -185,7 +192,6 @@ module Sinatra
       def edit_course_html
         raise "no user" unless @user_config
         raise "missing value" unless @domain_id && @badge_placement_config_id && @course_id && @badge_placement_config_id
-        @modules_json ||= CanvasAPI.api_call("/api/v1/courses/#{@course_id}/modules", @user_config)
         erb :_badge_settings
       end
       

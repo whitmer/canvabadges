@@ -154,7 +154,7 @@ module Sinatra
             badge = badges.detect{|b| b.user_id.to_i == student['id'] }
             result << badge_hash(student['id'], student['name'], badge, @badge_placement_config && @badge_placement_config.nonce)
           end
-          if json.instance_variable_get('@has_more')
+          if json.more?
             next_url = "/api/v1/badges/current/#{@badge_placement_config_id}.json?page=#{params['page'].to_i + 1}"
           end
         end

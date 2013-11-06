@@ -1,19 +1,20 @@
+require 'canvas-api'
+
 module CanvasAPI
-  def self.api_call(path, user_config, post_params=nil)
+  def self.api_call(path, user_config, all_pages=false)
     protocol = 'https'
-    url = "#{protocol}://#{user_config.host}" + path
-    url += (url.match(/\?/) ? "&" : "?") + "access_token=#{user_config.access_token}"
-    uri = URI.parse(url)
-    http = Net::HTTP.new(uri.host, uri.port)
-    http.use_ssl = protocol == "https"
-    req = Net::HTTP::Get.new(uri.request_uri)
-    response = http.request(req)
-    json = JSON.parse(response.body)
-    json.instance_variable_set('@has_more', (response['Link'] || '').match(/rel=\"next\"/))
-    if response.code != "200"
-      false
-    else
-      json
+    host = "#{protocol}://#{user_config.host}"
+    canvas = Canvas::API.new(:host => host, :token => user_config.access_token)
+    begin
+      result = canvas.get(path)
+      if result.is_a?(Array) && all_pages
+        while result.more?
+          result.next_page!
+        end
+      end
+      return result
+    rescue Canvas::ApiError => e
+      return false
     end
   end
 end

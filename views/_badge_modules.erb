@@ -1,0 +1,18 @@
+<% settings = @badge_placement_config.merged_settings || {} %>
+<% if @modules_json && @modules_json.length > 0 %>
+  <div class="control-group advanced">
+    <label class="control-label">Modules requiring completion:</label>
+    <div class="controls">
+      <% @modules_json.each do |mod| %>
+        <% checked = (settings['modules'] || []).map(&:first).include?(mod['id']) %>
+        <div class='module'>
+          <label style='display: inline-block'>
+            <input type="checkbox" <%= 'checked' if checked %> name="module_<%= mod['id'] %>" value="<%= CGI.escape(mod['name']) %>"/>
+            <%= mod['name'] %>
+          </label>
+          <input name="credits_for_<%= mod['id'] %>" class="credits span1" title="Credits for <%= mod['name'] %>" placeholder="credits"/>
+        </div>
+      <% end %>
+    </div>
+  </div>
+<%  end %>

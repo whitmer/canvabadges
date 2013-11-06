@@ -136,7 +136,9 @@ describe 'Badges API' do
       user
       s1 = fake_badge_json(@badge_placement_config, '123', 'bob')
       s2 = fake_badge_json(@badge_placement_config, '456', 'fred')
-      Canvabadges.any_instance.should_receive(:api_call).and_return([{'id' => s1[:id], 'name' => s1[:name]}, {'id' => s2[:id], 'name' => s2[:name]}])
+      arr = [{'id' => s1[:id], 'name' => s1[:name]}, {'id' => s2[:id], 'name' => s2[:name]}]
+      arr.stub(:more?).and_return(false)
+      Canvabadges.any_instance.should_receive(:api_call).and_return(arr)
       get "/api/v1/badges/current/#{@badge_placement_config.id}.json", {}, 'rack.session' => {"permission_for_#{@badge_placement_config.course_id}" => 'edit', 'user_id' => @user.user_id}
       last_response.should be_ok
       last_response.body.should == {:meta => {:next => nil}, :objects => [s1, s2]}.to_json      
@@ -148,7 +150,7 @@ describe 'Badges API' do
       s1 = fake_badge_json(@badge_placement_config, '123', 'bob')
       s2 = fake_badge_json(@badge_placement_config, '456', 'fred')
       json = [{'id' => s1[:id], 'name' => s1[:name]}, {'id' => s2[:id], 'name' => s2[:name]}]
-      json.instance_variable_set('@has_more', true)
+      json.stub(:more?).and_return(true)
       
       Canvabadges.any_instance.should_receive(:api_call).and_return(json)
       get "/api/v1/badges/current/#{@badge_placement_config.id}.json", {}, 'rack.session' => {"permission_for_#{@badge_placement_config.course_id}" => 'edit', 'user_id' => @user.user_id}
