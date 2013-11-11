@@ -10,7 +10,7 @@
         <img src='<%= settings['badge_url'] %>' style='float: left; margin-right: 10px;' class='thumbnail'/>
         <h2>
         <% if bpc && bpc.settings && bpc.settings['course_url'] %>
-          <a href="<%= bpc.settings['course_url'] %>"><%= settings['badge_name'] || "Unnamed Badge" %></a></h2>
+          <a href="<%= bpc.settings['course_url'] %>"><%= settings['badge_name'] || "Unnamed Badge" %></a>
         <% else %>
           <%= settings['badge_name'] || "Unnamed Badge" %></h2>
         <% end %>

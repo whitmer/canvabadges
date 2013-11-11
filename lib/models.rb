@@ -149,6 +149,7 @@ class BadgeConfig
   property :reference_code, String # deprecated
   property :reuse_code, String, :index => true
   property :public, Boolean
+  property :uncool, Boolean
   property :configured, Boolean, :index => true
   property :updated_at, DateTime
   
