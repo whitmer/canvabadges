@@ -35,6 +35,7 @@ describe 'Badge Configuration' do
         'credits_for_123' => '19',
         'credit_based' => '1'
       }
+      Canvas::API.any_instance.should_receive(:get).and_return({})
       post "/badges/settings/#{@badge_placement_config.id}", params, 'rack.session' => {"permission_for_#{@badge_placement_config.course_id}" => "edit", "user_id" => "9876"}
       last_response.should be_redirect
       last_response.location.should == "http://example.org/badges/check/#{@badge_placement_config.id}/9876"
@@ -53,6 +54,7 @@ describe 'Badge Configuration' do
     
     it "should fail gracefully on empty parameters" do
       badge_config
+      Canvas::API.any_instance.should_receive(:get).and_return({})
       post "/badges/settings/#{@badge_placement_config.id}", {}, 'rack.session' => {"permission_for_#{@badge_placement_config.course_id}" => "edit", "user_id" => "9876"}
       last_response.should be_redirect
       last_response.location.should == "http://example.org/badges/check/#{@badge_placement_config.id}/9876"

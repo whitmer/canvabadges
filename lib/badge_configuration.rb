@@ -56,6 +56,7 @@ module Sinatra
         
         @badge_placement_config.settings = placement_settings
         @badge_placement_config.updated_at = DateTime.now
+        @badge_placement_config.check_for_public_state
 
         if @user_config
           BadgeConfigOwner.first_or_create(:user_config_id => @user_config.id, :badge_config_id => @badge_config.id, :badge_placement_config_id => @badge_placement_config.id)
