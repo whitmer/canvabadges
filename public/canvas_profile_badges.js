@@ -37,7 +37,7 @@ $(function() {
             $box.append($badge);
           }
           $box.append($("<div/>", {style: 'clear: left'}));
-          $("#edit_profile_form").after($box);
+          $("#edit_profile_form,fieldset#courses,.more_user_information + div").after($box);
         }
       },
       error: function() {
