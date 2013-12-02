@@ -1,4 +1,4 @@
-<h2><a href="/"><img src="<%= @org.settings['image'] || "/organizations/default.png" %>" alt=""/></a> <%= @org.settings['name'] %> Badging Stats</h2>
+<h2><a href="/"><img src="<%= @org.settings['image'] || "/organizations/default.png" %>" alt="Root"/></a> <%= @org.settings['name'] %> Badging Stats</h2>
 <div class='row'>
   <div class='span8 offset2'>
     <table class='table table-bordered table-striped'>
@@ -28,7 +28,12 @@
             Organizations
             <ul style="padding-top: 10px;">
               <% Organization.all.each do |org| %>
-                <li><a href="<%= org.settings['url'] %>"><%= org.settings['name'] %></a> <a class="sub" href="<%= BadgeHelper.protocol %>://<%= org.host %>">badge site</a></li>
+                <li>
+                  <a href="<%= org.settings['url'] %>">
+                    <img src="<%= @org.settings['image'] || "/organizations/default.png" %>" alt="" style="height: 40px; padding-right: 10px;"/>
+                    <%= org.settings['name'] %></a> 
+                  <a class="sub" href="<%= BadgeHelper.protocol %>://<%= org.host %>">badge site</a>
+                </li>
               <% end %>
               <li style="margin-top: 15px; font-size: 12px; list-style: none;">
                 <a href="<%= BadgeHelper.issuer['owner_url'] %>">Contact us</a> to add your own badging site
