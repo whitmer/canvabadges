@@ -34,23 +34,7 @@ end
 
 module Stats
   def self.general(org)
-    res = {}
-    if org
-      res['issuers'] = ExternalConfig.all(:organization_id => org.id).count
-      res['badge_configs'] = BadgeConfig.all(:configured => true, :organization_id => org.id).count
-      res['badge_placement_configs'] = BadgePlacementConfig.all(BadgePlacementConfig.badge_config.organization_id => org.id).count
-      res['badges'] = Badge.all(:state => 'awarded', Badge.badge_config.organization_id => org.id).count
-      res['domains'] = Domain.count
-      res['organizations'] = Organization.count
-    else
-      res['issuers'] = ExternalConfig.count
-      res['badge_configs'] = BadgeConfig.all(:configured => true).count
-      res['badge_placement_configs'] = BadgePlacementConfig.count
-      res['badges'] = Badge.all(:state => 'awarded').count
-      res['domains'] = Domain.count
-      res['organizations'] = Organization.count
-    end
-    res
+    OrgStats.check
   end
   
   def self.badge_earnings(bc)

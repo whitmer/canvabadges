@@ -10,6 +10,39 @@ class Domain
   property :name, String
 end
 
+class OrgStats
+  property :id, Serial
+  property :organization_id, String
+  property :data, Json
+  property :updated_at, DateTime
+  
+  def self.check(org)
+    stats = OrgStats.first_or_new(:organization_id => org.id)
+    if !stats.updated_at || stats.updated_at < (DateTime.now - 1.0)
+      res = {}
+      if org
+        res['issuers'] = ExternalConfig.all(:organization_id => org.id).count
+        res['badge_configs'] = BadgeConfig.all(:configured => true, :organization_id => org.id).count
+        res['badge_placement_configs'] = BadgePlacementConfig.all(BadgePlacementConfig.badge_config.organization_id => org.id).count
+        res['badges'] = Badge.all(:state => 'awarded', Badge.badge_config.organization_id => org.id).count
+        res['domains'] = Domain.count
+        res['organizations'] = Organization.count
+      else
+        res['issuers'] = ExternalConfig.count
+        res['badge_configs'] = BadgeConfig.all(:configured => true).count
+        res['badge_placement_configs'] = BadgePlacementConfig.count
+        res['badges'] = Badge.all(:state => 'awarded').count
+        res['domains'] = Domain.count
+        res['organizations'] = Organization.count
+      end
+      stats.data = res
+      stats.updated_at = DateTime.now
+      stats.save
+    end
+    stats.data
+  end
+end
+
 class Organization
   include DataMapper::Resource
   property :id, Serial
