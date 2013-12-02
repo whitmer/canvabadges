@@ -34,7 +34,7 @@ end
 
 module Stats
   def self.general(org)
-    OrgStats.check
+    OrgStats.check(org)
   end
   
   def self.badge_earnings(bc)

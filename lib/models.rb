@@ -11,13 +11,14 @@ class Domain
 end
 
 class OrgStats
+  include DataMapper::Resource
   property :id, Serial
   property :organization_id, String
   property :data, Json
   property :updated_at, DateTime
   
   def self.check(org)
-    stats = OrgStats.first_or_new(:organization_id => org.id)
+    stats = OrgStats.first_or_new(:organization_id => org && org.id)
     if !stats.updated_at || stats.updated_at < (DateTime.now - 1.0)
       res = {}
       if org

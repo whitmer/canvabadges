@@ -198,6 +198,10 @@ module Sinatra
         erb :_badge_settings
       end
       
+      def comma(number)
+        number.to_s.reverse.gsub(/(\d{3})(?=\d)/, '\\1,').reverse
+      end
+      
       def error(text)
         if @api_request
           halt 400, {:error => true, :message => text}.to_json
