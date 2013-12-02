@@ -13,7 +13,7 @@ module Sinatra
         if org_id == 'default'
           return api_response(Organization.new(:host => request.host_with_port).as_json)
         end
-        config = Organization.first(:id => org_id)
+        config = Organization.first(:id => org_id, :order => :id)
         halt 404, api_response({:error => "not found"}) unless config && config.settings
         api_response(config.as_json)
       end
@@ -106,7 +106,7 @@ module Sinatra
     
     module Helpers
       def get_org
-        @org = Organization.first(:host => request.env['HTTP_HOST'])
+        @org = Organization.first(:host => request.env['HTTP_HOST'], :order => :id)
         halt(400, {:error => "Domain not properly configured. No Organization record matching the host #{request.env['HTTP_HOST']}"}.to_json) unless @org
       end
       

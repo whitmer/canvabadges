@@ -191,7 +191,7 @@ module Sinatra
         end
         
         
-        @org = Organization.first(:host => request.env['HTTP_HOST'])
+        @org = Organization.first(:host => request.env['HTTP_HOST'], :order => :id)
         @conf = ExternalConfig.generate(screen_name)
         erb :config_tokens
       end
