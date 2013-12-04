@@ -45,7 +45,7 @@
     <div class="row">
       <% @public_badge_placements[0,6].each do |placement| %>
         <% settings = placement.merged_settings %>
-        <div class="span2 cool_badge">
+        <div class="span2 cool_badge" data-placement_id="<%= placement.id %>" data-config_id="<%= placement.badge_config_id %>">
           <% if settings['course_url'] %>
             <a href="<%= settings['course_url'] %>">
               <img src='<%= settings['badge_url'] %>' class='thumbnail'/>

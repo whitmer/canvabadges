@@ -8,8 +8,8 @@ module Sinatra
       app.get "/" do
         @full_footer = true
         org_check
-        @public_badge_placements = BadgePlacementConfig.all(:organization_id => @org.id, BadgePlacementConfig.badge_config.public => true, :public_course => true, :order => :id.desc, :limit => 25)
-        @public_badge_placements = @public_badge_placements.uniq{|p| p.badge_config_id }.select{|p| p.badge_config.uncool != true }
+        @public_badge_placements = BadgePlacementConfig.all(:organization_id => @org.id, BadgePlacementConfig.badge_config.uncool => nil, BadgePlacementConfig.badge_config.public => true, :public_course => true, :order => :id.desc, :limit => 25)
+        @public_badge_placements = @public_badge_placements.uniq{|p| [p.course_id, p.badge_config_id] }
         
         erb (@org.settings['template'] || :index).to_sym
       end
