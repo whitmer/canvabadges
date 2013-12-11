@@ -14,9 +14,9 @@ $(function() {
   if(!protocol_and_host) {
     console.log("Couldn't find a valid protocol and host. Canvabadges will not appear on profile pages until this is fixed.");
   }
-  var match = location.href.match(/\/users\/(\d+)$/);
+  var match = location.href.match(/\/(users|about)\/(\d+)$/);
   if(match && protocol_and_host) {
-    var user_id = match[1];
+    var user_id = match[2];
     var domain = location.host;
     var url = protocol_and_host + "/api/v1/badges/public/" + user_id + "/" + encodeURIComponent(domain) + ".json";
     $.ajax({
