@@ -81,4 +81,39 @@ FixupMigration.enlarge_columns
 It may take a little while to run depending on how many badges you've got
 set up already.
 
+
+## Advanced Settings
+
+### Multitenancy
+Canvabadges by default only talks to one instance of Canvas. It's possible for it
+to talk to multiple instances, it just takes an additional step.
+
+Multitenancy is set at the organization level. An organization can have multiple 
+domains (each has a corresponding object). On the organization object if you make
+the following change:
+
+```ruby
+org = Organization.find(:name => "whatever it's called")
+settings = org.settings
+settings['oss_auth'] = true
+org.settings = settings
+org.save
+```
+
+Then the organzation will be set up to use its own configuration. Now we need to
+add a Canvas developer key. Ask the Canvas admin -- if that's you, you can create
+a new developer key by logging in as a site admin and going to 
+`https://<yourcanvas>/developer_keys` and creating one. You can use the
+image at `https://<canvabadges>/logo.png` as the developer key image. For
+the redirect URI enter `https://<canvabadges>/oauth_success`. Then in
+Canvabadges run the following code:
+
+```ruby
+ec = ExternalConfig.new(:config_type => 'canvas_oss_oauth', :organization_id => org.id)
+ec.app_name = "Name for Canvas Instance"
+ec.value = "<developer key id>"
+ec.shared_secret = "<developer key secret>"
+ec.save
+```
+
 [![Build Status](https://travis-ci.org/whitmer/canvabadges.png)](https://travis-ci.org/whitmer/canvabadges)
