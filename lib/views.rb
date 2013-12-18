@@ -66,7 +66,8 @@ module Sinatra
         @badge = Badge.first(:nonce => params['user'])
         if @badge
           @user_config = UserConfig.first(:user_id => @badge.user_id, :domain_id => @badge.domain_id)
-          @user_config ||= UserConfig.first(:global_user_id => @badge.global_user_id)
+          # TODO: Canvas needs a reliable way to get global user ids
+          #@user_config ||= UserConfig.first(:global_user_id => @badge.global_user_id)
         end
         if !params['user']
           @stats = Stats.badge_earnings(@badge_config)
