@@ -152,6 +152,11 @@ module Sinatra
         org_check
         load_badge_config(params['badge_placement_config_id'], 'edit')
         @modules_json ||= CanvasAPI.api_call("/api/v1/courses/#{@course_id}/modules", @user_config, true)
+        if @badge_placement_config.credit_based?
+          @modules_json.each do |mod|
+            
+          end
+        end
         erb :_badge_modules, :layout => false
       end
       

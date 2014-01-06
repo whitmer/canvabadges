@@ -32,7 +32,7 @@ module Sinatra
         placement_settings['manual_approval'] = params['manual_approval'] == '1'
         placement_settings['require_evidence'] = params['require_evidence'] == '1'
         placement_settings['credit_based'] = params['credit_based'] == '1'
-        placement_settings['required_credits'] = [params['requird_credits'].to_f.round(1), 0.1].max
+        placement_settings['required_credits'] = [params['required_credits'].to_f.round(1), 0.1].max
         placement_settings['min_percent'] = params['min_percent'].to_f
         placement_settings['hours'] = params['hours'].to_f.round(1)
         placement_settings['hours'] = nil if placement_settings['hours'] == 0

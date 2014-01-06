@@ -205,6 +205,22 @@ describe 'Badging Models' do
       last_response.body.should_not match(/module/)
     end
     
+    it "should show module credits when editing module settings" do
+      credit_configured_badge
+      user
+      mods = @badge_placement_config.settings['modules']
+      CanvasAPI.should_receive(:api_call).with("/api/v1/courses/#{@badge_placement_config.course_id}/modules", @user, true).and_return([
+        {'id' => mods[0][0], 'name' => mods[0][1]},
+        {'id' => mods[1][0], 'name' => mods[1][1]}
+      ])
+      get "/badges/modules/#{@badge_placement_config.id}/#{@user.user_id}", {}, 'rack.session' => {'user_id' => @user.user_id, "permission_for_#{@badge_placement_config.course_id}" => 'edit'}
+      last_response.should be_ok
+      html = Nokogiri::HTML(last_response.body)
+      html.css("input[type='text']").length.should == 2
+      html.css("input[type='text']")[0]['value'].should == '3'
+      html.css("input[type='text']")[0]['value'].should == '3'
+    end
+    
     it "should not allow course module check when no edit permission exists" do
       badge_config
       user
