@@ -204,7 +204,7 @@ module Sinatra
     module Helpers
       def consumer
         consumer ||= OAuth::Consumer.new(twitter_config.value, twitter_config.shared_secret, {
-          :site => "http://api.twitter.com",
+          :site => "https://api.twitter.com",
           :request_token_path => "/oauth/request_token",
           :access_token_path => "/oauth/access_token",
           :authorize_path=> "/oauth/authorize",
