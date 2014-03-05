@@ -204,8 +204,8 @@ module Sinatra
         ENV['RACK_ENV'].to_s == "development" ? "http" : "https"
       end
       
-      def api_call(path, user_config, post_params=nil)
-        res = CanvasAPI.api_call(path, user_config, post_params)
+      def api_call(path, user_config, all_pages=false)
+        res = CanvasAPI.api_call(path, user_config, all_pages)
         if res == false
           oauth_dance(request, user_config.host)
         else

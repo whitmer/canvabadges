@@ -105,7 +105,7 @@ module Sinatra
   
         settings = (@badge_placement_config && @badge_placement_config.merged_settings) || {}
         if @badge_config && @badge_config.configured? && (@badge_placement_config.configured? || @badge_placement_config.award_only?)
-          json = api_call("/api/v1/courses/#{@course_id}/users?enrollment_type=student&include[]=email&user_id=#{params['user_id']}", @user_config)
+          json = api_call("/api/v1/courses/#{@course_id}/users?enrollment_type=student&per_page=50&include[]=email&user_id=#{params['user_id']}", @user_config, true)
           student = json.detect{|e| e['id'] == params['user_id'].to_i }
           if student
             if !student['email']

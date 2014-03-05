@@ -43,7 +43,7 @@
   <% if @public_badge_placements.length > 0 %>
     <h2>Some Badges in Public Canvas Courses</h2>
     <div class="row">
-      <% @public_badge_placements[0,6].each do |placement| %>
+      <% @public_badge_placements[0,12].each do |placement| %>
         <% settings = placement.merged_settings %>
         <div class="span2 cool_badge" data-placement_id="<%= placement.id %>" data-config_id="<%= placement.badge_config_id %>">
           <% if settings['course_url'] %>
