@@ -106,6 +106,7 @@ class UserConfig
   property :access_token, String, :length => 512
   property :domain_id, Integer
   property :name, String, :length => 256
+  property :email, String, :length => 512
   property :image, String, :length => 512
   property :global_user_id, String, :length => 256
   belongs_to :domain
@@ -123,6 +124,7 @@ class UserConfig
   end
   
   def check_badge_status(badge_placement_config, params, name, email)
+    email ||= self.email
     scores_json = CanvasAPI.api_call("/api/v1/courses/#{badge_placement_config.course_id}?include[]=total_scores", self)
     modules_json = CanvasAPI.api_call("/api/v1/courses/#{badge_placement_config.course_id}/modules", self, true) if badge_placement_config.modules_required?
     modules_json ||= []

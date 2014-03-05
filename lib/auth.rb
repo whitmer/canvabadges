@@ -142,6 +142,8 @@ module Sinatra
           user_config.name = session['name']
           user_config.image = session['user_image']
           user_config.global_user_id = session['source_id'] + "_" + json['user']['id'].to_s
+          user_config.email = session['email']
+          
           user_config.save
           params_stash = session['params_stash']
           launch_badge_placement_config_id = session['launch_badge_placement_config_id']
