@@ -120,6 +120,6 @@ ec.save
 
 - Add search for teacher working in large classes
 - "Awarded students" list order isn't obvious or useful
-- Something weird going on with global vs. local ids
+- Update screencast and setup instructions
 
 [![Build Status](https://travis-ci.org/whitmer/canvabadges.png)](https://travis-ci.org/whitmer/canvabadges)
