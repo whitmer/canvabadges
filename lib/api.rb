@@ -169,7 +169,7 @@ module Sinatra
           abs_url = badge.badge_url || "/badges/default.png"
           abs_url = "#{protocol}://#{request.host_with_port}" + abs_url unless abs_url.match(/\:\/\//) || abs_url.match(/^data/)
           {
-            :id => user_id,
+            :id => user_id.to_s,
             :name => user_name,
             :manual => badge.manual_approval,
             :public => badge.public,
@@ -184,7 +184,7 @@ module Sinatra
           }
         else
           {
-            :id => user_id,
+            :id => user_id.to_s,
             :name => user_name,
             :manual => nil,
             :public => nil,
