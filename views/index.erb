@@ -42,27 +42,29 @@
   <hr/>
   <% if @public_badge_placements.length > 0 %>
     <h2>Some Badges in Public Canvas Courses</h2>
-    <div class="row">
-      <% @public_badge_placements[0,12].each do |placement| %>
-        <% settings = placement.merged_settings %>
-        <div class="span2 cool_badge" data-placement_id="<%= placement.id %>" data-config_id="<%= placement.badge_config_id %>">
-          <% if settings['course_url'] %>
-            <a href="<%= settings['course_url'] %>">
+    <% 3.times do |i| %>
+      <div class="row">
+        <% @public_badge_placements[i * 6,6].each do |placement| %>
+          <% settings = placement.merged_settings %>
+          <div class="span2 cool_badge" data-placement_id="<%= placement.id %>" data-config_id="<%= placement.badge_config_id %>">
+            <% if settings['course_url'] %>
+              <a href="<%= settings['course_url'] %>">
+                <img src='<%= settings['badge_url'] %>' class='thumbnail'/>
+              </a>
+            <% else %>
               <img src='<%= settings['badge_url'] %>' class='thumbnail'/>
-            </a>
-          <% else %>
-            <img src='<%= settings['badge_url'] %>' class='thumbnail'/>
-          <% end %>
-          <h3>
-          <% if settings['course_url'] %>
-            <a href="<%= settings['course_url'] %>"><%= settings['badge_name'] || "Unnamed Badge" %></a>
-          <% else %>
-            <%= settings['badge_name'] || "Unnamed Badge" %></h2>
-          <% end %>
-          </h3>
-        </div>
-      <% end %>
-    </div>
+            <% end %>
+            <h3>
+            <% if settings['course_url'] %>
+              <a href="<%= settings['course_url'] %>"><%= settings['badge_name'] || "Unnamed Badge" %></a>
+            <% else %>
+              <%= settings['badge_name'] || "Unnamed Badge" %></h2>
+            <% end %>
+            </h3>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
     <hr/>
   <% end %>
   <% if @org.default? %>
