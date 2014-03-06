@@ -111,6 +111,7 @@ function loadResults(url) {
 }
 $(".nav-pills li").click(function(event) {
   event.preventDefault();
+  $("#search").val("");
   $(".nav-pills li").removeClass('active');
   $(this).addClass('active');
   $("#badges tbody").empty();
@@ -122,6 +123,27 @@ $(".nav-pills li").click(function(event) {
   }
 });
 $("#current_students").click();
+
+$("#search_form").submit(function(event) {
+  event.preventDefault();
+  var search = $("#search").val();
+  if(search) {
+    $("#badges tbody").empty();
+    var $tab = $(".nav-pills li.active");
+    var badge_placement_config_id = $("#badges").attr('data-badge_placement_config_id');
+    if($tab.attr('id') == 'current_students') {
+      loadResults("/api/v1/badges/current/" + badge_placement_config_id + ".json?search=" + encodeURIComponent(search));
+    } else {
+      loadResults("/api/v1/badges/awarded/" + badge_placement_config_id + ".json?search=" + encodeURIComponent(search));
+    }
+  } else {
+    $(".nav-pills li.active").click();
+  }
+});
+
+$("#clear_search").click(function() {
+  $(".nav-pills li.active").click();
+});
 
 var badge_status = $("#student_badge").attr('rel');
 if(badge_status) {

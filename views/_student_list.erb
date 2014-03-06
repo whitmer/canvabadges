@@ -6,6 +6,11 @@
       <a href="#">Awarded Students</a>
     </li>
   </ul>
+  <form class="form-inline" id="search_form">
+    <input type="text" class="input-large" placeholder="Search" id="search"/>
+    <button class="btn btn-primary" type="submit">Go</button>
+    <button class="btn" type="button" id="clear_search">Clear</button>
+  </form>
   <table id="badges" class="table table-bordered table-striped" style='margin: 0 0 15px 0;' data-badge_config_id="<%= @badge_config_id %>" data-badge_placement_config_id="<%= @badge_placement_config_id %>">
     <thead>
       <tr>
