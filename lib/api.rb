@@ -142,7 +142,11 @@ module Sinatra
         params['page'] = '1' if params['page'].to_i == 0
         if awarded
           if params['search']
-            badges = badges.all(:user_full_name.like => "%#{params['search']}%")
+            if DataMapper.repository.adapter.options['adapter'] == 'postgres'
+              badges = badges.all(:conditions => ['user_full_name ILIKE ?', "%#{params['search']}%"])
+            else
+              badges = badges.all(:user_full_name.like => "%#{params['search']}%")
+            end
           end
           badges = badges.all(:state => 'awarded', :order => 'user_full_name')
           if badges.length > (params['page'].to_i * 50)
