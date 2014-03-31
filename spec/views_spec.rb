@@ -34,6 +34,10 @@ describe 'Badging Models' do
       get "/_test/"
       last_response.should be_ok
       last_response.body.should match(/Test With Prefix/)
+
+      get "/_test"
+      last_response.should be_ok
+      last_response.body.should match(/Test With Prefix/)
     end
     
   end  

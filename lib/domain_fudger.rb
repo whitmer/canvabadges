@@ -11,6 +11,7 @@ class DomainFudger
     env['badges.path_prefix'] = ""
     if path.match(/^\/_/)
       nothing, domain_piece, new_path = path.split(/\//, 3)
+      new_path = new_path || ""
       domain += "/" + domain_piece
       env['PATH_INFO'] = "/" + new_path
       env['badges.path_prefix'] = "/" + domain_piece
