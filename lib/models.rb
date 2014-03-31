@@ -380,10 +380,6 @@ class BadgePlacementConfig
     end
   end
   
-  def to_json(host_with_port)
-    as_json(host_with_port).to_json
-  end
-  
   def approve_to_pending?
     settings && (settings['manual_approval'] || settings['require_evidence'])
   end

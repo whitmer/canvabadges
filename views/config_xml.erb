@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<% url = "#{protocol}://#{request.host_with_port}/placement_launch" %>
+<% url = "#{protocol}://#{request.env['badges.domain']}/placement_launch" %>
 <cartridge_basiclti_link xmlns="http://www.imsglobal.org/xsd/imslticc_v1p0"
     xmlns:blti = "http://www.imsglobal.org/xsd/imsbasiclti_v1p0"
     xmlns:lticm ="http://www.imsglobal.org/xsd/imslticm_v1p0"

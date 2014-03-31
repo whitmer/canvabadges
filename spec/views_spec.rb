@@ -29,6 +29,13 @@ describe 'Badging Models' do
       last_response.body.should match(/Canvabadges Badges/)
     end
     
+    it "should work with prefixed orgs" do
+      prefix_org
+      get "/_test/"
+      last_response.should be_ok
+      last_response.body.should match(/Test With Prefix/)
+    end
+    
   end  
   
   describe "LTI XML config" do
@@ -37,6 +44,14 @@ describe 'Badging Models' do
       last_response.should be_ok
       xml = Nokogiri(last_response.body)
       xml.css('blti|launch_url').text.should == "https://example.org/placement_launch"
+    end
+
+    it "should work with prefixed orgs" do
+      prefix_org
+      get "/_test/canvabadges.xml"
+      last_response.should be_ok
+      xml = Nokogiri(last_response.body)
+      xml.css('blti|launch_url').text.should == "https://example.org/_test/placement_launch"
     end
   end  
   
@@ -57,6 +72,15 @@ describe 'Badging Models' do
     it "should return badge completion information if the user has earned the badge" do
       award_badge(badge_config, user)
       get "/badges/criteria/#{@badge_config.id}/#{@badge_config.nonce}?user=#{@badge.nonce}"
+      last_response.should be_ok
+      last_response.body.should match(/completed the requirements/)
+      last_response.body.should match(/#{@badge.user_name}/)
+    end
+
+    it "should work with prefixed orgs" do
+      prefix_org
+      award_badge(badge_config, user)
+      get "/_test/badges/criteria/#{@badge_config.id}/#{@badge_config.nonce}?user=#{@badge.nonce}"
       last_response.should be_ok
       last_response.body.should match(/completed the requirements/)
       last_response.body.should match(/#{@badge.user_name}/)
@@ -104,6 +128,21 @@ describe 'Badging Models' do
       last_response.body.should match(/#{@badge.name}/)
       last_response.body.should_not match(/Share this Page/)
     end
+
+    it "should work with prefixed orgs" do
+      prefix_org
+      award_badge(badge_config, user)
+      get "/_test/badges/all/#{@domain.id}/#{@user.user_id}"
+      last_response.should be_ok
+      assert_error_page("No Badges Earned or Shared")
+      
+      @badge.public = true
+      @badge.save
+      
+      get "/_test/badges/all/#{@domain.id}/#{@user.user_id}"
+      last_response.body.should match(/#{@badge.name}/)
+      last_response.body.should_not match(/Share this Page/)
+    end
   end  
   
   describe "course badges page" do
@@ -137,6 +176,14 @@ describe 'Badging Models' do
       example_org
       award_badge(configured_badge, user)
       get "/badges/course/#{@badge_placement_config.course_id}", {}, 'rack.session' => {'user_id' => @user.user_id, 'domain_id' => @user.domain_id, "permission_for_#{@badge_placement_config.course_id}" => 'view'}
+      last_response.should be_ok
+      last_response.body.should match(@badge_config.settings['badge_description'])
+    end
+    
+    it "should work with prefixed orgs" do
+      prefix_org
+      award_badge(configured_badge, user)
+      get "/_test/badges/course/#{@badge_placement_config.course_id}", {}, 'rack.session' => {'user_id' => @user.user_id, 'domain_id' => @user.domain_id, "permission_for_#{@badge_placement_config.course_id}" => 'view'}
       last_response.should be_ok
       last_response.body.should match(@badge_config.settings['badge_description'])
     end
@@ -201,6 +248,16 @@ describe 'Badging Models' do
       user
       CanvasAPI.should_receive(:api_call).with("/api/v1/courses/#{@badge_placement_config.course_id}/modules", @user, true).and_return([])
       get "/badges/modules/#{@badge_placement_config.id}/#{@user.user_id}", {}, 'rack.session' => {'user_id' => @user.user_id, "permission_for_#{@badge_placement_config.course_id}" => 'edit'}
+      last_response.should be_ok
+      last_response.body.should_not match(/module/)
+    end
+    
+    it "should work with prefixed orgs" do
+      prefix_org
+      badge_config
+      user
+      CanvasAPI.should_receive(:api_call).with("/api/v1/courses/#{@badge_placement_config.course_id}/modules", @user, true).and_return([])
+      get "/_test/badges/modules/#{@badge_placement_config.id}/#{@user.user_id}", {}, 'rack.session' => {'user_id' => @user.user_id, "permission_for_#{@badge_placement_config.course_id}" => 'edit'}
       last_response.should be_ok
       last_response.body.should_not match(/module/)
     end
@@ -331,6 +388,30 @@ describe 'Badging Models' do
         bc2.settings['modules'][0].should == [4, "Module 1", 0]
         bc2.settings['modules'][1].should == [5, "Module 2", 0]
       end
+
+      it "should work with prefixed orgs" do
+        prefix_org
+        bc1 = module_configured_badge
+        bc2 = configured_badge
+        bc2.settings['prior_resource_link_id'] = bc1.placement_id
+        bc2.settings['pending'] = true
+        bc2.save
+        
+        user
+        CanvasAPI.should_receive(:api_call).and_return([
+          {'id' => '4', 'name' => 'Module 1'},
+          {'id' => '5', 'name' => 'Module 2'}
+        ])
+        get "/_test/badges/check/#{bc2.id}/#{@user.user_id}", {}, 'rack.session' => {'user_id' => @user.user_id, "permission_for_#{bc2.course_id}" => 'view', 'email' => 'bob@example.com'}
+        last_response.should be_ok
+        last_response.body.should match(/Cool Badge/)
+
+        bc2.reload
+        bc2.should_not be_pending
+        bc2.settings['badge_url'].should == bc1.settings['badge_url']
+        bc2.settings['modules'][0].should == [4, "Module 1", 0]
+        bc2.settings['modules'][1].should == [5, "Module 2", 0]
+      end
     end
     
     describe "meeting completion criteria as a student" do
@@ -372,6 +453,25 @@ describe 'Badging Models' do
         last_response.should be_ok
         last_response.body.should match(/Cool Badge/)
         get "/badges/status/#{@badge_placement_config.id}/#{@user.user_id}", {}, 'rack.session' => {'user_id' => @user.user_id, "permission_for_#{@badge_placement_config.course_id}" => 'view', 'email' => 'student@example.com'}
+        last_response.should be_ok
+        last_response.body.should match(/You've earned this badge!/)
+        
+        @badge = Badge.last
+        @badge.should_not be_nil
+        @badge.user_id.should == @user.user_id
+        @badge.state.should == 'awarded'
+      end
+      
+      it "should work with prefixed orgs" do
+        prefix_org
+        configured_badge(50)
+        user
+        Badge.last.should be_nil
+        CanvasAPI.should_receive(:api_call).with("/api/v1/courses/#{@badge_placement_config.course_id}?include[]=total_scores", @user).and_return(enrollments(60))
+        get "/_test/badges/check/#{@badge_placement_config.id}/#{@user.user_id}", {}, 'rack.session' => {'user_id' => @user.user_id, "permission_for_#{@badge_placement_config.course_id}" => 'view', 'email' => 'student@example.com'}
+        last_response.should be_ok
+        last_response.body.should match(/Cool Badge/)
+        get "/_test/badges/status/#{@badge_placement_config.id}/#{@user.user_id}", {}, 'rack.session' => {'user_id' => @user.user_id, "permission_for_#{@badge_placement_config.course_id}" => 'view', 'email' => 'student@example.com'}
         last_response.should be_ok
         last_response.body.should match(/You've earned this badge!/)
         
@@ -503,6 +603,27 @@ describe 'Badging Models' do
         last_response.should be_ok
         last_response.body.should match(/Cool Badge/)
         get "/badges/status/#{@badge_placement_config.id}/#{@user.user_id}", {}, 'rack.session' => {'user_id' => @user.user_id, "permission_for_#{@badge_placement_config.course_id}" => 'view', 'email' => 'student@example.com'}
+        last_response.should be_ok
+        last_response.body.should match(/You haven't earned this badge yet/)
+        last_response.body.should match(/URL showing what qualifies you to earn this badge \(required\)/)
+
+        Badge.last.should_not be_nil
+        Badge.last.state.should == 'unissued'
+      end
+      
+      it "should work with prefixed orgs" do
+        prefix_org
+        module_configured_badge(50)
+        @badge_placement_config.settings['require_evidence'] = true
+        @badge_placement_config.save
+        user
+        Badge.last.should be_nil
+        CanvasAPI.should_receive(:api_call).with("/api/v1/courses/#{@badge_placement_config.course_id}?include[]=total_scores", @user).and_return(enrollments(60))
+        CanvasAPI.should_receive(:api_call).with("/api/v1/courses/#{@badge_placement_config.course_id}/modules", @user, true).and_return([])
+        get "/_test/badges/check/#{@badge_placement_config.id}/#{@user.user_id}", {}, 'rack.session' => {'user_id' => @user.user_id, "permission_for_#{@badge_placement_config.course_id}" => 'view', 'email' => 'student@example.com'}
+        last_response.should be_ok
+        last_response.body.should match(/Cool Badge/)
+        get "/_test/badges/status/#{@badge_placement_config.id}/#{@user.user_id}", {}, 'rack.session' => {'user_id' => @user.user_id, "permission_for_#{@badge_placement_config.course_id}" => 'view', 'email' => 'student@example.com'}
         last_response.should be_ok
         last_response.body.should match(/You haven't earned this badge yet/)
         last_response.body.should match(/URL showing what qualifies you to earn this badge \(required\)/)

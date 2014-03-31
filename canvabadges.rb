@@ -16,6 +16,7 @@ require './lib/api.rb'
 require './lib/badge_configuration.rb'
 require './lib/views.rb'
 require './lib/utils.rb'
+require './lib/domain_fudger.rb'
 
 class Canvabadges < Sinatra::Base
   register Sinatra::Auth
@@ -24,6 +25,7 @@ class Canvabadges < Sinatra::Base
   register Sinatra::Views
   
   use Rack::Iframe
+  use DomainFudger
   
   # sinatra wants to set x-frame-options by default, disable it
   disable :protection

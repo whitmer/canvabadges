@@ -16,7 +16,7 @@
         and secret above for configuration)
       </li>
       <li>
-        If you're an admin, add <a href="/canvas_profile_badges.js">this javascript file</a>
+        If you're an admin, add <a href="/canvas_profile_badges.js<%= "?path_prefix=#{request.env['badges.path_prefix']}" if request.env['badges.path_prefix'].length > 0 %>">this javascript file</a>
         to your global Canvas JavaScript to make badges appear on user profiles.
       </li>
       <li>

@@ -67,7 +67,7 @@ module Sinatra
         @badge_config.updated_at = DateTime.now
         @badge_config.public = params['public'] == '1'
         @badge_config.save
-        redirect to("/badges/check/#{@badge_placement_config_id}/#{@user_id}")
+        redirect to("#{request.env['badges.path_prefix']}/badges/check/#{@badge_placement_config_id}/#{@user_id}")
       end
       
       # set a badge to public or private
@@ -117,7 +117,7 @@ module Sinatra
             end
             badge = Badge.manually_award(params, @badge_placement_config, student['name'], email)
             
-            redirect to("/badges/check/#{@badge_placement_config_id}/#{@user_id}")
+            redirect to("#{request.env['badges.path_prefix']}/badges/check/#{@badge_placement_config_id}/#{@user_id}")
           else
             return error("That user is not a student in this course")
           end

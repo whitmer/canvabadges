@@ -37,6 +37,17 @@ describe 'Badges API' do
       last_response.should be_ok
       last_response.body.should == {:objects => [badge_json(@badge, @user)]}.to_json
     end
+    
+    it "should support prefixed organizations" do
+      prefix_org
+      award_badge(badge_config, user)
+      @badge.public = true
+      @badge.save!
+      get "/_test/api/v1/badges/public/#{@user.user_id}/bob.com.json"
+      last_response.should be_ok
+      last_response.body.should == {:objects => [badge_json(@badge, @user)]}.to_json
+    end
+    
     it "should only return badges that are public for the user" do
       example_org
       award_badge(badge_config, user)
@@ -87,6 +98,15 @@ describe 'Badges API' do
       last_response.should be_ok
       last_response.body.should == {:meta => {:next => nil}, :objects => [badge_json(@badge, @user)]}.to_json      
     end
+    
+    it "should support prefixed orgs" do
+      prefix_org
+      award_badge(badge_config, user)
+      get "/_test/api/v1/badges/awarded/#{@badge_placement_config.id}.json", {}, 'rack.session' => {"permission_for_#{@badge_placement_config.course_id}" => 'edit', 'user_id' => @user.user_id}
+      last_response.should be_ok
+      last_response.body.should == {:meta => {:next => nil}, :objects => [badge_json(@badge, @user)]}.to_json      
+    end
+    
     it "should not return pending or revoked badges" do
       award_badge(badge_config, user)
       @badge.state = 'revoked'
@@ -157,6 +177,21 @@ describe 'Badges API' do
       last_response.should be_ok
       last_response.body.should == {:meta => {:next => "/api/v1/badges/current/#{@badge_placement_config.id}.json?page=2"}, :objects => [s1, s2]}.to_json      
     end
+    
+    it "should support prefixed orgs" do
+      prefix_org
+      badge_config
+      user
+      s1 = fake_badge_json(@badge_placement_config, '123', 'bob')
+      s2 = fake_badge_json(@badge_placement_config, '456', 'fred')
+      json = [{'id' => s1[:id], 'name' => s1[:name]}, {'id' => s2[:id], 'name' => s2[:name]}]
+      json.stub(:more?).and_return(true)
+      
+      Canvabadges.any_instance.should_receive(:api_call).and_return(json)
+      get "/_test/api/v1/badges/current/#{@badge_placement_config.id}.json", {}, 'rack.session' => {"permission_for_#{@badge_placement_config.course_id}" => 'edit', 'user_id' => @user.user_id}
+      last_response.should be_ok
+      last_response.body.should == {:meta => {:next => "/_test/api/v1/badges/current/#{@badge_placement_config.id}.json?page=2"}, :objects => [s1, s2]}.to_json      
+    end
   end
   
   describe "open badges data" do
@@ -199,6 +234,23 @@ describe 'Badges API' do
       }
       json['issuedOn'].should_not be_nil
       json['badge'].should == "https://example.org/api/v1/badges/summary/#{@badge_config.id}/#{@badge_config.nonce}.json"
+    end
+    
+    it "should support prefixed orgs" do
+      prefix_org
+      award_badge(badge_config, user)
+      get "/_test/api/v1/badges/data/#{@badge_config.id}/#{@user.user_id}/#{@badge.nonce}.json"
+      last_response.should be_ok 
+      last_response.body.should == @badge.open_badge_json("example.org/_test").to_json
+      json = JSON.parse(last_response.body)
+      json['recipient'].should_not be_nil
+      json['recipient']['salt'].should_not be_nil
+      json['verify'].should == {
+        "type"=>"hosted", 
+        "url"=>"https://example.org/_test/api/v1/badges/data/#{@badge_config.id}/#{@user.user_id}/#{@badge.nonce}.json"
+      }
+      json['issuedOn'].should_not be_nil
+      json['badge'].should == "https://example.org/_test/api/v1/badges/summary/#{@badge_config.id}/#{@badge_config.nonce}.json"
     end
     
     it "should return valid OBI BadgeClass data" do

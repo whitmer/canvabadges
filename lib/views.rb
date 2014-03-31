@@ -115,7 +115,7 @@ module Sinatra
           @bp.settings['award_only'] = true
           @bp.save
         end
-        redirect to("/badges/check/#{@bp.id}/#{session['user_id']}")
+        redirect to("#{request.env['badges.path_prefix']}/badges/check/#{@bp.id}/#{session['user_id']}")
       end
       
       # the magic page, APIs it up to make sure the user has done what they need to,
@@ -194,8 +194,8 @@ module Sinatra
     
     module Helpers
       def org_check
-        @org = Organization.first(:host => request.env['HTTP_HOST'], :order => :id)
-        halt 404, error("Domain not properly configured. No Organization record matching the host #{request.env['HTTP_HOST']}") unless @org
+        @org = Organization.first(:host => request.env['badges.domain'], :order => :id)
+        halt 404, error("Domain not properly configured. No Organization record matching the host #{request.env['badges.domain']}") unless @org
       end
       
       def edit_course_html
@@ -224,7 +224,7 @@ module Sinatra
       end
       
       def oauth_dance(request, host)
-        return_url = "#{protocol}://#{request.host_with_port}/oauth_success"
+        return_url = "#{protocol}://#{request.env['badges.domain']}/oauth_success"
         redirect to("#{protocol}://#{host}/login/oauth2/auth?client_id=#{oauth_config.value}&response_type=code&redirect_uri=#{CGI.escape(return_url)}")
       end 
   

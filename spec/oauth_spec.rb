@@ -138,6 +138,20 @@ describe 'Badging OAuth' do
       last_response.location.should == "http://example.org/badges/check/#{bc.id}/#{@user.user_id}"
     end
     
+    it "should work with prefixed orgs" do
+      prefix_org
+      ExternalConfig.create(:config_type => 'lti', :value => '123')
+      ExternalConfig.create(:config_type => 'canvas_oauth', :value => '456')
+      user
+      IMS::LTI::ToolProvider.any_instance.stub(:valid_request?).and_return(true)
+      IMS::LTI::ToolProvider.any_instance.stub(:roles).and_return(['student'])
+      CanvasAPI.should_receive(:api_call).and_return({'id' => '123'})
+      post "/_test/placement_launch", {'oauth_consumer_key' => '123', 'tool_consumer_instance_guid' => 'something.bob.com', 'resource_link_id' => '2s3d', 'custom_canvas_user_id' => @user.user_id, 'custom_canvas_course_id' => '1', 'lis_person_contact_email_primary' => 'bob@example.com'}
+      last_response.should be_redirect
+      bc = BadgePlacementConfig.last
+      last_response.location.should == "http://example.org/_test/badges/check/#{bc.id}/#{@user.user_id}"
+    end
+    
     it "should redirect to user page if specified" do
       example_org
       ExternalConfig.create(:config_type => 'lti', :value => '123')
@@ -334,6 +348,23 @@ describe 'Badging OAuth' do
         last_response.should be_redirect
         bpc = BadgePlacementConfig.last
         last_response.location.should == "http://example.org/badges/check/#{bpc.id}/#{@user.user_id}"
+        bc = BadgeConfig.last
+        bc.should_not == nil
+        bpc.badge_config.should == bc
+      end
+
+      it "should work with prefixed orgs" do
+        prefix_org
+        ExternalConfig.create(:config_type => 'lti', :value => '123', :organization_id => @org.id)
+        ExternalConfig.create(:config_type => 'canvas_oauth', :value => '456')
+        user
+        IMS::LTI::ToolProvider.any_instance.stub(:valid_request?).and_return(true)
+        IMS::LTI::ToolProvider.any_instance.stub(:roles).and_return(['student'])
+        CanvasAPI.should_receive(:api_call).and_return({'id' => '123'})
+        post "/_test/placement_launch", {'oauth_consumer_key' => '123', 'tool_consumer_instance_guid' => 'something.bob.com', 'resource_link_id' => '2s3d', 'custom_canvas_user_id' => @user.user_id, 'custom_canvas_course_id' => '1', 'lis_person_contact_email_primary' => 'bob@example.com'}
+        last_response.should be_redirect
+        bpc = BadgePlacementConfig.last
+        last_response.location.should == "http://example.org/_test/badges/check/#{bpc.id}/#{@user.user_id}"
         bc = BadgeConfig.last
         bc.should_not == nil
         bpc.badge_config.should == bc

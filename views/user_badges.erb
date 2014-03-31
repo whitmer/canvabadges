@@ -26,6 +26,6 @@
   <% end %>
 </table>
 <% if @for_current_user && !@badges.empty? %>
-  <% url = "#{protocol}://#{request.host_with_port}/badges/all/#{params['domain_id']}/#{params['user_id']}" %>
+  <% url = "#{protocol}://#{request.env['badges.domain']}/badges/all/#{params['domain_id']}/#{params['user_id']}" %>
   <br/><form class='form-inline'><label>Share this Page: <input type='text' value='<%= url %>'/></label></form>
 <% end %>

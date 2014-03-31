@@ -1,7 +1,9 @@
 $(function() {
   // NOTE: if pasting this code into another script, you'll need to manually change the
   // next line. Instead of assigning the value null, you need to assign the value of
-  // the Canvabadges domain, i.e. "https://canvabadges.herokuapp.com"
+  // the Canvabadges domain, i.e. "https://canvabadges.herokuapp.com". If you have a custom
+  // domain configured then it'll be something like "https://canvabadges.herokuapp.com/_my_site"
+  // instead.
   var protocol_and_host = null;
   var $scripts = $("script");
   $("script").each(function() {
@@ -9,6 +11,10 @@ $(function() {
     if(src && src.match(/canvas_profile_badges/)) {
       var splits = src.split(/\//);
       protocol_and_host = splits[0] + "//" + splits[2];
+    }
+    var prefix = src && src.match(/\?path_prefix=\/(\w+)/);
+    if(prefix && prefix[1]) {
+      protocol_and_host = protocol_and_host + "/" + prefix[1];
     }
   });
   if(!protocol_and_host) {

@@ -118,7 +118,7 @@ module Sinatra
           halt 400, erb(:session_lost)
         end
         domain = Domain.first(:id => session['domain_id'])
-        return_url = "#{protocol}://#{request.host_with_port}/oauth_success"
+        return_url = "#{protocol}://#{request.env['badges.domain']}/oauth_success"
         code = params['code']
         url = "#{protocol}://#{domain.host}/login/oauth2/token"
         uri = URI.parse(url)
@@ -166,7 +166,7 @@ module Sinatra
       end
       
       app.get "/login" do
-        request_token = consumer.get_request_token(:oauth_callback => "#{request.scheme}://#{request.host_with_port}/login_success")
+        request_token = consumer.get_request_token(:oauth_callback => "#{request.scheme}://#{request.env['badges.domain']}/login_success")
         if request_token.token && request_token.secret
           session[:oauth_token] = request_token.token
           session[:oauth_token_secret] = request_token.secret
@@ -193,7 +193,7 @@ module Sinatra
         end
         
         
-        @org = Organization.first(:host => request.env['HTTP_HOST'], :order => :id)
+        @org = Organization.first(:host => request.env['badges.domain'], :order => :id)
         @conf = ExternalConfig.generate(screen_name)
         erb :config_tokens
       end
@@ -221,17 +221,17 @@ module Sinatra
       def launch_redirect(config_id, domain_id, user_id, params)
         params ||= {}
         if params['custom_show_all']
-          redirect to("/badges/all/#{domain_id}/#{user_id}")
+          redirect to("#{request.env['badges.path_prefix']}/badges/all/#{domain_id}/#{user_id}")
         elsif params['custom_show_course']
-          redirect to("/badges/course/#{params['custom_canvas_course_id']}")
+          redirect to("#{request.env['badges.path_prefix']}/badges/course/#{params['custom_canvas_course_id']}")
         elsif params['ext_content_intended_use'] == 'navigation' || params['picker']
           return_url = params['ext_content_return_url'] || params['launch_presentation_return_url'] || ""
-          redirect to("/badges/pick?return_url=#{CGI.escape(return_url)}")
+          redirect to("#{request.env['badges.path_prefix']}/badges/pick?return_url=#{CGI.escape(return_url)}")
         else
           if !config_id
             halt 400, erb(:session_lost)
           end
-          redirect to("/badges/check/#{config_id}/#{user_id}")
+          redirect to("#{request.env['badges.path_prefix']}/badges/check/#{config_id}/#{user_id}")
         end
       end
       

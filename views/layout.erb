@@ -131,7 +131,7 @@
           }
           </style>
         </head>
-        <body>
+        <body data-path_prefix="<%= request.env['badges.path_prefix'] %>">
           <div class="container" id="content">
           <div id="contents">
 <%= yield %>

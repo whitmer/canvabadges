@@ -7,7 +7,7 @@ $(document).on('change', ".public_badge", function() {
   $.ajax({
     type: 'POST',
     dataType: 'json',
-    url: url,
+    url: window.path_prefix + url,
     data: {
       public: ($(this).attr('checked') ? 'true' : 'false')
     },
@@ -22,7 +22,7 @@ $(document).on('click', "#disable_badge", function() {
   $.ajax({
     type: 'POST',
     dataType: 'json',
-    url: url,
+    url: window.path_prefix + url,
     success: function() {
       location.reload();
     },
@@ -36,7 +36,7 @@ $(document).on('change', "#evidence_url", function() {
   $.ajax({
     type: 'POST',
     dataType: 'json',
-    url: url,
+    url: window.path_prefix + url,
     data: {
       evidence_url: $(this).val()
     },
@@ -86,7 +86,7 @@ function loadResults(url) {
   $.ajax({
     type: 'GET',
     dataType: 'json',
-    url: url,
+    url: window.path_prefix + url,
     success: function(data) {
       $("#badges tbody .loading").remove();
       var badge_placement_config_id = $("#badges").attr('data-badge_placement_config_id');
@@ -150,7 +150,7 @@ if(badge_status) {
   $.ajax({
     type: 'GET',
     dataType: 'html',
-    url: badge_status,
+    url: window.path_prefix + badge_status,
     success: function(data) {
       $("#student_badge").html(data);
     },
@@ -165,7 +165,7 @@ if(modules) {
   $.ajax({
     type: 'GET',
     dataType: 'html',
-    url: modules,
+    url: window.path_prefix + modules,
     success: function(data) {
       $("#modules_settings").html(data);
       $("#badge_settings .form-actions button[type='submit']").attr('disabled', false);

@@ -13,6 +13,10 @@ RSpec.configure do |config|
   }
 end
 
+def prefix_org
+  @org = Organization.create(:host => "example.org/_test", :settings => {'name' => 'Test With Prefix'})
+end
+
 def example_org
   @org ||= Organization.create(:host => "example.org", :settings => {'name' => 'Canvabadges'})
 end

@@ -10,7 +10,7 @@
     <p>
       Put it all together and you've got some lightweight course credentials!
       Badges can be added to a <a href="http://openbadges.org/">Mozilla Backpack</a>,
-      or you can drop <a href="/canvas_profile_badges.js">this javascript file</a> in your
+      or you can drop <a href="/canvas_profile_badges.js<%= "?path_prefix=#{request.env['badges.path_prefix']}" if request.env['badges.path_prefix'].length > 0 %>">this javascript file</a> in your
       global Canvas scripts to let users add them to their Canvas 
       profiles.
     </p>
@@ -26,11 +26,11 @@
         </li>
       <% end %>
       <li>
-        <a href="/canvabadges.xml">Copy this XML link</a> and pick "By URL" as 
+        <a href="<%= request.env['badges.path_prefix'] %>/canvabadges.xml">Copy this XML link</a> and pick "By URL" as 
         the configuration type to add as a new external tool in Canvas
       </li>
       <li>
-        If you're an admin, add <a href="/canvas_profile_badges.js">this javascript file</a>
+        If you're an admin, add <a href="/canvas_profile_badges.js<%= "?path_prefix=#{request.env['badges.path_prefix']}" if request.env['badges.path_prefix'].length > 0 %>">this javascript file</a>
         to your global Canvas JavaScript to make badges appear on user profiles.
       </li>
     </ol>
