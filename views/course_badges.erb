@@ -9,11 +9,11 @@
   <% else %>
     <table>
       <% @badges.each do |badge| %>
-        <% badge_url = "/badges/check/#{badge.badge_config_id}/#{badge.user_id}" %>
+        <% badge_url = "#{ request.env['badges.path_prefix'] }/badges/check/#{badge.badge_config_id}/#{badge.user_id}" %>
         <tr>
         <td style='padding: 0 5px;'><a href='<%= badge_url %>'><img src='<%= badge.badge_url %>' class='thumbnail' alt='badge image'/></a></td>
         <td style='padding: 0 5px;'><%= badge.name %>
-          <form class='form-inline' action='/badges/<% badge.nonce %>' style='margin: 0 0 0 15px;'>
+          <form class='form-inline' action='<%= request.env['badges.path_prefix'] %>/badges/<% badge.nonce %>' style='margin: 0 0 0 15px;'>
           <label><input class='public_badge' <%= 'checked' if badge.public %> type='checkbox'/> show on my Canvas profile</label>
           </form>
         </td>
@@ -21,7 +21,7 @@
       <% end %>
     </table>
   <% end %>
-  <a href='/badges/all/<%= session['domain_id'] %>/<%= session['user_id'] %>'>See All Your Badges</a>
+  <a href='<%= request.env['badges.path_prefix'] %>/badges/all/<%= session['domain_id'] %>/<%= session['user_id'] %>'>See All Your Badges</a>
 </div>
 
 <h3>All Course Badges</h3>
@@ -34,7 +34,7 @@
         <% settings = bp.merged_settings || {} %>
         <img src='<%= settings['badge_url'] %>' style='float: left; margin-right: 10px;' class='thumbnail'/>
         <h2>
-          <a href="/badges/check/<%= bp.id %>/<%= session['user_id'] %>"><%= settings['badge_name'] || "Unnamed Badge" %></a></h2>
+          <a href="<%= request.env['badges.path_prefix'] %>/badges/check/<%= bp.id %>/<%= session['user_id'] %>"><%= settings['badge_name'] || "Unnamed Badge" %></a></h2>
         </h2>
         <p class='desc'><%= settings['badge_description'] %></p>
 
@@ -58,7 +58,7 @@
           <% settings = bp.merged_settings || {} %>
           <img src='<%= settings['badge_url'] %>' style='float: left; margin-right: 10px;' class='thumbnail'/>
           <h2>
-            <a href="/badges/add_to_course/<%= bp.id %>/<%= params['course_id'] %>"><%= settings['badge_name'] || "Unnamed Badge" %></a></h2>
+            <a href="<%= request.env['badges.path_prefix'] %>/badges/add_to_course/<%= bp.id %>/<%= params['course_id'] %>"><%= settings['badge_name'] || "Unnamed Badge" %></a></h2>
           </h2>
           <p class='desc'><%= settings['badge_description'] %></p>
 

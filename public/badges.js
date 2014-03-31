@@ -7,7 +7,7 @@ $(document).on('change', ".public_badge", function() {
   $.ajax({
     type: 'POST',
     dataType: 'json',
-    url: window.path_prefix + url,
+    url: url,
     data: {
       public: ($(this).attr('checked') ? 'true' : 'false')
     },

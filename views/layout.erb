@@ -140,8 +140,8 @@
             <% issuer = BadgeHelper.issuer %>
             powered by <a href="<%= issuer['url'] %>"><%= issuer['name'] %></a>
             <% if @full_footer %>
-              | <a href="/about">About</a>
-              | <a href="/stats">Stats</a>
+              | <a href="<%= request.env['badges.path_prefix'] %>/about">About</a>
+              | <a href="<%= request.env['badges.path_prefix'] %>/stats">Stats</a>
             <% end %>
           </footer>
         </div>

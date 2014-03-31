@@ -7,7 +7,7 @@
         <td><%= comma @stats['issuers'] %></td>
       </tr>
       <tr>
-        <td>Badges Configured <a class="sub" href="/badges/public<%= "?this_org_only=1" if @stats_org %>">see earnable public badges</a></td>
+        <td>Badges Configured <a class="sub" href="<%= request.env['badges.path_prefix'] %>/badges/public<%= "?this_org_only=1" if @stats_org %>">see earnable public badges</a></td>
         <td><%= comma @stats['badge_configs'] %></td>
       </tr>
       <tr>
@@ -15,7 +15,7 @@
         <td><%= comma @stats['badge_placement_configs'] %></td>
       </tr>
       <tr>
-        <td>Badges Awarded <a class="sub" href="/badges/public/awarded<%= "?this_org_only=1" if @stats_org %>">see learner-shared badges</a></td>
+        <td>Badges Awarded <a class="sub" href="<%= request.env['badges.path_prefix'] %>/badges/public/awarded<%= "?this_org_only=1" if @stats_org %>">see learner-shared badges</a></td>
         <td><%= comma @stats['badges'] %></td>
       </tr>
       <% unless @stats_org %>
