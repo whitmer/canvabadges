@@ -212,6 +212,15 @@ class BadgeConfig
     }
   end
   
+  def self.uncool(id, uncool=true)
+    bc = BadgeConfig.first(:id => id)
+    if bc
+      bc.uncool = uncool ? true : nil
+      bc.save
+    end
+    bc.uncool
+  end
+  
   def to_json(host_with_port)
     as_json(host_with_port).to_json
   end
