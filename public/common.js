@@ -1,4 +1,4 @@
-var window.path_prefix = $("body").attr('data-path_prefix') || "";
+window.path_prefix = $("body").attr('data-path_prefix') || "";
 
 // lib/handlebars/base.js
 var Handlebars = {};
