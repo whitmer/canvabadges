@@ -46,7 +46,6 @@ describe 'Badging OAuth' do
     it "should set session parameters" do
       example_org
       ExternalConfig.create(:config_type => 'lti', :value => '123')
-      ExternalConfig.create(:config_type => 'canvas_oauth', :value => '456')
       IMS::LTI::ToolProvider.any_instance.stub(:valid_request?).and_return(true)
       IMS::LTI::ToolProvider.any_instance.stub(:roles).and_return(['student'])
       post "/placement_launch", {'oauth_consumer_key' => '123', 'tool_consumer_instance_guid' => 'something.bob.com', 'custom_canvas_user_id' => '1', 'custom_canvas_course_id' => '1', 'lis_person_contact_email_primary' => 'bob@example.com'}
@@ -63,7 +62,6 @@ describe 'Badging OAuth' do
     it "should provision domain if new" do
       example_org
       ExternalConfig.create(:config_type => 'lti', :value => '123')
-      ExternalConfig.create(:config_type => 'canvas_oauth', :value => '456')
       IMS::LTI::ToolProvider.any_instance.stub(:valid_request?).and_return(true)
       IMS::LTI::ToolProvider.any_instance.stub(:roles).and_return(['student'])
       Domain.last.host.should_not == 'bob.org'
@@ -75,7 +73,6 @@ describe 'Badging OAuth' do
     it "should tie badge config to the current organization" do
       example_org
       ExternalConfig.create(:config_type => 'lti', :value => '123')
-      ExternalConfig.create(:config_type => 'canvas_oauth', :value => '456')
       IMS::LTI::ToolProvider.any_instance.stub(:valid_request?).and_return(true)
       IMS::LTI::ToolProvider.any_instance.stub(:roles).and_return(['student'])
       Domain.last.host.should_not == 'bob.org'
@@ -88,7 +85,6 @@ describe 'Badging OAuth' do
     it "should tie badge config to a different organization if specified" do
       example_org
       ExternalConfig.create(:config_type => 'lti', :value => '123')
-      ExternalConfig.create(:config_type => 'canvas_oauth', :value => '456')
       IMS::LTI::ToolProvider.any_instance.stub(:valid_request?).and_return(true)
       IMS::LTI::ToolProvider.any_instance.stub(:roles).and_return(['student'])
       post "/placement_launch", {'oauth_consumer_key' => '123', 'tool_consumer_instance_guid' => 'something.bob.org', 'custom_canvas_user_id' => '1', 'custom_canvas_course_id' => '1', 'lis_person_contact_email_primary' => 'bob@example.com'}
@@ -99,9 +95,8 @@ describe 'Badging OAuth' do
     
     it "should redirect to oauth if not authorized" do
       example_org
-      @org2 = Organization.create(:host => "bob.com", :settings => {'name' => 'my org'})
+      @org2 = Organization.create(:host => "bobx.com", :settings => {'name' => 'my org'})
       ExternalConfig.create(:config_type => 'lti', :value => '123', :organization_id => @org2.id)
-      ExternalConfig.create(:config_type => 'canvas_oauth', :value => '456')
       IMS::LTI::ToolProvider.any_instance.stub(:valid_request?).and_return(true)
       IMS::LTI::ToolProvider.any_instance.stub(:roles).and_return(['student'])
       post "/placement_launch", {'oauth_consumer_key' => '123', 'tool_consumer_instance_guid' => 'something.bob.com', 'custom_canvas_user_id' => '1', 'custom_canvas_course_id' => '1', 'lis_person_contact_email_primary' => 'bob@example.com'}
@@ -111,10 +106,25 @@ describe 'Badging OAuth' do
       BadgePlacementConfig.last.organization_id.should == @org2.id
     end
     
+    it "should redirect to proper route for prefixed org if not authorized" do
+      prefix_org
+      @org.settings['oss_oauth'] = true
+      @org.save
+      
+      ExternalConfig.create(:config_type => 'lti', :value => '123', :organization_id => @org.id)
+      ExternalConfig.create(:config_type => 'canvas_oss_oauth', :value => '789', :organization_id => @org.id)
+      IMS::LTI::ToolProvider.any_instance.stub(:valid_request?).and_return(true)
+      IMS::LTI::ToolProvider.any_instance.stub(:roles).and_return(['student'])
+      post "/_test/placement_launch", {'oauth_consumer_key' => '123', 'tool_consumer_instance_guid' => 'something.bob.com', 'custom_canvas_user_id' => '1', 'custom_canvas_course_id' => '1', 'lis_person_contact_email_primary' => 'bob@example.com'}
+      last_response.should be_redirect
+      last_response.location.should == "https://bob.com/login/oauth2/auth?client_id=789&response_type=code&redirect_uri=https%3A%2F%2Fexample.org%2F_test%2Foauth_success"
+      BadgeConfig.last.organization_id.should == @org.id
+      BadgePlacementConfig.last.organization_id.should == @org.id
+    end
+    
     it "should redirect to oauth if authorized but bad API response" do
       example_org
       ExternalConfig.create(:config_type => 'lti', :value => '123')
-      ExternalConfig.create(:config_type => 'canvas_oauth', :value => '456')
       user
       IMS::LTI::ToolProvider.any_instance.stub(:valid_request?).and_return(true)
       IMS::LTI::ToolProvider.any_instance.stub(:roles).and_return(['student'])
@@ -127,7 +137,6 @@ describe 'Badging OAuth' do
     it "should redirect to badge page if authorized" do
       example_org
       ExternalConfig.create(:config_type => 'lti', :value => '123')
-      ExternalConfig.create(:config_type => 'canvas_oauth', :value => '456')
       user
       IMS::LTI::ToolProvider.any_instance.stub(:valid_request?) do |req|
         req.path.should == "/placement_launch"
@@ -143,7 +152,6 @@ describe 'Badging OAuth' do
     it "should work with prefixed orgs" do
       prefix_org
       ExternalConfig.create(:config_type => 'lti', :value => '123')
-      ExternalConfig.create(:config_type => 'canvas_oauth', :value => '456')
       user
       IMS::LTI::ToolProvider.any_instance.stub(:valid_request?).and_return(true)
       IMS::LTI::ToolProvider.any_instance.stub(:roles).and_return(['student'])
@@ -157,7 +165,6 @@ describe 'Badging OAuth' do
     it "should use correct signature verification for prefixed orgs" do
       prefix_org
       ExternalConfig.create(:config_type => 'lti', :value => '123')
-      ExternalConfig.create(:config_type => 'canvas_oauth', :value => '456')
       user
       IMS::LTI::ToolProvider.any_instance.stub(:valid_request?) do |req|
         req.path.should == "/_test/placement_launch"
@@ -174,7 +181,6 @@ describe 'Badging OAuth' do
     it "should redirect to user page if specified" do
       example_org
       ExternalConfig.create(:config_type => 'lti', :value => '123')
-      ExternalConfig.create(:config_type => 'canvas_oauth', :value => '456')
       user
       IMS::LTI::ToolProvider.any_instance.stub(:valid_request?).and_return(true)
       IMS::LTI::ToolProvider.any_instance.stub(:roles).and_return(['student'])
@@ -191,7 +197,6 @@ describe 'Badging OAuth' do
     it "should redirect to picker page if specified" do
       example_org
       ExternalConfig.create(:config_type => 'lti', :value => '123')
-      ExternalConfig.create(:config_type => 'canvas_oauth', :value => '456')
       user
       IMS::LTI::ToolProvider.any_instance.stub(:valid_request?).and_return(true)
       IMS::LTI::ToolProvider.any_instance.stub(:roles).and_return(['student'])
@@ -205,7 +210,6 @@ describe 'Badging OAuth' do
     it "should redirect to course page if specified" do
       example_org
       ExternalConfig.create(:config_type => 'lti', :value => '123')
-      ExternalConfig.create(:config_type => 'canvas_oauth', :value => '456')
       user
       IMS::LTI::ToolProvider.any_instance.stub(:valid_request?).and_return(true)
       IMS::LTI::ToolProvider.any_instance.stub(:roles).and_return(['student'])
@@ -220,7 +224,6 @@ describe 'Badging OAuth' do
       it "should do nothing on an invalid badge config id" do
         example_org
         ExternalConfig.create(:config_type => 'lti', :value => '123')
-        ExternalConfig.create(:config_type => 'canvas_oauth', :value => '456')
         user
         IMS::LTI::ToolProvider.any_instance.stub(:valid_request?).and_return(true)
         IMS::LTI::ToolProvider.any_instance.stub(:roles).and_return(['student'])
@@ -238,7 +241,6 @@ describe 'Badging OAuth' do
         BadgeConfig.create(:organization_id => @org2.id, :reuse_code => 'abc123')
         
         ExternalConfig.create(:config_type => 'lti', :value => '123')
-        ExternalConfig.create(:config_type => 'canvas_oauth', :value => '456')
         user
         IMS::LTI::ToolProvider.any_instance.stub(:valid_request?).and_return(true)
         IMS::LTI::ToolProvider.any_instance.stub(:roles).and_return(['student'])
@@ -255,7 +257,6 @@ describe 'Badging OAuth' do
         @bc = BadgeConfig.create(:organization_id => @org.id, :reuse_code => 'abc123')
         
         ExternalConfig.create(:config_type => 'lti', :value => '123')
-        ExternalConfig.create(:config_type => 'canvas_oauth', :value => '456')
         user
         IMS::LTI::ToolProvider.any_instance.stub(:valid_request?).and_return(true)
         IMS::LTI::ToolProvider.any_instance.stub(:roles).and_return(['student'])
@@ -274,7 +275,6 @@ describe 'Badging OAuth' do
         @badge_config.save
         
         ExternalConfig.create(:config_type => 'lti', :value => '123')
-        ExternalConfig.create(:config_type => 'canvas_oauth', :value => '456')
         user
         IMS::LTI::ToolProvider.any_instance.stub(:valid_request?).and_return(true)
         IMS::LTI::ToolProvider.any_instance.stub(:roles).and_return(['student'])
@@ -295,7 +295,6 @@ describe 'Badging OAuth' do
         configured_badge
         
         ExternalConfig.create(:config_type => 'lti', :value => '123')
-        ExternalConfig.create(:config_type => 'canvas_oauth', :value => '456')
         user
         IMS::LTI::ToolProvider.any_instance.stub(:valid_request?).and_return(true)
         IMS::LTI::ToolProvider.any_instance.stub(:roles).and_return(['student'])
@@ -313,7 +312,6 @@ describe 'Badging OAuth' do
         @bc = old_school_configured_badge
 
         ExternalConfig.create(:config_type => 'lti', :value => '123')
-        ExternalConfig.create(:config_type => 'canvas_oauth', :value => '456')
         user
         IMS::LTI::ToolProvider.any_instance.stub(:valid_request?).and_return(true)
         IMS::LTI::ToolProvider.any_instance.stub(:roles).and_return(['student'])
@@ -338,7 +336,6 @@ describe 'Badging OAuth' do
         @bpc.save
 
         ExternalConfig.create(:config_type => 'lti', :value => '123')
-        ExternalConfig.create(:config_type => 'canvas_oauth', :value => '456')
         user
         IMS::LTI::ToolProvider.any_instance.stub(:valid_request?).and_return(true)
         IMS::LTI::ToolProvider.any_instance.stub(:roles).and_return(['student'])
@@ -358,7 +355,6 @@ describe 'Badging OAuth' do
       it "should create a new badge config for the placement if one is not already linked" do
         example_org
         ExternalConfig.create(:config_type => 'lti', :value => '123')
-        ExternalConfig.create(:config_type => 'canvas_oauth', :value => '456')
         user
         IMS::LTI::ToolProvider.any_instance.stub(:valid_request?).and_return(true)
         IMS::LTI::ToolProvider.any_instance.stub(:roles).and_return(['student'])
@@ -375,7 +371,6 @@ describe 'Badging OAuth' do
       it "should work with prefixed orgs" do
         prefix_org
         ExternalConfig.create(:config_type => 'lti', :value => '123', :organization_id => @org.id)
-        ExternalConfig.create(:config_type => 'canvas_oauth', :value => '456')
         user
         IMS::LTI::ToolProvider.any_instance.stub(:valid_request?).and_return(true)
         IMS::LTI::ToolProvider.any_instance.stub(:roles).and_return(['student'])

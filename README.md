@@ -95,7 +95,7 @@ the following change:
 ```ruby
 org = Organization.find(:name => "whatever it's called")
 settings = org.settings
-settings['oss_auth'] = true
+settings['oss_oauth'] = true
 org.settings = settings
 org.save
 ```
