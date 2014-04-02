@@ -4,6 +4,7 @@ class DomainFudger
   end
   
   def call(env)
+    original_env = env.merge({})
     scheme = env['rack.url_scheme']
     host = env['HTTP_HOST']
     path = env['PATH_INFO'] || ""
@@ -22,6 +23,7 @@ class DomainFudger
       env['REQUEST_PATH'] = "/" + new_path
     end
     env['badges.domain'] = domain
+    env['badges.original_env'] = original_env
     @app.call(env)
   end
 end

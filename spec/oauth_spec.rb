@@ -129,7 +129,9 @@ describe 'Badging OAuth' do
       ExternalConfig.create(:config_type => 'lti', :value => '123')
       ExternalConfig.create(:config_type => 'canvas_oauth', :value => '456')
       user
-      IMS::LTI::ToolProvider.any_instance.stub(:valid_request?).and_return(true)
+      IMS::LTI::ToolProvider.any_instance.stub(:valid_request?) do |req|
+        req.path.should == "/placement_launch"
+      end.and_return(true)
       IMS::LTI::ToolProvider.any_instance.stub(:roles).and_return(['student'])
       CanvasAPI.should_receive(:api_call).and_return({'id' => '123'})
       post "/placement_launch", {'oauth_consumer_key' => '123', 'tool_consumer_instance_guid' => 'something.bob.com', 'resource_link_id' => '2s3d', 'custom_canvas_user_id' => @user.user_id, 'custom_canvas_course_id' => '1', 'lis_person_contact_email_primary' => 'bob@example.com'}
@@ -147,6 +149,23 @@ describe 'Badging OAuth' do
       IMS::LTI::ToolProvider.any_instance.stub(:roles).and_return(['student'])
       CanvasAPI.should_receive(:api_call).and_return({'id' => '123'})
       post "/_test/placement_launch", {'oauth_consumer_key' => '123', 'tool_consumer_instance_guid' => 'something.bob.com', 'resource_link_id' => '2s3d', 'custom_canvas_user_id' => @user.user_id, 'custom_canvas_course_id' => '1', 'lis_person_contact_email_primary' => 'bob@example.com'}
+      last_response.should be_redirect
+      bc = BadgePlacementConfig.last
+      last_response.location.should == "http://example.org/_test/badges/check/#{bc.id}/#{@user.user_id}"
+    end
+    
+    it "should use correct signature verification for prefixed orgs" do
+      prefix_org
+      ExternalConfig.create(:config_type => 'lti', :value => '123')
+      ExternalConfig.create(:config_type => 'canvas_oauth', :value => '456')
+      user
+      IMS::LTI::ToolProvider.any_instance.stub(:valid_request?) do |req|
+        req.path.should == "/_test/placement_launch"
+      end.and_return(true)
+      IMS::LTI::ToolProvider.any_instance.stub(:roles).and_return(['student'])
+      CanvasAPI.should_receive(:api_call).and_return({'id' => '123'})
+      params = {'oauth_consumer_key' => '123', 'tool_consumer_instance_guid' => 'something.bob.com', 'resource_link_id' => '2s3d', 'custom_canvas_user_id' => @user.user_id, 'custom_canvas_course_id' => '1', 'lis_person_contact_email_primary' => 'bob@example.com'}
+      post "/_test/placement_launch", params
       last_response.should be_redirect
       bc = BadgePlacementConfig.last
       last_response.location.should == "http://example.org/_test/badges/check/#{bc.id}/#{@user.user_id}"

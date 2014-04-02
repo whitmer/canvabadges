@@ -22,6 +22,7 @@ module Sinatra
         if host && params['launch_presentation_return_url'].match(Regexp.new(host.sub(/\.instructure\.com/, ".(test|beta).instructure.com")))
           host = params['launch_presentation_return_url'].split(/\//)[2]
         end
+        
         host ||= params['tool_consumer_instance_guid'].split(/\./)[1..-1].join(".") if params['tool_consumer_instance_guid'] && params['tool_consumer_instance_guid'].match(/\./)
         domain = Domain.first_or_new(:host => host)
         domain.name = params['tool_consumer_instance_name']
@@ -33,7 +34,7 @@ module Sinatra
         if !params['lis_person_contact_email_primary']
           halt 400, error("This app appears to have been misconfigured, please contact your instructor or administrator. Email address is required on user launches.")
         end
-        if provider.valid_request?(request)
+        if provider.valid_request?(Sinatra::Request.new(request.env['badges.original_env']))
           badgeless_placement = params['custom_show_all'] || params['custom_show_course'] || params['ext_content_intended_use'] == 'navigation' || params['picker']
           unless badgeless_placement
             if !params['custom_canvas_course_id']
