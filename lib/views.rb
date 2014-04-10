@@ -194,7 +194,8 @@ module Sinatra
     
     module Helpers
       def org_check
-        @org = Organization.first(:host => request.env['badges.domain'], :order => :id)
+        @org = Organization.first(:host => request.env['badges.original_domain'], :order => :id)
+        @org ||= Organization.first(:old_host => request.env['badges.original_domain'], :order => :id)
         halt 404, error("Domain not properly configured. No Organization record matching the host #{request.env['badges.domain']}") unless @org
       end
       

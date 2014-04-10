@@ -333,6 +333,9 @@ describe 'Badge Configuration' do
       post "/badges/award/#{@badge_placement_config.id}/#{@user.user_id}", {}, 'rack.session' => {"permission_for_#{@badge_placement_config.course_id}" => 'edit', 'user_id' => @user.user_id}
       last_response.should be_redirect
       last_response.location.should == "http://example.org/badges/check/#{@badge_placement_config.id}/#{@user.user_id}"
+      b = Badge.last
+      b.should_not == nil
+      b.user_id.should == @user.user_id
     end
     
     it "should work with prefixed orgs" do

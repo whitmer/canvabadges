@@ -236,6 +236,66 @@ describe 'Badges API' do
       json['badge'].should == "https://example.org/api/v1/badges/summary/#{@badge_config.id}/#{@badge_config.nonce}.json"
     end
     
+    it "should use updated domains when migrating a domain" do
+      example_org
+      @org.old_host = @org.host
+      @org.host = "new." + @org.host
+      @org.save
+      new_domain = @org.host
+      old_domain = @org.old_host
+
+      award_badge(badge_config(@org), user)
+      get "/api/v1/badges/data/#{@badge_config.id}/#{@user.user_id}/#{@badge.nonce}.json", {}, 'HTTP_HOST' => old_domain
+      last_response.should be_ok 
+      last_response.body.should == @badge.open_badge_json("new.example.org").to_json
+      json = JSON.parse(last_response.body)
+      json['recipient'].should_not be_nil
+      json['recipient']['salt'].should_not be_nil
+      json['verify'].should == {
+        "type"=>"hosted", 
+        "url"=>"https://new.example.org/api/v1/badges/data/#{@badge_config.id}/#{@user.user_id}/#{@badge.nonce}.json"
+      }
+      json['issuedOn'].should_not be_nil
+      json['badge'].should == "https://new.example.org/api/v1/badges/summary/#{@badge_config.id}/#{@badge_config.nonce}.json"
+    end
+    
+    it "should really be ok with domain migrations" do
+      example_org
+      @org.host = "www.canvabadges.org"
+      @org.save
+
+      award_badge(badge_config(@org), user)
+      @org.host = "www.canvabadges.org"
+      @org.old_host = "canvabadges.herokuapp.com"
+      @org.save
+
+      get "/api/v1/badges/data/#{@badge_config.id}/#{@user.user_id}/#{@badge.nonce}.json", {}, 'HTTP_HOST' => @org.old_host
+      last_response.should be_ok 
+      last_response.body.should == @badge.open_badge_json("www.canvabadges.org").to_json
+      json = JSON.parse(last_response.body)
+      json['recipient'].should_not be_nil
+      json['recipient']['salt'].should_not be_nil
+      json['verify'].should == {
+        "type"=>"hosted", 
+        "url"=>"https://www.canvabadges.org/api/v1/badges/data/#{@badge_config.id}/#{@user.user_id}/#{@badge.nonce}.json"
+      }
+      json['issuedOn'].should_not be_nil
+      json['badge'].should == "https://www.canvabadges.org/api/v1/badges/summary/#{@badge_config.id}/#{@badge_config.nonce}.json"
+
+      get "/api/v1/badges/data/#{@badge_config.id}/#{@user.user_id}/#{@badge.nonce}.json", {}, 'HTTP_HOST' => @org.host
+      last_response.should be_ok 
+      last_response.body.should == @badge.open_badge_json("www.canvabadges.org").to_json
+      json = JSON.parse(last_response.body)
+      json['recipient'].should_not be_nil
+      json['recipient']['salt'].should_not be_nil
+      json['verify'].should == {
+        "type"=>"hosted", 
+        "url"=>"https://www.canvabadges.org/api/v1/badges/data/#{@badge_config.id}/#{@user.user_id}/#{@badge.nonce}.json"
+      }
+      json['issuedOn'].should_not be_nil
+      json['badge'].should == "https://www.canvabadges.org/api/v1/badges/summary/#{@badge_config.id}/#{@badge_config.nonce}.json"
+    end
+    
     it "should support prefixed orgs" do
       prefix_org
       award_badge(badge_config, user)

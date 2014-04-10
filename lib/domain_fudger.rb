@@ -22,7 +22,8 @@ class DomainFudger
       end
       env['REQUEST_PATH'] = "/" + new_path
     end
-    env['badges.domain'] = domain
+    env['badges.original_domain'] = domain
+    env['badges.domain'] = domain.sub(/canvabadges\.herokuapp\.com/, 'www.canvabadges.org')
     env['badges.original_env'] = original_env
     @app.call(env)
   end

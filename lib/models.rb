@@ -48,6 +48,7 @@ class Organization
   include DataMapper::Resource
   property :id, Serial
   property :host, String, :index => true
+  property :old_host, String
   property :settings, Json
   
   def as_json

@@ -194,7 +194,8 @@ module Sinatra
         end
         
         
-        @org = Organization.first(:host => request.env['badges.domain'], :order => :id)
+        @org = Organization.first(:host => request.env['badges.original_domain'], :order => :id)
+        @org ||= Organization.first(:old_host => request.env['badges.original_domain'], :order => :id)
         @conf = ExternalConfig.generate(screen_name)
         erb :config_tokens
       end
