@@ -163,9 +163,9 @@ module Sinatra
         else
           json = []
           if params['search']
-            json = api_call("#{request.env['badges.path_prefix']}/api/v1/search/recipients?search=#{CGI.escape(params['search'])}&context=course_#{@course_id}_students&type=user", @user_config)
+            json = api_call("/api/v1/search/recipients?search=#{CGI.escape(params['search'])}&context=course_#{@course_id}_students&type=user", @user_config)
           else
-            json = api_call("#{request.env['badges.path_prefix']}/api/v1/courses/#{@course_id}/users?enrollment_type=student&per_page=50&page=#{params['page'].to_i}", @user_config)
+            json = api_call("/api/v1/courses/#{@course_id}/users?enrollment_type=student&per_page=50&page=#{params['page'].to_i}", @user_config)
           end
           json.each do |student|
             badge = badges.detect{|b| b.user_id.to_i == student['id'] }
