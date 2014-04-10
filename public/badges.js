@@ -214,7 +214,7 @@ $(document).on('click', '.select_badge_config', function(event) {
   }
 
   var host = location.origin || (location.protocol + "//" + location.host);
-  var launch = host + "/placement_launch";
+  var launch = host + window.path_prefix + "/placement_launch";
   var $config = $(this).closest(".badge_config");
   var badge_id = $config.attr('data-id') || $config.attr('data-proposed_id')
   var badge_name = ($config.find(".name").val() || $config.find('.name').text() || "New Badge");
