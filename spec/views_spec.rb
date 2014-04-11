@@ -40,6 +40,15 @@ describe 'Badging Models' do
       last_response.body.should match(/Test With Prefix/)
     end
     
+    it "should redirect if it matches the old host" do
+      @org.old_host = @org.host
+      @org.host = "www.bacon.com"
+      @org.save
+      get "/"
+      last_response.should be_redirect
+      last_response.location.should == "https://www.bacon.com/"
+    end
+    
   end  
   
   describe "LTI XML config" do

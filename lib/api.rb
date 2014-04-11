@@ -129,7 +129,7 @@ module Sinatra
           badge.badge_url = "#{protocol}://#{host_with_port}" + badge.badge_url if badge.badge_url.match(/^\//)
           return badge.open_badge_json(host_with_port)
         else
-          halt 404, api_response({:error => "Not found", :bc => (bc && bc.organization_id), :org => @org.id})
+          halt 404, api_response({:error => "Not found"})
         end
       end
       
