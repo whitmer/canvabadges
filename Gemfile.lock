@@ -2,7 +2,9 @@ GEM
   remote: http://rubygems.org/
   specs:
     addressable (2.3.6)
-    bcrypt-ruby (3.0.1)
+    bcrypt (3.1.7)
+    bcrypt-ruby (3.1.5)
+      bcrypt (>= 3.1.3)
     builder (3.2.2)
     canvas-api (1.0)
       json
@@ -33,14 +35,14 @@ GEM
     dm-sqlite-adapter (1.2.0)
       dm-do-adapter (~> 1.2.0)
       do_sqlite3 (~> 0.10.6)
-    dm-types (1.2.0)
-      bcrypt-ruby (~> 3.0.0)
+    dm-types (1.2.2)
+      bcrypt-ruby (~> 3.0)
       dm-core (~> 1.2.0)
-      fastercsv (~> 1.5.4)
-      json (~> 1.5.4)
-      multi_json (~> 1.0.3)
-      stringex (~> 1.3.0)
-      uuidtools (~> 2.1.2)
+      fastercsv (~> 1.5)
+      json (~> 1.6)
+      multi_json (~> 1.0)
+      stringex (~> 1.4)
+      uuidtools (~> 2.1)
     do_postgres (0.10.14)
       data_objects (= 0.10.14)
     do_sqlite3 (0.10.14)
@@ -52,20 +54,20 @@ GEM
       builder
       oauth (~> 0.4.5)
       uuid
-    json (1.5.5)
-    macaddr (1.6.7)
+    json (1.8.1)
+    macaddr (1.7.1)
       systemu (~> 2.6.2)
     mime-types (2.2)
     mini_portile (0.5.3)
-    multi_json (1.0.4)
+    multi_json (1.9.2)
     multipart-post (2.0.0)
     nokogiri (1.6.1)
       mini_portile (~> 0.5.0)
-    oauth (0.4.5)
+    oauth (0.4.7)
     rack (1.5.2)
     rack-iframe (0.0.3)
       rack
-    rack-protection (1.5.2)
+    rack-protection (1.5.3)
       rack
     rack-ssl-enforcer (0.2.6)
     rack-test (0.6.2)
@@ -78,17 +80,17 @@ GEM
     rspec-expectations (2.14.5)
       diff-lcs (>= 1.1.3, < 2.0)
     rspec-mocks (2.14.6)
-    rubyzip (1.1.2)
+    rubyzip (1.1.3)
     selenium-webdriver (2.41.0)
       childprocess (>= 0.5.0)
       multi_json (~> 1.0)
       rubyzip (~> 1.0)
       websocket (~> 1.0.4)
-    sinatra (1.4.4)
+    sinatra (1.4.5)
       rack (~> 1.4)
       rack-protection (~> 1.4)
       tilt (~> 1.3, >= 1.3.4)
-    stringex (1.3.3)
+    stringex (1.5.1)
     systemu (2.6.4)
     tilt (1.4.1)
     uuid (2.3.7)
@@ -109,12 +111,12 @@ DEPENDENCIES
   dm-migrations
   dm-postgres-adapter
   dm-sqlite-adapter
-  dm-types (= 1.2.0)
+  dm-types
   erubis
   ims-lti
   json
   nokogiri
-  oauth (= 0.4.5)
+  oauth
   rack-iframe
   rack-ssl-enforcer
   rack-test
