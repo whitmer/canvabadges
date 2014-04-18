@@ -540,6 +540,10 @@ describe 'Badging OAuth' do
       @org.save
       OAuthConfig.oauth_config(@org).should == c
     end
+    
+    it "should use the api-approved domain for the oauth dance"
+    # TODO: add a record for the api_host which will be used for oauth dance with host as a fallback
+    # TODO: figure out how to merge domain_fudger and org_check logic
   end
   
   describe "session fix" do

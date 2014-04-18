@@ -24,6 +24,10 @@ class DomainFudger
     end
     env['badges.original_domain'] = domain
     env['badges.domain'] = domain.sub(/canvabadges\.herokuapp\.com/, 'www.canvabadges.org')
+    env['badges.api_domain'] = env['badges.domain']
+    if env['badges.api_domain'] == 'www.canvabadges.org'
+      env['badges.api_domain'] = 'canvabadges.herokuapp.com'
+    end
     env['badges.original_env'] = original_env
     @app.call(env)
   end
