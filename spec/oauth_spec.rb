@@ -106,6 +106,19 @@ describe 'Badging OAuth' do
       BadgePlacementConfig.last.organization_id.should == @org2.id
     end
     
+    it "should use the correct oauth token" do
+      example_org
+      @org2 = Organization.create(:host => "bobx.com", :settings => {'name' => 'my org'})
+
+      ExternalConfig.create(:config_type => 'canvas_oauth', :value => 'abcd', :shared_secret => 'xyza', :domain => 'example.org')
+      ExternalConfig.create(:config_type => 'lti', :value => '123', :organization_id => @org2.id)
+      IMS::LTI::ToolProvider.any_instance.stub(:valid_request?).and_return(true)
+      IMS::LTI::ToolProvider.any_instance.stub(:roles).and_return(['student'])
+      post "/placement_launch", {'oauth_consumer_key' => '123', 'tool_consumer_instance_guid' => 'something.bob.com', 'custom_canvas_user_id' => '1', 'custom_canvas_course_id' => '1', 'lis_person_contact_email_primary' => 'bob@example.com'}
+      last_response.should be_redirect
+      last_response.location.should == "https://bob.com/login/oauth2/auth?client_id=abcd&response_type=code&redirect_uri=https%3A%2F%2Fexample.org%2Foauth_success"
+    end
+    
     it "should redirect to proper route for prefixed org if not authorized" do
       prefix_org
       @org.settings['oss_oauth'] = true
@@ -524,26 +537,28 @@ describe 'Badging OAuth' do
   describe "oauth_config" do
     it "should raise if no config is found" do
       ExternalConfig.first(:config_type => 'canvas_oauth').destroy
-      expect { OAuthConfig.oauth_config }.to raise_error("Missing oauth config")
+      expect { OAuthConfig.oauth_config(nil, nil) }.to raise_error("Missing oauth config")
     end
     
     it "should return the default config if no org is found" do
       example_org
       c = ExternalConfig.create(:organization_id => @org.id + 1, :config_type => 'canvas_oss_oauth', :value => 'abc', :shared_secret => 'xyz')
-      OAuthConfig.oauth_config(@org).should == ExternalConfig.first(:config_type => 'canvas_oauth')
+      OAuthConfig.oauth_config(@org, 'example.org').should == ExternalConfig.first(:config_type => 'canvas_oauth')
+    end
+    it "should return the default config for the mathing domain if no org is found" do
+      example_org
+      ExternalConfig.create(:config_type => 'canvas_oauth', :domain => 'bacon.org')
+      c = ExternalConfig.create(:organization_id => @org.id + 1, :config_type => 'canvas_oss_oauth', :value => 'abc', :shared_secret => 'xyz')
+      OAuthConfig.oauth_config(@org, 'bacon.org').should == ExternalConfig.first(:config_type => 'canvas_oauth', :domain => 'bacon.org')
     end
     it "should return the org-specific config if found" do
       example_org
       c = ExternalConfig.create(:organization_id => @org.id, :config_type => 'canvas_oss_oauth', :value => 'abc', :shared_secret => 'xyz')
-      OAuthConfig.oauth_config(@org).should == ExternalConfig.first(:config_type => 'canvas_oauth')
+      OAuthConfig.oauth_config(@org, 'example.org').should == ExternalConfig.first(:config_type => 'canvas_oauth')
       @org.settings['oss_oauth'] = true
       @org.save
-      OAuthConfig.oauth_config(@org).should == c
+      OAuthConfig.oauth_config(@org, 'example.org').should == c
     end
-    
-    it "should use the api-approved domain for the oauth dance"
-    # TODO: add a record for the api_host which will be used for oauth dance with host as a fallback
-    # TODO: figure out how to merge domain_fudger and org_check logic
   end
   
   describe "session fix" do

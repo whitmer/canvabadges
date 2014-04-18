@@ -236,7 +236,7 @@ describe 'Badges API' do
       json['badge'].should == "https://example.org/api/v1/badges/summary/#{@badge_config.id}/#{@badge_config.nonce}.json"
     end
     
-    it "should use updated domains when migrating a domain" do
+    it "should use legacy domains when migrating a domain" do
       example_org
       @org.old_host = @org.host
       @org.host = "new." + @org.host
@@ -246,6 +246,19 @@ describe 'Badges API' do
 
       award_badge(badge_config(@org), user)
       get "/api/v1/badges/data/#{@badge_config.id}/#{@user.user_id}/#{@badge.nonce}.json", {}, 'HTTP_HOST' => old_domain
+      last_response.should be_ok 
+      last_response.body.should == @badge.open_badge_json("example.org").to_json
+      json = JSON.parse(last_response.body)
+      json['recipient'].should_not be_nil
+      json['recipient']['salt'].should_not be_nil
+      json['verify'].should == {
+        "type"=>"hosted", 
+        "url"=>"https://example.org/api/v1/badges/data/#{@badge_config.id}/#{@user.user_id}/#{@badge.nonce}.json"
+      }
+      json['issuedOn'].should_not be_nil
+      json['badge'].should == "https://example.org/api/v1/badges/summary/#{@badge_config.id}/#{@badge_config.nonce}.json"
+
+      get "/api/v1/badges/data/#{@badge_config.id}/#{@user.user_id}/#{@badge.nonce}.json", {}, 'HTTP_HOST' => new_domain
       last_response.should be_ok 
       last_response.body.should == @badge.open_badge_json("new.example.org").to_json
       json = JSON.parse(last_response.body)
@@ -271,16 +284,16 @@ describe 'Badges API' do
 
       get "/api/v1/badges/data/#{@badge_config.id}/#{@user.user_id}/#{@badge.nonce}.json", {}, 'HTTP_HOST' => @org.old_host
       last_response.should be_ok 
-      last_response.body.should == @badge.open_badge_json("www.canvabadges.org").to_json
+      last_response.body.should == @badge.open_badge_json("canvabadges.herokuapp.com").to_json
       json = JSON.parse(last_response.body)
       json['recipient'].should_not be_nil
       json['recipient']['salt'].should_not be_nil
       json['verify'].should == {
         "type"=>"hosted", 
-        "url"=>"https://www.canvabadges.org/api/v1/badges/data/#{@badge_config.id}/#{@user.user_id}/#{@badge.nonce}.json"
+        "url"=>"https://canvabadges.herokuapp.com/api/v1/badges/data/#{@badge_config.id}/#{@user.user_id}/#{@badge.nonce}.json"
       }
       json['issuedOn'].should_not be_nil
-      json['badge'].should == "https://www.canvabadges.org/api/v1/badges/summary/#{@badge_config.id}/#{@badge_config.nonce}.json"
+      json['badge'].should == "https://canvabadges.herokuapp.com/api/v1/badges/summary/#{@badge_config.id}/#{@badge_config.nonce}.json"
 
       get "/api/v1/badges/data/#{@badge_config.id}/#{@user.user_id}/#{@badge.nonce}.json", {}, 'HTTP_HOST' => @org.host
       last_response.should be_ok 

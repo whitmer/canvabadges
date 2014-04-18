@@ -20,11 +20,13 @@ module CanvasAPI
 end
 
 module OAuthConfig
-  def self.oauth_config(org=nil)
+  def self.oauth_config(org, domain)
     if org && org.settings['oss_oauth']
-      oauth_config ||= ExternalConfig.first(:config_type => 'canvas_oss_oauth', :organization_id => org.id)
+      oauth_config ||= ExternalConfig.first(:config_type => 'canvas_oss_oauth', :organization_id => org.id, :domain => domain)
+      oauth_config ||= ExternalConfig.first(:config_type => 'canvas_oss_oauth', :organization_id => org.id, :domain => nil)
     else
-      oauth_config ||= ExternalConfig.first(:config_type => 'canvas_oauth')
+      oauth_config ||= ExternalConfig.first(:config_type => 'canvas_oauth', :domain => domain)
+      oauth_config ||= ExternalConfig.first(:config_type => 'canvas_oauth', :domain => nil)
     end
     
     raise "Missing oauth config" unless oauth_config

@@ -1,4 +1,4 @@
-ruby '1.9.3'
+ruby '2.1.1'
 source "http://rubygems.org"
 
 gem "sinatra"
@@ -23,4 +23,3 @@ group :development do
     gem 'selenium-webdriver'
     gem 'capybara'
 end
-

@@ -119,7 +119,7 @@ module Sinatra
           halt 400, erb(:session_lost)
         end
         domain = Domain.first(:id => session['domain_id'])
-        return_url = "#{protocol}://#{request.env['badges.api_domain']}/oauth_success"
+        return_url = "#{protocol}://#{request.env['badges.domain']}/oauth_success"
         code = params['code']
         url = "#{protocol}://#{domain.host}/login/oauth2/token"
         uri = URI.parse(url)

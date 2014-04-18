@@ -39,14 +39,14 @@ module Sinatra
       # OBI-Compliant Result Required
       app.head "/api/v1/badges/data/:badge_config_id/:user_id/:code.json" do
         get_org
-        api_response(badge_data(params, @org.host))
+        api_response(badge_data(params, request.env['badges.original_domain']))
       end
 
       # GET open badge award details permalink
       # OBI-Compliant Result Required
       app.get "/api/v1/badges/data/:badge_config_id/:user_id/:code.json" do
         get_org
-        api_response(badge_data(params, @org.host))
+        api_response(badge_data(params, request.env['badges.original_domain']))
       end
 
       # list of publicly available badges for the current user
@@ -234,7 +234,8 @@ module Sinatra
       
       def oauth_config
         get_org
-        @oauth_config = OAuthConfig.oauth_config(@org)
+        domain = request.env['badges.domain'].split(/\//)[0]
+        @oauth_config = OAuthConfig.oauth_config(@org, domain)
       end
     end
   end

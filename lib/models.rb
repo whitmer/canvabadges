@@ -85,6 +85,7 @@ class ExternalConfig
   include DataMapper::Resource
   property :id, Serial
   property :config_type, String
+  property :domain, String
   property :app_name, String
   property :organization_id, Integer
   property :value, String
