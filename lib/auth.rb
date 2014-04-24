@@ -162,6 +162,8 @@ module Sinatra
 
           launch_redirect(launch_badge_placement_config_id, user_config.domain_id, user_config.user_id, params_stash)
         else
+          puts "API RESPONSE ERROR"
+          puts json
           return error("Error retrieving access token")
         end
       end
