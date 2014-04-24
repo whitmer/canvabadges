@@ -234,7 +234,7 @@ module Sinatra
       
       def oauth_config
         get_org
-        domain = request.env['badges.domain'].split(/\//)[0]
+        domain = request.env['badges.original_domain'].split(/\//)[0]
         @oauth_config = OAuthConfig.oauth_config(@org, domain)
       end
     end

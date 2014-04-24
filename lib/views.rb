@@ -229,7 +229,7 @@ module Sinatra
       end
       
       def oauth_dance(request, host)
-        return_url = "#{protocol}://#{request.env['badges.domain']}/oauth_success"
+        return_url = "#{protocol}://#{request.env['badges.original_domain']}/oauth_success"
         redirect to("#{protocol}://#{host}/login/oauth2/auth?client_id=#{oauth_config.value}&response_type=code&redirect_uri=#{CGI.escape(return_url)}")
       end 
   
