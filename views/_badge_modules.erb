@@ -11,7 +11,7 @@
             <input type="checkbox" <%= 'checked' if checked %> name="module_<%= mod['id'] %>" value="<%= CGI.escape(mod['name']) %>"/>
             <%= mod['name'] %>
           </label>
-          <input type="text" name="credits_for_<%= mod['id'] %>" class="credits span1" title="Credits for <%= mod['name'] %>" placeholder="credits" value="<%= (mod_settings && mod_settings[2]) || "" %>"/>
+          <input type="text" name="credits_for_mod_<%= mod['id'] %>" class="credits span1" title="Credits for <%= mod['name'] %>" placeholder="credits" value="<%= (mod_settings && mod_settings[2]) || "" %>"/>
         </div>
       <% end %>
     </div>

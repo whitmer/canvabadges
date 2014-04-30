@@ -32,7 +32,7 @@ describe 'Badge Configuration' do
         'min_percent' => '50',
         'module_123' => "Module 123",
         'module_asdf' => "Bad module",
-        'credits_for_123' => '19',
+        'credits_for_mod_123' => '19',
         'credit_based' => '1'
       }
       Canvas::API.any_instance.should_receive(:get).and_return({})
@@ -63,7 +63,7 @@ describe 'Badge Configuration' do
         'min_percent' => '50',
         'module_123' => "Module 123",
         'module_asdf' => "Bad module",
-        'credits_for_123' => '19',
+        'credits_for_mod_123' => '19',
         'credit_based' => '1'
       }
       Canvas::API.any_instance.should_receive(:get).and_return({})

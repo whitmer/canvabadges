@@ -167,12 +167,32 @@ if(modules) {
     dataType: 'html',
     url: window.path_prefix + modules,
     success: function(data) {
-      $("#modules_settings").html(data);
-      $("#badge_settings .form-actions button[type='submit']").attr('disabled', false);
-      $("#credit_based").change();
+      $("#modules_settings").html(data).addClass('ready');
+      if($("#modules_settings").hasClass('ready') && $("#outcomes_settings").hasClass('ready')) {
+        $("#badge_settings .form-actions button[type='submit']").attr('disabled', false);
+        $("#credit_based").change();
+      }
     },
     error: function(data) {
       $("#modules_settings .controls").html("Error retrieving course modules. Please reload.");
+    }
+  });
+}
+var outcomes = $("#outcomes_settings").attr('rel');
+if(outcomes) {
+  $.ajax({
+    type: 'GET',
+    dataType: 'html',
+    url: window.path_prefix + outcomes,
+    success: function(data) {
+      $("#outcomes_settings").html(data).addClass('ready');
+      if($("#modules_settings").hasClass('ready') && $("#outcomes_settings").hasClass('ready')) {
+        $("#badge_settings .form-actions button[type='submit']").attr('disabled', false);
+        $("#credit_based").change();
+      }
+    },
+    error: function(data) {
+      $("#outcomes_settings .controls").html("Error retrieving course outcomes. Please reload.");
     }
   });
 }

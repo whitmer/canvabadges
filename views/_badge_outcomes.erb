@@ -1,0 +1,21 @@
+<% settings = @badge_placement_config.merged_settings || {} %>
+<% if @outcomes_json && @outcomes_json.length > 0 %>
+  <div class="control-group advanced">
+    <label class="control-label">Outcomes requiring mastery:</label>
+    <div class="controls">
+      <% @outcomes_json.each do |obj| 
+          outcome = obj['outcome']
+      %>
+        <% oc_settings = (settings['outcomes'] || []).detect{|oc| oc[0] == outcome['id'] } %>
+        <% checked = !!oc_settings %>
+        <div class='module'>
+          <label style='display: inline-block'>
+            <input type="checkbox" <%= 'checked' if checked %> name="outcome_<%= outcome['id'] %>" value="<%= CGI.escape(outcome['title']) %>"/>
+            <%= outcome['title'] %>
+          </label>
+          <input type="text" name="credits_for_oc_<%= outcome['id'] %>" class="credits span1" title="Credits for <%= outcome['title'] %>" placeholder="credits" value="<%= (oc_settings && oc_settings[2]) || "" %>"/>
+        </div>
+      <% end %>
+    </div>
+  </div>
+<%  end %>

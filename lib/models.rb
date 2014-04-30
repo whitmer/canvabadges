@@ -130,7 +130,17 @@ class UserConfig
     scores_json = CanvasAPI.api_call("/api/v1/courses/#{badge_placement_config.course_id}?include[]=total_scores", self)
     modules_json = CanvasAPI.api_call("/api/v1/courses/#{badge_placement_config.course_id}/modules", self, true) if badge_placement_config.modules_required?
     modules_json ||= []
+    outcomes_json = CanvasAPI.api_call("/api/v1/courses/#{badge_placement_config.course_id}/outcome_rollups?include[]=outcomes&user_ids[]=#{self.user_id}", self, true) if badge_placement_config.outcomes_required?
+    outcomes_json ||= {'linked' => {'outcomes' => []}, 'rollups' => []}
     completed_module_ids = modules_json.select{|m| m['completed_at'] }.map{|m| m['id'] }.compact
+    rollup = outcomes_json['rollups'].detect{|r| r['links']['user'].to_s == self.user_id.to_s }
+    rollup ||= outcomes_json['rollups'][0]
+    rollup ||= {'scores' => []}
+    scores = {}
+    rollup['scores'].each do |score|
+      scores[score['links']['outcome'].to_i] = score['score']
+    end
+    completed_outcome_ids = outcomes_json['linked']['outcomes'].select{|oc| (scores[oc['id'].to_i] || 0) >= oc['mastery_points'] }.map{|oc| oc['id'].to_i }.compact
     unless scores_json
       return "<h3>Error getting data from Canvas</h3>"
     end
@@ -139,8 +149,8 @@ class UserConfig
     student['computed_final_score'] ||= 0 if student
   
     if student
-      if badge_placement_config.requirements_met?(student['computed_final_score'], completed_module_ids)
-        params['credits_earned'] = badge_placement_config.credits_earned(student['computed_final_score'], completed_module_ids)
+      if badge_placement_config.requirements_met?(student['computed_final_score'], completed_module_ids, completed_outcome_ids)
+        params['credits_earned'] = badge_placement_config.credits_earned(student['computed_final_score'], completed_module_ids, completed_outcome_ids)
         if !email
           raise "You need to set an email address in Canvas before you can earn any badges."
         end
@@ -152,6 +162,7 @@ class UserConfig
     end
     return {
       :completed_module_ids => completed_module_ids,
+      :completed_outcome_ids => completed_outcome_ids,
       :badge_config => badge_placement_config.badge_config,
       :badge_placement_config => badge_placement_config,
       :user_config => self,
@@ -318,6 +329,7 @@ class BadgePlacementConfig
       placement_settings['hours'] = nil if placement_settings['hours'] == 0
       placement_settings['credits_for_final_score'] = badge_settings['credits_for_final_score'].to_f.round(1)
       placement_settings['modules'] = badge_settings['modules']
+      placement_settings['outcomes'] = badge_settings['outcomes']
       placement_settings['total_credits'] = badge_settings['total_credits']
     
       self.settings = placement_settings
@@ -365,25 +377,40 @@ class BadgePlacementConfig
       
       # set to pending unless
       # able to get new module ids and map them correctly for module-configured badges
-      self.settings['pending'] = true if old_config.modules_required?
+      self.settings['pending'] = true if old_config.modules_or_outcomes_required?
       self.settings['course_url'] = existing_settings['course_url'] if existing_settings
       
       api_user = UserConfig.first(:id => self.teacher_user_config_id) || user_config
-      if api_user && old_config.modules_required?
+      if api_user && old_config.modules_or_outcomes_required?
         # make an API call to get the module ids and try to map from old to new
         # map ids for module names and also credits_for values
-        new_modules = []
-        modules_json = CanvasAPI.api_call("/api/v1/courses/#{self.course_id}/modules", api_user, true) || []
         all_found = true
-        old_config.settings['modules'].each do |id, str, credits|
-          new_module = modules_json.detect{|m| m['name'] == str}
-          if new_module
-            new_modules << [new_module['id'].to_s.to_i, str, credits]
-          else
-            all_found = false
+        if old_config.modules_required?
+          new_modules = []
+          modules_json = CanvasAPI.api_call("/api/v1/courses/#{self.course_id}/modules", api_user, true) || []
+          old_config.settings['modules'].each do |id, str, credits|
+            new_module = modules_json.detect{|m| m['name'] == str}
+            if new_module
+              new_modules << [new_module['id'].to_s.to_i, str, credits]
+            else
+              all_found = false
+            end
           end
+          self.settings['modules'] = new_modules
         end
-        self.settings['modules'] = new_modules
+        if old_config.outcomes_required?
+          new_outcomes = []
+          outcomes_json = CanvasAPI.api_call("/api/v1/courses/#{self.course_id}/outcome_group_links", api_user, true) || []
+          old_config.settings['outcomes'].each do |id, str, credits|
+            new_outcome = outcomes_json.detect{|oc| oc['outcome']['id'] == id || oc['outcome']['title'] == str}
+            if new_outcome
+              new_outcomes << [new_outcome['outcome']['id'].to_s.to_i, str, credits]
+            else
+              all_found = false
+            end
+          end
+          self.settings['outcomes'] = new_outcomes
+        end
         self.settings['pending'] = !all_found
       end
       self.settings['already_loaded_from_old_config'] = true
@@ -418,6 +445,14 @@ class BadgePlacementConfig
     !!(self.settings && self.badge_config && self.badge_config.settings && self.badge_config.settings['badge_url'] && self.settings['min_percent'] && !self.pending? && !self.award_only?)
   end
   
+  def modules_or_outcomes_required?
+    modules_required? || outcomes_required?
+  end
+  
+  def outcomes_required?
+    settings && settings['outcomes']
+  end
+  
   def modules_required?
     settings && settings['modules']
   end
@@ -434,8 +469,16 @@ class BadgePlacementConfig
     (settings && settings['modules']) || []
   end
   
+  def required_outcomes
+    (settings && settings['outcomes']) || []
+  end
+  
   def required_module_ids
     required_modules.map(&:first).map(&:to_i)
+  end
+  
+  def required_outcome_ids
+    required_outcomes.map(&:first).map(&:to_i)
   end
   
   def required_modules_completed?(completed_module_ids)
@@ -443,26 +486,38 @@ class BadgePlacementConfig
     incomplete_module_ids.length == 0
   end
   
+  def required_outcomes_completed?(completed_outcome_ids)
+    incomplete_outcome_ids = self.required_outcome_ids - completed_outcome_ids
+    incomplete_outcome_ids.length == 0
+  end
+  
   def required_score_met?(percent)
     settings && percent >= settings['min_percent']
   end
   
-  def credits_earned(percent, completed_module_ids)
+  def credits_earned(percent, completed_module_ids, completed_outcome_ids)
     credits = required_score_met?(percent) ? settings['credits_for_final_score'].to_f : 0
     (settings['modules'] || []).each do |id, name, credit|
       if completed_module_ids.include?(id.to_i)
         credits += (credit || 0)
       end
     end
+    (settings['outcomes'] || []).each do |id, name, credit|
+      if completed_outcome_ids.include?(id.to_i)
+        credits += (credit || 0)
+      end
+    end
     credits
   end
   
-  def requirements_met?(percent, completed_module_ids)
+  def requirements_met?(percent, completed_module_ids, completed_outcome_ids)
     if credit_based?
-      credits = credits_earned(percent, completed_module_ids)
+      credits = credits_earned(percent, completed_module_ids, completed_outcome_ids)
       credits > 0 && credits > settings['required_credits'].to_f
     else
-      required_modules_completed?(completed_module_ids) && required_score_met?(percent)
+      required_modules_completed?(completed_module_ids) && 
+        required_outcomes_completed?(completed_outcome_ids) && 
+        required_score_met?(percent)
     end
   end
 end

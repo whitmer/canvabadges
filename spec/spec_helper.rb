@@ -113,11 +113,49 @@ def module_configured_badge(min_percent=nil)
   @badge_placement_config
 end
 
+def module_outcome_configured_badge(min_percent=nil)
+  badge_config
+  hash = @badge_placement_config.settings
+  hash['min_percent'] = min_percent || rand(1000) / 10.0
+  hash['modules'] = [['1', 'Module 1', 0], ['2', 'Module 2', 0]]
+  hash['outcomes'] = [['1', 'Outcome 1', 0], ['2', 'Outcome 2', 0]]
+  @badge_placement_config.settings = hash
+  @badge_placement_config.save
+  @badge_placement_config.should be_configured
+  @badge_placement_config
+end
+
+def outcome_configured_badge(min_percent=nil)
+  badge_config
+  hash = @badge_placement_config.settings
+  hash['min_percent'] = min_percent || rand(1000) / 10.0
+  hash['outcomes'] = [['1', 'Outcome 1', 0], ['2', 'Outcome 2', 0]]
+  @badge_placement_config.settings = hash
+  @badge_placement_config.save
+  @badge_placement_config.should be_configured
+  @badge_placement_config
+end
+
 def credit_configured_badge(min_percent=nil)
   badge_config
   hash = @badge_placement_config.settings
   hash['min_percent'] = min_percent || rand(1000) / 10.0
   hash['modules'] = [['1', 'Module 1', 3], ['2', 'Module 2', 3]]
+  hash['credit_based'] = true
+  hash['required_credits'] = 5
+  hash['credits_for_final_score'] = 3
+  
+  @badge_placement_config.settings = hash
+  @badge_placement_config.save
+  @badge_placement_config.should be_configured
+  @badge_placement_config
+end
+
+def credit_outcome_configured_badge(min_percent=nil)
+  badge_config
+  hash = @badge_placement_config.settings
+  hash['min_percent'] = min_percent || rand(1000) / 10.0
+  hash['outcomes'] = [['1', 'Outcome 1', 3], ['2', 'Outcome 2', 3]]
   hash['credit_based'] = true
   hash['required_credits'] = 5
   hash['credits_for_final_score'] = 3

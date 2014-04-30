@@ -164,6 +164,13 @@ module Sinatra
         erb :_badge_modules, :layout => false
       end
       
+      app.get "/badges/outcomes/:badge_placement_config_id/:user_id" do
+        org_check
+        load_badge_config(params['badge_placement_config_id'], 'edit')
+        @outcomes_json ||= CanvasAPI.api_call("/api/v1/courses/#{@course_id}/outcome_group_links", @user_config, true)
+        erb :_badge_outcomes, :layout => false
+      end
+      
       app.get "/badges/status/:badge_placement_config_id/:user_id" do
         org_check
         load_badge_config(params['badge_placement_config_id'], 'view')
@@ -180,6 +187,7 @@ module Sinatra
             end
             @student = args[:student]
             @completed_module_ids = args[:completed_module_ids]
+            @completed_outcome_ids = args[:completed_outcome_ids]
             @badge = args[:badge]
           end
           if @student

@@ -44,7 +44,7 @@ describe 'Badging Models' do
         BadgePlacementConfig.create.configured?.should be_false
       end
       
-      it "check if modules are required" do
+      it "should check if modules are required" do
         badge_config
         @badge_placement_config.modules_required?.should be_false
         
@@ -54,6 +54,18 @@ describe 'Badging Models' do
         }.to_a
         @badge_placement_config.save
         @badge_placement_config.modules_required?.should be_true
+      end
+      
+      it "should check if outcomes are required" do
+        badge_config
+        @badge_placement_config.outcomes_required?.should be_false
+        
+        @badge_placement_config.settings['outcomes'] = {
+          '1' => 'Outcome 1',
+          '2' => 'Outcome 2',
+        }.to_a
+        @badge_placement_config.save
+        @badge_placement_config.outcomes_required?.should be_true
       end
       
       it "should return list of required modules" do
@@ -68,6 +80,18 @@ describe 'Badging Models' do
         @badge_placement_config.required_modules.should == [['1', 'Module 1'], ['2', 'Module 2']]
       end
       
+      it "should return list of required outcomes" do
+        badge_config
+        @badge_placement_config.required_outcomes.should == []
+        
+        @badge_placement_config.settings['outcomes'] = {
+          '1' => 'Outcome 1',
+          '2' => 'Outcome 2',
+        }.to_a
+        @badge_placement_config.save
+        @badge_placement_config.required_outcomes.should == [['1', 'Outcome 1'], ['2', 'Outcome 2']]
+      end
+      
       it "should check if requirements are met" do
         badge_config
         @badge_placement_config.settings['min_percent'] = 10
@@ -75,14 +99,19 @@ describe 'Badging Models' do
           '1' => 'Module 1',
           '2' => 'Module 2',
         }.to_a
+        @badge_placement_config.settings['outcomes'] = {
+          '1' => 'Outcome 1'
+        }
         @badge_placement_config.save
-        @badge_placement_config.requirements_met?(9, [1, 2]).should be_false
-        @badge_placement_config.requirements_met?(11, [1, 2]).should be_true
-        @badge_placement_config.requirements_met?(11, [nil, 1, 2, 3]).should be_true
-        @badge_placement_config.requirements_met?(11, [1]).should be_false
-        @badge_placement_config.requirements_met?(11, [2]).should be_false
-        @badge_placement_config.requirements_met?(11, []).should be_false
-        @badge_placement_config.requirements_met?(11, [nil, "1", "2"]).should be_false
+        @badge_placement_config.requirements_met?(9, [1, 2], [1]).should be_false
+        @badge_placement_config.requirements_met?(11, [1, 2], [1]).should be_true
+        @badge_placement_config.requirements_met?(11, [nil, 1, 2, 3], [nil, 1, 2]).should be_true
+        @badge_placement_config.requirements_met?(11, [1], [1]).should be_false
+        @badge_placement_config.requirements_met?(11, [2], [1]).should be_false
+        @badge_placement_config.requirements_met?(11, [1, 2], []).should be_false
+        @badge_placement_config.requirements_met?(11, [1, 2], [nil, 2]).should be_false
+        @badge_placement_config.requirements_met?(11, [], []).should be_false
+        @badge_placement_config.requirements_met?(11, [nil, "1", "2"], ["1"]).should be_false
       end
     end
   end  
