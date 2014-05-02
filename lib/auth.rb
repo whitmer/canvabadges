@@ -126,14 +126,17 @@ module Sinatra
         
         http = Net::HTTP.new(uri.host, uri.port)
         http.use_ssl = protocol == "https"
-        request = Net::HTTP::Post.new(uri.request_uri)
-        request.set_form_data({
+        if domain.host == "lms.hdiuk.org"
+          http.verify_mode = OpenSSL::SSL::VERIFY_NONE # TODO: this needs to be fixed
+        end
+        req = Net::HTTP::Post.new(uri.request_uri)
+        req.set_form_data({
           :client_id => oauth_config.value,
           :code => code,
           :client_secret => oauth_config.shared_secret,
           :redirect_uri => CGI.escape(return_url)
         })
-        response = http.request(request)
+        response = http.request(req)
         json = JSON.parse(response.body)
         
         if json && json['access_token']
