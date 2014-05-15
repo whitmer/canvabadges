@@ -15,6 +15,7 @@ gem 'erubis'
 gem 'dm-types'
 gem 'rack-ssl-enforcer'
 gem 'rack-iframe'
+gem 'typhoeus'
 
 group :development do
     gem 'dm-sqlite-adapter'

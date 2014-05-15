@@ -1,4 +1,5 @@
 require 'sinatra/base'
+require 'typhoeus'
 
 module Sinatra
   module Auth
@@ -122,21 +123,12 @@ module Sinatra
         return_url = "#{protocol}://#{request.env['badges.original_domain']}/oauth_success"
         code = params['code']
         url = "#{protocol}://#{domain.host}/login/oauth2/token"
-        uri = URI.parse(url)
-        
-        http = Net::HTTP.new(uri.host, uri.port)
-        http.use_ssl = protocol == "https"
-        if domain.host == "lms.hdiuk.org"
-          http.verify_mode = OpenSSL::SSL::VERIFY_NONE # TODO: this needs to be fixed
-        end
-        req = Net::HTTP::Post.new(uri.request_uri)
-        req.set_form_data({
+        response = Typhoeus.post(url, body: {
           :client_id => oauth_config.value,
           :code => code,
           :client_secret => oauth_config.shared_secret,
           :redirect_uri => CGI.escape(return_url)
         })
-        response = http.request(req)
         json = JSON.parse(response.body)
         
         if json && json['access_token']
