@@ -9,6 +9,7 @@ describe 'Badge Configuration' do
 
   describe "badge configuration" do
     it "should require instructor/admin authorization" do
+      example_org
       post "/badges/settings/1"
       last_response.should_not be_ok
       assert_error_page("Configuration not found")
@@ -23,6 +24,7 @@ describe 'Badge Configuration' do
     end
 
     it "should accept configuration parameters" do
+      example_org
       badge_config
       params = {
         'badge_url' => "http://example.com/badge.png",
@@ -84,6 +86,7 @@ describe 'Badge Configuration' do
     end
     
     it "should fail gracefully on empty parameters" do
+      example_org
       badge_config
       Canvas::API.any_instance.should_receive(:get).and_return({})
       post "/badges/settings/#{@badge_placement_config.id}", {}, 'rack.session' => {"permission_for_#{@badge_placement_config.course_id}" => "edit", "user_id" => "9876"}
@@ -182,6 +185,7 @@ describe 'Badge Configuration' do
   
   describe "badge privacy" do
     it "should do nothing if an invalid badge" do
+      example_org
       award_badge(badge_config, user)
       post "/badges/#{@badge.nonce}x", {}, 'rack.session' => {'user_id' => @user.user_id}
       last_response.should_not be_ok
@@ -189,6 +193,7 @@ describe 'Badge Configuration' do
     end
     
     it "should not let you change someone else's badge" do
+      example_org
       award_badge(badge_config, user)
       post "/badges/#{@badge.nonce}", {}, 'rack.session' => {'user_id' => "asdf"}
       last_response.should_not be_ok
@@ -196,6 +201,7 @@ describe 'Badge Configuration' do
     end
     
     it "should allow setting your badge to public" do
+      example_org
       award_badge(badge_config, user)
       @badge.public.should == nil
       post "/badges/#{@badge.nonce}", {'public' => 'true'}, 'rack.session' => {'user_id' => @user.user_id}
@@ -219,6 +225,7 @@ describe 'Badge Configuration' do
     end
     
     it "should allow setting your badge to private" do
+      example_org
       award_badge(badge_config, user)
       @badge.public.should == nil
       post "/badges/#{@badge.nonce}", {'public' => 'true'}, 'rack.session' => {'user_id' => @user.user_id}
@@ -236,6 +243,7 @@ describe 'Badge Configuration' do
     end
     
     it "should allow setting the evidence URL for your badge" do
+      example_org
       award_badge(badge_config, user)
       @badge.state = 'pending'
       @badge.save
@@ -253,6 +261,7 @@ describe 'Badge Configuration' do
     end
     
     it "should not impact public/private when setting the evidence URL" do
+      example_org
       award_badge(badge_config, user)
       @badge.state = 'pending'
       @badge.public = true
@@ -272,6 +281,7 @@ describe 'Badge Configuration' do
     end
     
     it "should not allow setting the evidence URL for an already-awarded badge" do
+      example_org
       award_badge(badge_config, user)
       @badge.state.should == 'awarded'
       @badge.evidence_url.should == nil
@@ -286,6 +296,7 @@ describe 'Badge Configuration' do
   
   describe "manually awarding badges" do
     it "should require instructor/admin authorization" do
+      example_org
       badge_config
       user
       post "/badges/award/#{@badge_placement_config.id}/#{@user.user_id}", {}, 'rack.session' => {}
@@ -294,6 +305,7 @@ describe 'Badge Configuration' do
     end
     
     it "should do nothing for an invalid course or user" do
+      example_org
       badge_config
       post "/badges/award/#{@badge_placement_config.id}/asdfjkl", {}, 'rack.session' => {"permission_for_#{@badge_placement_config.course_id}" => 'edit'}
       last_response.should_not be_ok
@@ -318,6 +330,7 @@ describe 'Badge Configuration' do
     end
     
     it "should fail on manual awarding if no email provided by api" do
+      example_org
       user
       configured_badge
       Canvabadges.any_instance.should_receive(:api_call).and_return([{'id' => @user.user_id.to_i, 'name' => 'bob'}])
@@ -327,6 +340,7 @@ describe 'Badge Configuration' do
     end
     
     it "should allow manual awarding" do
+      example_org
       user
       configured_badge
       Canvabadges.any_instance.should_receive(:api_call).and_return([{'id' => @user.user_id.to_i, 'name' => 'bob', 'email' => 'bob@example.com'}])
@@ -349,6 +363,7 @@ describe 'Badge Configuration' do
     end
     
     it "should allow instructors to manually award the badge for their students" do
+      example_org
       badge_config
       user
       @badge_placement_config.settings['min_percent'] = 10

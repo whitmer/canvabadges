@@ -401,6 +401,7 @@ describe 'Badging OAuth' do
   
   describe "GET oauth_success" do
     it "should error if session details are not preserved" do
+      example_org
       get "/oauth_success"
       assert_error_page("Session Information Lost")
     end
@@ -563,6 +564,7 @@ describe 'Badging OAuth' do
   
   describe "session fix" do
     it "should set session" do
+      example_org
       get "/session_fix"
       last_response.body.should match(/Session Fixer/)
       session['has_session'].should == true

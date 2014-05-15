@@ -16,6 +16,7 @@ module Sinatra
       
       # configure badge settings.
       app.post "/badges/settings/:badge_placement_config_id" do
+        org_check
         load_badge_config(params['badge_placement_config_id'], 'edit')
         
         @badge_config = @badge_placement_config.badge_config
@@ -82,6 +83,7 @@ module Sinatra
       
       # set a badge to public or private
       app.post "/badges/:badge_id" do
+        org_check
         badge = Badge.first(:nonce => params['badge_id'])
         if !badge
           halt 400, {:error => "invalid badge"}.to_json
@@ -100,6 +102,7 @@ module Sinatra
       end
       
       app.post "/badges/disable/:badge_placement_config_id" do
+        org_check
         load_badge_config(params['badge_placement_config_id'], 'edit')
         settings = @badge_placement_config.settings
         settings['pending'] = true
@@ -110,6 +113,7 @@ module Sinatra
       
       # manually award a user with the course's badge
       app.post "/badges/award/:badge_placement_config_id/:user_id" do
+        org_check
         load_badge_config(params['badge_placement_config_id'], 'edit')
         @badge_config = @badge_placement_config.badge_config
   

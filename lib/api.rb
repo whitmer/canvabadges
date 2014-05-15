@@ -51,6 +51,7 @@ module Sinatra
 
       # list of publicly available badges for the current user
       app.get "/api/v1/badges/public/:user_id/:host.json" do
+        get_org
         domain = Domain.first(:host => params['host'])
         return "bad domain: #{params['host']}" unless domain
         user = UserConfig.first(:domain_id => domain.id, :user_id => params['user_id'])
@@ -76,6 +77,7 @@ module Sinatra
       # they are currently active in the course
       # requires admin permissions
       app.get "/api/v1/badges/awarded/:badge_placement_config_id.json" do
+        get_org
         api_response(badge_list(true, params, session))
       end
       
@@ -83,10 +85,12 @@ module Sinatra
       # or not they have been awarded the badge
       # requires admin permissions
       app.get "/api/v1/badges/current/:badge_placement_config_id.json" do
+        get_org
         api_response(badge_list(false, params, session))
       end
       
       app.get "/badges/from_:type/:id/:nonce/badge.png" do
+        get_org
         url = nil
         if params['type'] == 'config'
           bc = BadgeConfig.first(:id => params['id'], :nonce => params['nonce'])
@@ -110,6 +114,7 @@ module Sinatra
         @org = Organization.first(:host => request.env['badges.original_domain'], :order => :id)
         @org ||= Organization.first(:old_host => request.env['badges.original_domain'], :order => :id)
         halt(400, {:error => "Domain not properly configured. No Organization record matching the host #{request.env['badges.domain']}"}.to_json) unless @org
+        CanvasAPI.set_org(@org)
       end
       
       def api_response(hash)

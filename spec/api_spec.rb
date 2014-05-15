@@ -79,6 +79,7 @@ describe 'Badges API' do
   
   describe "awarded badges for course" do
     it "should require instructor/admin authorization" do
+      example_org
       badge_config
       get "/api/v1/badges/awarded/#{@badge_config.id}.json"
       last_response.should_not be_ok
@@ -86,6 +87,7 @@ describe 'Badges API' do
     end
     
     it "should return nothing if no course" do
+      example_org
       user
       get "/api/v1/badges/awarded/123.json", {}, 'rack.session' => {"permission_for_123" => 'edit', 'user_id' => @user.user_id}
       last_response.should_not be_ok
@@ -93,6 +95,7 @@ describe 'Badges API' do
     end
     
     it "should return awarded badges if there are any" do
+      example_org
       award_badge(badge_config, user)
       get "/api/v1/badges/awarded/#{@badge_placement_config.id}.json", {}, 'rack.session' => {"permission_for_#{@badge_placement_config.course_id}" => 'edit', 'user_id' => @user.user_id}
       last_response.should be_ok
@@ -108,6 +111,7 @@ describe 'Badges API' do
     end
     
     it "should not return pending or revoked badges" do
+      example_org
       award_badge(badge_config, user)
       @badge.state = 'revoked'
       @badge.save!
@@ -116,6 +120,7 @@ describe 'Badges API' do
       last_response.body.should == {:meta => {:next => nil}, :objects => []}.to_json      
     end
     it "should return paginated results" do
+      example_org
       CanvasAPI.should_not_receive(:api_call)
       award_badge(badge_config, user)
       @admin = @user
@@ -138,6 +143,7 @@ describe 'Badges API' do
   
   describe "active students for course" do
     it "should require instructor/admin authorization" do
+      example_org
       badge_config
       get "/api/v1/badges/current/#{@badge_placement_config.id}.json"
       last_response.should_not be_ok
@@ -145,6 +151,7 @@ describe 'Badges API' do
     end
     
     it "should return nothing if no course" do
+      example_org
       user
       get "/api/v1/badges/current/123.json", {}, 'rack.session' => {"permission_for_123" => 'edit', 'user_id' => @user.user_id}
       last_response.should_not be_ok
@@ -152,6 +159,7 @@ describe 'Badges API' do
     end
     
     it "should return active students if there are any" do
+      example_org
       badge_config
       user
       s1 = fake_badge_json(@badge_placement_config, '123', 'bob')
@@ -165,6 +173,7 @@ describe 'Badges API' do
     end
     
     it "should return paginated results" do
+      example_org
       badge_config
       user
       s1 = fake_badge_json(@badge_placement_config, '123', 'bob')

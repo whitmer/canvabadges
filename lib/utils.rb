@@ -1,10 +1,14 @@
 require 'canvas-api'
 
 module CanvasAPI
+  def self.set_org(org)
+    @insecure = !!org.settings['insecure']
+  end
+  
   def self.api_call(path, user_config, all_pages=false)
     protocol = 'https'
     host = "#{protocol}://#{user_config.host}"
-    canvas = Canvas::API.new(:host => host, :token => user_config.access_token)
+    canvas = Canvas::API.new(:host => host, :token => user_config.access_token, :insecure => @insecure)
     begin
       result = canvas.get(path)
       if result.is_a?(Array) && all_pages

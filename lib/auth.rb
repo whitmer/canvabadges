@@ -116,6 +116,7 @@ module Sinatra
       end
   
       app.get "/oauth_success" do
+        get_org
         if !session['domain_id'] || !session['user_id'] || !session['source_id']
           halt 400, erb(:session_lost)
         end
@@ -123,12 +124,13 @@ module Sinatra
         return_url = "#{protocol}://#{request.env['badges.original_domain']}/oauth_success"
         code = params['code']
         url = "#{protocol}://#{domain.host}/login/oauth2/token"
+        secure_connection = !@org.settings['insecure']
         response = Typhoeus.post(url, body: {
           :client_id => oauth_config.value,
           :code => code,
           :client_secret => oauth_config.shared_secret,
           :redirect_uri => CGI.escape(return_url)
-        })
+        }, ssl_verifypeer: secure_connection)
         json = JSON.parse(response.body)
         
         if json && json['access_token']
@@ -162,6 +164,7 @@ module Sinatra
       end
       
       app.get "/login" do
+        get_org
         request_token = consumer.get_request_token(:oauth_callback => "#{request.scheme}://#{request.env['badges.domain']}/login_success")
         if request_token.token && request_token.secret
           session[:oauth_token] = request_token.token
@@ -173,6 +176,7 @@ module Sinatra
       end
       
       app.get "/login_success" do
+        get_org
         verifier = params[:oauth_verifier]
         if params[:oauth_token] != session[:oauth_token]
           return "Authorization failed"
@@ -196,6 +200,7 @@ module Sinatra
       end
       
       app.get "/session_fix" do
+        get_org
         session['has_session'] = true
         erb :session_fixed
       end
