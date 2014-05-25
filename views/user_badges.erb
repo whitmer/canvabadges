@@ -17,7 +17,7 @@
     <td style='padding: 0 5px;'><a href='<%= badge_url %>'><img src='<%= badge.badge_url %>' class='thumbnail' alt='badge image'/></a></td>
     <td style='padding: 0 5px;'><%= badge.name %>
       <% if @for_current_user %>
-        <form class='form-inline' action='<%= request.env['badges.path_prefix'] %>/badges/<% badge.nonce %>' style='margin: 0 0 0 15px;'>
+        <form class='form-inline' action='<%= request.env['badges.path_prefix'] %>/badges/<%= badge.nonce %>' style='margin: 0 0 0 15px;'>
         <label><input class='public_badge' <%= 'checked' if badge.public %> type='checkbox'/> show on my Canvas profile</label>
         </form>
       <% end %>
