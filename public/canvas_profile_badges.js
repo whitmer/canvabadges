@@ -1,8 +1,8 @@
 $(function() {
   // NOTE: if pasting this code into another script, you'll need to manually change the
   // next line. Instead of assigning the value null, you need to assign the value of
-  // the Canvabadges domain, i.e. "https://canvabadges.herokuapp.com". If you have a custom
-  // domain configured then it'll be something like "https://canvabadges.herokuapp.com/_my_site"
+  // the Canvabadges domain, i.e. "https://www.canvabadges.org". If you have a custom
+  // domain configured then it'll be something like "https://www.canvabadges.org/_my_site"
   // instead.
   var protocol_and_host = null;
   var $scripts = $("script");
@@ -31,7 +31,7 @@ $(function() {
       url: url,
       success: function(data) {
         if(data.objects && data.objects.length > 0) {
-          var $box = $("<div/>");
+          var $box = $("<div/>", {style: 'margin-bottom: 20px;'});
           $box.append("<h2 class='border border-b'>Badges</h2>");
           for(idx in data.objects) {
             var badge = data.objects[idx];
