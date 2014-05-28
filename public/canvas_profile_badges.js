@@ -5,20 +5,22 @@ $(function() {
   // domain configured then it'll be something like "https://www.canvabadges.org/_my_site"
   // instead.
   var protocol_and_host = null;
-  var $scripts = $("script");
-  $("script").each(function() {
-    var src = $(this).attr('src');
-    if(src && src.match(/canvas_profile_badges/)) {
-      var splits = src.split(/\//);
-      protocol_and_host = splits[0] + "//" + splits[2];
-    }
-    var prefix = src && src.match(/\?path_prefix=\/(\w+)/);
-    if(prefix && prefix[1]) {
-      protocol_and_host = protocol_and_host + "/" + prefix[1];
-    }
-  });
   if(!protocol_and_host) {
-    console.log("Couldn't find a valid protocol and host. Canvabadges will not appear on profile pages until this is fixed.");
+    var $scripts = $("script");
+    $("script").each(function() {
+      var src = $(this).attr('src');
+      if(src && src.match(/canvas_profile_badges/)) {
+        var splits = src.split(/\//);
+        protocol_and_host = splits[0] + "//" + splits[2];
+      }
+      var prefix = src && src.match(/\?path_prefix=\/(\w+)/);
+      if(prefix && prefix[1]) {
+        protocol_and_host = protocol_and_host + "/" + prefix[1];
+      }
+    });
+  }
+  if(!protocol_and_host) {
+    console.log("CANVABADGES: Couldn't find a valid protocol and host. Canvabadges will not appear on profile pages until this is fixed.");
   }
   var match = location.href.match(/\/(users|about)\/(\d+)$/);
   if(match && protocol_and_host) {
@@ -44,10 +46,12 @@ $(function() {
           }
           $box.append($("<div/>", {style: 'clear: left'}));
           $("#edit_profile_form,fieldset#courses,.more_user_information + div").after($box);
+        } else {
+          console.log("CANVABADGES: no badges found for the user: " + user_id + " at " + domain);
         }
       },
       error: function() {
-        console.log("badges failed to load");
+        console.log("CANVABADGES: badges failed to load, API error response");
       },
       timeout: 5000
     });
