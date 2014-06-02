@@ -128,7 +128,7 @@ class UserConfig
   def check_badge_status(badge_placement_config, params, name, email)
     email ||= self.email
     scores_json = CanvasAPI.api_call("/api/v1/courses/#{badge_placement_config.course_id}?include[]=total_scores", self)
-    modules_json = CanvasAPI.api_call("/api/v1/courses/#{badge_placement_config.course_id}/modules", self, true) if badge_placement_config.modules_required?
+    modules_json = CanvasAPI.api_call("/api/v1/courses/#{badge_placement_config.course_id}/modules?student_id=#{self.user_id}", self, true) if badge_placement_config.modules_required?
     modules_json ||= []
     outcomes_json = CanvasAPI.api_call("/api/v1/courses/#{badge_placement_config.course_id}/outcome_rollups?include[]=outcomes&user_ids[]=#{self.user_id}", self, true) if badge_placement_config.outcomes_required?
     outcomes_json ||= {'linked' => {'outcomes' => []}, 'rollups' => []}
