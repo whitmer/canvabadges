@@ -319,8 +319,9 @@ class BadgePlacementConfig
   
   def set_badge_config(badge_config)
     self.badge_config_id = badge_config.id
+    self.settings ||= {}
     badge_settings = badge_config.settings || {}
-    placement_settings = self.settings || {}
+    placement_settings = self.settings
     if badge_settings['min_percent'] != nil && placement_settings['min_percent'] == nil
       placement_settings['manual_approval'] = badge_settings['manual_approval']
       placement_settings['require_evidence'] = badge_settings['require_evidence']
