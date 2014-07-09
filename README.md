@@ -118,8 +118,6 @@ ec.save
 
 ## TODO
 
-- Add search for teacher working in large classes
-- "Awarded students" list order isn't obvious or useful
-- Update screencast and setup instructions
+- Per-badge option to auto-publish
 
 [![Build Status](https://travis-ci.org/whitmer/canvabadges.png)](https://travis-ci.org/whitmer/canvabadges)
