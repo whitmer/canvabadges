@@ -131,7 +131,11 @@ module Sinatra
           :client_secret => oauth_config.shared_secret,
           :redirect_uri => CGI.escape(return_url)
         }, ssl_verifypeer: secure_connection)
-        json = JSON.parse(response.body)
+        
+        if response.code == 0
+          return error("Error authenticating user, please contact the system admin")
+        end
+        json = JSON.parse(response.body) rescue nil
         
         if json && json['access_token']
           user_config = UserConfig.first(:user_id => session['user_id'], :domain_id => domain.id)
