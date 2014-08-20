@@ -10,6 +10,10 @@ module Sinatra
         org_check
         @public_badge_placements = BadgePlacementConfig.all(:organization_id => @org.id, BadgePlacementConfig.badge_config.uncool => nil, BadgePlacementConfig.badge_config.public => true, :public_course => true, :order => :id.desc, :limit => 25)
         @public_badge_placements = @public_badge_placements.uniq{|p| [p.course_id, p.badge_config_id] }
+        @stats_org = @org
+        @stats_org = @org
+        @stats_org = nil if @org.default? && !params['this_org_only']
+        @stats = Stats.general(@stats_org)
         if @org.old_host && request.env['badges.original_domain'] == @org.old_host
           redirect to("#{protocol}://#{@org.host}/")
           return

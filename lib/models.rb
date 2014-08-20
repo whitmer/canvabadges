@@ -25,14 +25,16 @@ class OrgStats
         res['issuers'] = ExternalConfig.all(:organization_id => org.id).count
         res['badge_configs'] = BadgeConfig.all(:configured => true, :organization_id => org.id).count
         res['badge_placement_configs'] = BadgePlacementConfig.all(BadgePlacementConfig.badge_config.organization_id => org.id).count
-        res['badges'] = Badge.all(:state => 'awarded', Badge.badge_config.organization_id => org.id).count
+        res['badges'] = BadgeConfig.all(:organization_id => org.id).map{|c| c.settings && c.settings['awarded_count'] }.compact.reduce(:+)
+#         res['badges'] = Badge.all(:state => 'awarded', Badge.badge_config.organization_id => org.id).count
         res['domains'] = Domain.count
         res['organizations'] = Organization.count
       else
         res['issuers'] = ExternalConfig.count
         res['badge_configs'] = BadgeConfig.all(:configured => true).count
         res['badge_placement_configs'] = BadgePlacementConfig.count
-        res['badges'] = Badge.all(:state => 'awarded').count
+        res['badges'] = BadgeConfig.all.map{|c| c.settings && c.settings['awarded_count'] }.compact.reduce(:+)
+#         res['badges'] = Badge.all(:state => 'awarded').count
         res['domains'] = Domain.count
         res['organizations'] = Organization.count
       end
@@ -629,11 +631,13 @@ class Badge
   def revoke
     self.state = 'revoked'
     save
+    self.badge_placement_config && self.badge_placement_config.update_counts
   end
   
   def award
     self.state = 'awarded'
     save
+    self.badge_placement_config && self.badge_placement_config.update_counts
   end
   
   def self.generate_badge(params, badge_placement_config, name, email)

@@ -46,6 +46,10 @@
   <hr/>
   <% if @public_badge_placements.length > 0 %>
     <h2>Some Badges in Public Canvas Courses</h2>
+    <p>
+      <%= comma @stats['badges'] %>) badges earned so far - 
+      <a href="<%= request.env['badges.path_prefix'] %>/badges/public/awarded<%= "?this_org_only=1" if @stats_org %>">see some</a>
+    </p>
     <% 3.times do |i| %>
       <div class="row">
         <% @public_badge_placements[i * 6,6].shuffle(random: Random.new(1)).each do |placement| %>
