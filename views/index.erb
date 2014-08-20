@@ -1,4 +1,4 @@
-<h2><img src="<%= @org.settings['image'] || "/organizations/default.png" %>" alt=""/> <%= @org.settings['name'] %> Badges</h2>
+<h2><img src="<%= @org.settings['image'] || "/organizations/default.png" %>" alt=""/> <%= @org.settings['name'] %> <%= "Badges" if @stats_org %></h2>
 <div class="row">
   <span class="span6">
     <p>
@@ -47,8 +47,8 @@
   <% if @public_badge_placements.length > 0 %>
     <h2>Some Badges in Public Canvas Courses</h2>
     <p>
-      <%= comma @stats['badges'] %>) badges earned so far - 
-      <a href="<%= request.env['badges.path_prefix'] %>/badges/public/awarded<%= "?this_org_only=1" if @stats_org %>">see some</a>
+      <%= comma @stats['badges'] %> badges earned so far - 
+      <a href="<%= request.env['badges.path_prefix'] %>/badges/public/awarded<%= "?this_org_only=1" if @stats_org %>">see some recipients</a>
     </p>
     <% 3.times do |i| %>
       <div class="row">
