@@ -26,7 +26,7 @@ module Sinatra
         
         host ||= params['tool_consumer_instance_guid'].split(/\./)[1..-1].join(".") if params['tool_consumer_instance_guid'] && params['tool_consumer_instance_guid'].match(/\./)
         domain = Domain.first_or_new(:host => host)
-        domain.name = params['tool_consumer_instance_name'][0, 30]
+        domain.name = (params['tool_consumer_instance_name'] || "")[0, 30]
         domain.save
         provider = IMS::LTI::ToolProvider.new(key, secret, params)
         if !params['custom_canvas_user_id']
