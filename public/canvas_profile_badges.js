@@ -1,4 +1,5 @@
 $(function() {
+  console.log("CANVABADGES: Loaded!");
   // NOTE: if pasting this code into another script, you'll need to manually change the
   // next line. Instead of assigning the value null, you need to assign the value of
   // the Canvabadges domain, i.e. "https://www.canvabadges.org". If you have a custom
@@ -24,6 +25,7 @@ $(function() {
   }
   var match = location.href.match(/\/(users|about)\/(\d+)$/);
   if(match && protocol_and_host) {
+    console.log("CANVABADGES: This page shows badges! Loading...");
     var user_id = match[2];
     var domain = location.host;
     var url = protocol_and_host + "/api/v1/badges/public/" + user_id + "/" + encodeURIComponent(domain) + ".json";
@@ -32,7 +34,9 @@ $(function() {
       dataType: 'jsonp',
       url: url,
       success: function(data) {
+        console.log("CANVABADGES: Data retrieved!");
         if(data.objects && data.objects.length > 0) {
+          console.log("CANVABADGES: Badges found! Adding to the page...");
           var $box = $("<div/>", {style: 'margin-bottom: 20px;'});
           $box.append("<h2 class='border border-b'>Badges</h2>");
           for(idx in data.objects) {
@@ -47,13 +51,16 @@ $(function() {
           $box.append($("<div/>", {style: 'clear: left'}));
           $("#edit_profile_form,fieldset#courses,.more_user_information + div").after($box);
         } else {
-          console.log("CANVABADGES: no badges found for the user: " + user_id + " at " + domain);
+          console.log("CANVABADGES: No badges found for the user: " + user_id + " at " + domain);
         }
       },
-      error: function() {
-        console.log("CANVABADGES: badges failed to load, API error response");
+      error: function(err) {
+        console.log("CANVABADGES: Badges failed to load, API error response");
+        console.log(err);
       },
       timeout: 5000
     });
+  } else {
+    console.log("CANVABADGES: This page doesn't show badges");
   }
 });
