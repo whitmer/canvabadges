@@ -1,3 +1,67 @@
 en:
   errors:
-    org_not_found: Domain not properly configured. No Organization record matching the host %{domain}
+    organization_not_found: Domain not properly configured. No Organization record matching the host %{domain}
+  default_settings:
+    badge_name: "Unnamed Badge"
+  partials:
+    badge_description:
+      badge_awarded: ", and it was awarded %{awarded_at}"
+      completed_requirements: "This user completed the requirements needed for this badge"
+      hosted: It is hosted at
+      issued_by:
+        is: This badge was issued by
+        was: This badge is issued by
+      titles:
+        requirements: "Requirements for completion:"
+        completion_hours: "Approximate hours for completion: %{hours}"
+      uncompleted_requirements: "This user has not completed the requirements necessary to receive this badge."
+    badge_modules:
+      completion_required: "Modules requiring completion:"
+    badge_outcomes:
+      mastery_required: "Outcomes requiring mastery:"
+    badge_settings: ""
+    badge_status:
+      all_badges: "See All Your Badges"
+      and_have: "and you have "
+      backpack_alt: "Add this badge to your Mozilla backpack"
+      completed: completed the required modules and mastered the required outcomes.
+      current_score: "%{current_score}% in this course right now "
+      earned_for: "earned for email: %{email}"
+      earned_somewhere_else: You earned this badge somewhere else than this spot in this course.
+      needed_credits: "%{credits} credits, which you've now done. "
+      needed_requirements: "to complete the required modules and master the required outcomes. "
+      needed_score: "a final score of %{final_score}%, and "
+      show_badge: show this badge on my Canvas profile
+      titles:
+        almost_earned: You've almost earned this badge!
+        earned: "You've earned this badge!"
+        not_earned:
+      you_have: "You have "
+      you_needed: "To earn this badge you needed "
+      wait_for_approval: All you need now is to wait for your instructor's manual approval.
+      wait_for_review: All you need now is to wait for your instructor to review your evidence URL and the approve the badge.
+    evidence_url: ""
+    student_list: ""
+  views:
+    about: ""
+    badge_check: ""
+    badge_chooser: ""
+    badge_completion: ""
+    config_tokens: ""
+    config_xml: ""
+    course_badges: ""
+    error: ""
+    index:
+      hello: "Hello"
+    instructure_index: ""
+    layout: ""
+    manage_badge: ""
+    managed_badges: ""
+    message: ""
+    public_badge_configs: ""
+    public_badges: ""
+    session_fixed: ""
+    session_lost: ""
+    stats: ""
+    user_badges: ""
+>>>>>>> cad3abc... Added first translations

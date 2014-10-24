@@ -1,112 +1,174 @@
 <% settings = @badge_placement_config.merged_settings || {} %>
 <% if @badge && @badge.awarded? %>
-  <h3>You've earned this badge!</h3>
+  <h3><%= I18n.t("partials.badge_status.titles.earned") %></h3>
   <% if @badge.badge_placement_config_id != @badge_placement_config.id %>
-    You earned this badge somewhere else than this spot in this course.
+    <%= I18n.t("partials.badge_status.earned_somewhere_else") %>
   <% elsif !@badge.manual_approval %>
     <% if @badge_placement_config.credit_based? %>
-      To earn this badge you needed <%= settings['required_credits'] %> credits, which you've now done.
+      <%= I18n.t("partials.badge_status.you_needed") %>
+      <%= I18n.t("partials.badge_status.needed_credits", :credits => settings['required_credits']) %>
+
     <% elsif @badge_placement_config.modules_or_outcomes_required? %>
-      To earn this badge you needed 
-        <% if settings['min_percent'] && settings['min_percent'] > 0 %>
-          a final score of <%= settings['min_percent'] %>%, and 
-        <% end %>
-        to complete the required modules and master the required outcomes. You have 
-        <% if settings['min_percent'] && settings['min_percent'] > 0 %>
-          <%= @student['computed_final_score'].to_f %>% in this course right now and have 
-        <% end %>
-        completed the required modules and mastered the required outcomes.
+      <%= I18n.t("partials.badge_status.you_needed") %>
+      <% if settings['min_percent'] && settings['min_percent'] > 0 %>
+        <%= I18n.t("partials.badge_status.needed_score", :final_score => settings['min_percent'] ) %>
+      <% end %>
+      <%= I18n.t("partials.badge_status.needed_requirements") %>
+
+      <%= I18n.t("partials.badge_status.you_have") %>
+      <% if settings['min_percent'] && settings['min_percent'] > 0 %>
+        <%= I18n.t("partials.badge_status.current_score", :score => @student['computed_final_score'].to_f %>
+        <%= I18n.t("partials.badge_status.and_have") %>
+      <% end %>
+      <%= I18n.t("partials.badge_status.completed") %>
+
     <% else %>
-      To earn this badge you needed a final score of <%= settings['min_percent'] %>%, and you have <%= @student['computed_final_score'].to_f %>% in this course right now.
+      <%= I18n.t("partials.badge_status.you_needed") %>
+      <%= I18n.t("partials.badge_status.needed_score", :final_score => settings['min_percent'] ) %>
+      <%= I18n.t("partials.badge_status.and_have") %>
+      <%= I18n.t("partials.badge_status.current_score", :score => @student['computed_final_score'].to_f %>.
     <% end %>
     <div class='progress progress-success progress-striped progress-big'><div class='bar' style='width: 100%;'></div></div>
   <% end %>
+
   <% host = (@badge.badge_config && @badge.badge_config.organization && @badge.badge_config.organization.host) || request.env['badges.domain'] %>
   <% url = "#{protocol}://#{host}/api/v1/badges/data/#{@badge_config_id}/#{@user_id}/#{@badge.nonce}.json" %>
-  <form class='form-inline' action='<%= request.env['badges.path_prefix'] %>/badges/<%= @badge.nonce %>'><label><input class='public_badge' <%= 'checked' if @badge.public %> type='checkbox'/> show this badge on my Canvas profile</label><br/>
-    <a class='btn btn-primary btn-large' href='<%= request.env['badges.path_prefix'] %>/badges/all/<%= @domain_id %>/<%= @user_id %>'>See All Your Badges</a>
-    &nbsp;<a class='btn' style='background: #4a4842;' id='redeem' href='#' rel='<%= url %>'><span class='icon-plus icon-white'></span><img src='/mozilla-backpack.png' alt='Add this badge to your Mozilla backpack'/></a>
-    <span style="vertical-align: bottom; color: #888;">earned for email: <%= @badge.email %></span>
+  <form class='form-inline' action='<%= request.env['badges.path_prefix'] %>/badges/<%= @badge.nonce %>'>
+    <label><input class='public_badge' <%= 'checked' if @badge.public %> type='checkbox'/>
+      <%= I18n.t("partials.badge_status.show_badge") %>
+    </label>
+    <br/>
+    <a class='btn btn-primary btn-large' href='<%= request.env['badges.path_prefix'] %>/badges/all/<%= @domain_id %>/<%= @user_id %>'><%= I18n.t("partials.badge_status.all_badges") %>
+    </a>
+    &nbsp;<a class='btn' style='background: #4a4842;' id='redeem' href='#' rel='<%= url %>'><span class='icon-plus icon-white'></span><img src='/mozilla-backpack.png' alt='<%= I18n.t("partials.badge_status.backpack_alt") %>'/></a>
+    <span style="vertical-align: bottom; color: #888;">
+      <%= I18n.t("partials.badge_status.earned_for", :email => @badge.email) %>
+    </span>
   </form>
+
 <% elsif @badge && @badge.pending? %>
-  <h3>You've almost earned this badge!</h3>
+  <h3><%= I18n.t("partials.badge_status.titles.almost_earned") %></h3>
   <% if !@badge.manual_approval %>
     <% if @badge_placement_config.credit_based? %>
-      To earn this badge you needed <%= settings['required_credits'] %> credits, which you've now done.
+      <%= I18n.t("partials.badge_status.you_needed") %>
+      <%= I18n.t("partials.badge_status.needed_credits", :credits => settings['required_credits']) %>
       <div class='progress progress-success progress-striped progress-big'><div class='bar' style='width: <%= (@badge.credits_earned / settings['required_credits'] * 100).to_i.to_s %>%;'></div></div>
+
     <% elsif @badge_placement_config.modules_or_outcomes_required? %>
-      To earn this badge you needed 
+      <%= I18n.t("partials.badge_status.you_needed") %>
       <% if settings['min_percent'] && settings['min_percent'] > 0 %>
-        a final score of <%= settings['min_percent'] %>%, and 
+        <%= I18n.t("partials.badge_status.needed_score", :final_score => settings['min_percent'] ) %>
       <% end %>
-      to complete the required modules and master the required outcomes. You have 
+      <%= I18n.t("partials.badge_status.needed_requirements") %>
+
+      <%= I18n.t("partials.badge_status.you_have") %>
       <% if settings['min_percent'] && settings['min_percent'] > 0 %>
-        <%= @student['computed_final_score'].to_f %>% in this course right now and have 
+        <%= I18n.t("partials.badge_status.current_score", :score => @student['computed_final_score'].to_f %>
+        <%= I18n.t("partials.badge_status.and_have") %>
       <% end %>
-      completed the required modules and mastered the required outcomes.
+      <%= I18n.t("partials.badge_status.completed") %>
       <div class='progress progress-warning progress-striped progress-big'><div class='bar' style='width: <%= @student['computed_final_score'].to_i.to_s %>%;'></div></div>
     <% else %>
-      To earn this badge you needed a final score of <%= settings['min_percent'] %>%, and you have <%= @student['computed_final_score'].to_f %>% in this course right now.
+      <%= I18n.t("partials.badge_status.you_needed") %>
+      <%= I18n.t("partials.badge_status.needed_score", :final_score => settings['min_percent'] ) %>
+      <%= I18n.t("partials.badge_status.and_have") %>
+      <%= I18n.t("partials.badge_status.current_score", :score => @student['computed_final_score'].to_f %>.
       <div class='progress progress-warning progress-striped progress-big'><div class='tick' style='left: <%= (3 * settings['min_percent']).to_i.to_s %>px;'></div><div class='bar' style='width: <%= @student['computed_final_score'].to_i.to_s %>%;'></div></div>
     <% end %>
   <% end %>
   <%= erb :_evidence_url %>
   <% if @badge_placement_config.evidence_required? %>
-    <p><b>All you need now is to wait for your instructor to review your evidence URL and the approve the badge.</b></p>
+    <p><b><%= I18n.t("partials.badge_status.wait_for_review") %></b></p>
   <% else %>
-    <p><b>All you need now is to wait for your instructor's manual approval.</b></p>
+    <p><b><%= I18n.t("partials.badge_status.wait_for_approval") %></b></p>
   <% end %>
 <% else %>
-  <h3>You haven't earned this badge yet</h3>
+  <h3><%= I18n.t("partials.badge_status.") %>You haven't earned this badge yet</h3>
   <% if @badge_placement_config.credit_based? %>
+    <%= I18n.t("partials.badge_status.") %>
+
     To earn this badge you need to earn <%= settings['required_credits'] %> credits. Credits are available for the following activities:
+
     <% completed_score = @badge_placement_config.required_score_met?(@student['computed_final_score']) %>
     <% credits = completed_score ? settings['credits_for_final_score'] : 0 %>
+
     <ul class="badge_earn_list">
-      <li><img src='<%= completed_score ? '/check.gif' : '/redx.png' %>'/> Final score of at least <%= settings['min_percent'] %>% (currently <%= @student['computed_final_score'].to_f %>%): <%= settings['credits_for_final_score'] %> credits</li>
-    <% @badge_placement_config.required_modules.each do |id, name, credit| %>
-      <% complete = @completed_module_ids.include?(id.to_i) %>
-      <% credits += credit if complete %>
-      <li><img src='<%= complete ? '/check.gif' : '/redx.png' %>'/> Complete the module <%= name %> (<%= complete ? 'completed' : 'not completed' %>): <%= credit %> credits</li>
-    <% end %>
-    <% @badge_placement_config.required_outcomes.each do |id, name, credit| %>
-      <% complete = @completed_outcome_ids.include?(id.to_i) %>
-      <% credits += credit if complete %>
-      <li><img src='<%= complete ? '/check.gif' : '/redx.png' %>'/> Master the outcome <%= name %> (<%= complete ? 'mastered' : 'not mastered' %>): <%= credit %> credits</li>
-    <% end %>
+      <li>
+        <img src='<%= completed_score ? '/check.gif' : '/redx.png' %>'/>
+        <%= I18n.t("partials.badge_status.") %>
+        Final score of at least <%= settings['min_percent'] %>% (currently <%= @student['computed_final_score'].to_f %>%): <%= settings['credits_for_final_score'] %> credits
+      </li>
+
+      <% @badge_placement_config.required_modules.each do |id, name, credit| %>
+        <% complete = @completed_module_ids.include?(id.to_i) %>
+        <% credits += credit if complete %>
+        <li>
+          <img src='<%= complete ? '/check.gif' : '/redx.png' %>'/>
+          <%= I18n.t("partials.badge_status.") %>
+          Complete the module <%= name %> (<%= complete ? 'completed' : 'not completed' %>): <%= credit %> credits
+        </li>
+      <% end %>
+
+      <% @badge_placement_config.required_outcomes.each do |id, name, credit| %>
+        <% complete = @completed_outcome_ids.include?(id.to_i) %>
+        <% credits += credit if complete %>
+        <li>
+          <img src='<%= complete ? '/check.gif' : '/redx.png' %>'/>
+          <%= I18n.t("partials.badge_status.") %>
+          Master the outcome <%= name %> (<%= complete ? 'mastered' : 'not mastered' %>): <%= credit %> credits
+        </li>
+      <% end %>
     </ul>
     <div class='progress progress-danger progress-striped progress-big'><div class='bar' style='width: <%= [(credits / settings['required_credits'] * 100).to_i, 5].max.to_s %>%;'></div></div>
   <% elsif @badge_placement_config.modules_or_outcomes_required? %>
+    <%= I18n.t("partials.badge_status.") %>
     To earn this badge you need to achieve the following:
-    <% 
+    <%
       completed_score = @badge_placement_config.required_score_met?(@student['computed_final_score'])
       total = @badge_placement_config.required_modules.length + @badge_placement_config.required_outcomes.length + 1
       achieved = 0
       if settings['min_percent'] && settings['min_percent'] > 0
         total += 1
-        achieved = completed_score ? 1 : 0 
+        achieved = completed_score ? 1 : 0
       end
     %>
     <ul class="badge_earn_list">
-    <% if settings['min_percent'] && settings['min_percent'] > 0 %>
-      <li><img src='<%= completed_score ? '/check.gif' : '/redx.png' %>'/> Final score of at least <%= settings['min_percent'] %>% (currently <%= @student['computed_final_score'].to_f %>%)</li>
-    <% end %>
-    <% @badge_placement_config.required_modules.each do |id, name, credit| %>
-      <% complete = @completed_module_ids.include?((id || "").to_i) %>
-      <% achieved +=1 if complete %>
-      <li><img src='<%= complete ? '/check.gif' : '/redx.png' %>'/> Complete the module <%= name %> (<%= complete ? 'completed' : 'not completed' %>)</li>
-    <% end %>
-    <% @badge_placement_config.required_outcomes.each do |id, name, credit| %>
-      <% complete = @completed_outcome_ids.include?((id || "").to_i) %>
-      <% achieved +=1 if complete %>
-      <li><img src='<%= complete ? '/check.gif' : '/redx.png' %>'/> Master the outcome <%= name %> (<%= complete ? 'mastered' : 'not mastered' %>)</li>
-    <% end %>
+      <% if settings['min_percent'] && settings['min_percent'] > 0 %>
+        <li>
+          <img src='<%= completed_score ? '/check.gif' : '/redx.png' %>'/>
+          <%= I18n.t("partials.badge_status.") %>
+          Final score of at least <%= settings['min_percent'] %>% (currently <%= @student['computed_final_score'].to_f %>%)
+        </li>
+      <% end %>
+
+      <% @badge_placement_config.required_modules.each do |id, name, credit| %>
+        <% complete = @completed_module_ids.include?((id || "").to_i) %>
+        <% achieved +=1 if complete %>
+        <li>
+          <img src='<%= complete ? '/check.gif' : '/redx.png' %>'/>
+          <%= I18n.t("partials.badge_status.") %>
+          Complete the module <%= name %> (<%= complete ? 'completed' : 'not completed' %>)
+        </li>
+      <% end %>
+
+      <% @badge_placement_config.required_outcomes.each do |id, name, credit| %>
+        <% complete = @completed_outcome_ids.include?((id || "").to_i) %>
+        <% achieved +=1 if complete %>
+        <li>
+          <img src='<%= complete ? '/check.gif' : '/redx.png' %>'/>
+          <%= I18n.t("partials.badge_status.") %>
+          Master the outcome <%= name %> (<%= complete ? 'mastered' : 'not mastered' %>)</li>
+      <% end %>
     </ul>
     <div class='progress progress-danger progress-striped progress-big'><div class='bar' style='width: <%= [(100.0 * achieved.to_f / total.to_f).to_i, 5].max.to_s  %>%;'></div></div>
   <% else %>
+    <%= I18n.t("partials.badge_status.") %>
     To earn this badge you need <%= settings['min_percent'] %>%, but you only have <%= @student['computed_final_score'].to_f %>% in this course right now.
     <div class='progress progress-danger progress-striped progress-big'><div class='tick' style='left: <%= (3 * settings['min_percent']).to_i.to_s %>px;'></div><div class='bar' style='width: <%= @student['computed_final_score'].to_i.to_s %>%;'></div></div>
   <% end %>
   <%= erb :_evidence_url %>
-  <a class='btn btn-primary btn-large' href='<%= request.env['badges.path_prefix'] %>/badges/all/<%= @domain_id %>/<%= @user_id %>'>See All Your Badges</a>
+  <a class='btn btn-primary btn-large' href='<%= request.env['badges.path_prefix'] %>/badges/all/<%= @domain_id %>/<%= @user_id %>'>
+    <%= I18n.t("partials.badge_status.") %>
+    See All Your Badges
+  </a>
 <% end %>

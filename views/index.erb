@@ -2,6 +2,7 @@
 <div class="row">
   <span class="span6">
     <p>
+      <%= I18n.t(".hello") %>
       <%= @org.settings['name'] %> let you award badges to students in courses based on their total
       grade in the course and their completion of course modules. You can also put
       a manual approval step on as well that requires your final sign-off before they
@@ -11,7 +12,7 @@
       Put it all together and you've got some lightweight course credentials!
       Badges can be added to a <a href="http://openbadges.org/">Mozilla Backpack</a>,
       or you can drop <a href="/canvas_profile_badges.js<%= "?path_prefix=#{request.env['badges.path_prefix']}" if request.env['badges.path_prefix'].length > 0 %>">this javascript file</a> in your
-      global Canvas scripts to let users add them to their Canvas 
+      global Canvas scripts to let users add them to their Canvas
       profiles.
     </p>
     <p>
@@ -30,7 +31,7 @@
         </li>
       <% end %>
       <li>
-        <a href="<%= request.env['badges.path_prefix'] %>/canvabadges.xml">Copy this XML link</a> and pick "By URL" as 
+        <a href="<%= request.env['badges.path_prefix'] %>/canvabadges.xml">Copy this XML link</a> and pick "By URL" as
         the configuration type to add as a new external tool in Canvas
       </li>
       <li>
@@ -47,7 +48,7 @@
   <% if @public_badge_placements.length > 0 %>
     <h2>Some Badges in Public Canvas Courses</h2>
     <p>
-      <%= comma @stats['badges'] %> badges earned so far - 
+      <%= comma @stats['badges'] %> badges earned so far -
       <a href="<%= request.env['badges.path_prefix'] %>/badges/public/awarded<%= "?this_org_only=1" if @stats_org %>">see some recipients</a>
     </p>
     <% 3.times do |i| %>
@@ -77,7 +78,7 @@
   <% end %>
   <% if @org.default? %>
     <p>
-      Lots of schools will probably want to host their 
+      Lots of schools will probably want to host their
       own badge issuing server, so the domain matches their school
       (i.e. badges.utah.edu instead of canvabadges.herokuapp.com).
       Good news! You can now do that with Canvabadges! Just

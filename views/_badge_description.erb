@@ -1,6 +1,6 @@
 <% settings = @badge_config.settings || {} %>
 <img src='<%= settings['badge_url'] %>' style='float: left; margin-right: 20px;' class='thumbnail'/>
-<h2><%= settings['badge_name'] || "Unnamed Badge" %></h2>
+<h2><%= settings['badge_name'] || I18n.t("default_settings.badge_name") %></h2>
 <p class='desc'><%= settings['badge_description'] %></p>
 
 <% if @current_badge %>
@@ -12,29 +12,37 @@
     <h2><%= @current_badge.user_name %></h2>
   <% end %>
   <% if @earned %>
-    <p class="desc"><img src='/check.gif'/> This user completed the requirements needed for this badge<% if @current_badge.issued %>, and it was awarded <%= @current_badge.issued.strftime("%d %b, %Y") %><% end %>.</p>
+    <p class="desc"><img src='/check.gif'/>
+      <%= I18n.t('partials.badge_description.completed_requirements') %>
+      <%= I18n.t('partials.badge_description.badge_awarded', :awarded_at => @current_badge.issued.strftime("%d %b, %Y") if @current_badge.issued ) %>.
+    </p>
   <% else %>
-    <p class="desc"><img src='/redx.gif'/> This user has not completed the requirements necessary to receive this badge.</p>
+    <p class="desc"><img src='/redx.gif'/> <%= I18n.t("partials.badge_description.uncompleted_requirements" %></p>
   <% end %>
   <div style="clear: left;"></div>
 <% end %>
 
 <% if settings['badge_requirements'] && settings['badge_requirements'] != '' %>
-  <h3>Requirements for completion:</h3>
+  <h3><%= I18n.t("partials.badge_description.titles.requirements") %></h3>
   <p class='desc'>
     <%= settings['badge_requirements'] %>
   </p>
 <% end %>
 <% if settings['hours'] %>
-  <h3>Approximate hours for completion: <%= settings['hours'] %></h3>
+  <h3><%= I18n.t("partials.badge_description.titles.completion_hours", :hours => settings['hours']) %></h3>
 <% end %>
 <% org = @badge_config.organization %>
 <% settings = (org && org.settings) || BadgeHelper.issuer %>
 <p class="verification">
   <img src='<%= settings['image'] %>'/>
-  This badge <%= @current_badge && @current_badge.awarded? ? "was" : "is" %> issued by <a href="<%= settings['url'] %>">
-  <%= settings['name'] %></a>. It is hosted at 
-  <%= (org && org.host) || request.host %>.
+  <% if @current_badge && @current_badge.awarded? %>
+    <%= I18n.t("partials.badge_description.issued_by.was") %>
+  <% else %>
+    <%= I18n.t("partials.badge_description.issued_by.is") %>
+  <% end %>
+  <a href="<%= settings['url'] %>"> <%= settings['name'] %></a>.
+
+  <%= I18n.t("partials.badge_description.hosted") <%= (org && org.host) || request.host %>.
   <span style="clear: left;"></span>
 </p>
 
@@ -48,7 +56,7 @@
       var table = [['Week', 'Recipients']];
       var first = stats['start'];
       var last = stats['end'];
-      
+
       for(var idx = first; idx <= last;) {
         var year = Math.floor(idx / 100).toString();
         var week = (idx % 100).toString();

@@ -1,7 +1,7 @@
 <% settings = @badge_placement_config.merged_settings || {} %>
 <% if @modules_json && @modules_json.length > 0 %>
   <div class="control-group advanced">
-    <label class="control-label">Modules requiring completion:</label>
+    <label class="control-label"><%= I18n.t("partials.badge_modules.completion_required") %></label>
     <div class="controls">
       <% @modules_json.each do |mod| %>
         <% mod_settings = (settings['modules'] || []).detect{|m| m[0] == mod['id'] } %>

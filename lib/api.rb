@@ -113,7 +113,7 @@ module Sinatra
       def get_org
         @org = Organization.first(:host => request.env['badges.original_domain'], :order => :id)
         @org ||= Organization.first(:old_host => request.env['badges.original_domain'], :order => :id)
-        halt(400, {:error => "Domain not properly configured. No Organization record matching the host #{request.env['badges.domain']}"}.to_json) unless @org
+        halt 404, error(I18n.t("errors.organization_not_found", :domain => request.env['badges.domain'])) unless @org
         CanvasAPI.set_org(@org)
       end
       
