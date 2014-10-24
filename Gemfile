@@ -2,6 +2,7 @@ ruby '2.1.5'
 source "http://rubygems.org"
 
 gem "sinatra"
+gem "sinatra-contrib"
 gem "i18n"
 gem "oauth"
 gem "json"

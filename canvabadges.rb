@@ -1,4 +1,5 @@
 require 'sinatra/base'
+require "sinatra/reloader"
 require 'i18n'
 require 'i18n/backend/fallbacks'
 require 'oauth'
@@ -47,6 +48,13 @@ class Canvabadges < Sinatra::Base
   configure :production do
     require 'rack-ssl-enforcer'
     use Rack::SslEnforcer
+  end
+
+  configure :development do
+    register Sinatra::Reloader
+    also_reload "#{root}/lib/*"
+    also_reload "#{root}/locales/*"
+    also_reload "#{root}/views/*"
   end
 
   configure do
