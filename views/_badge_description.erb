@@ -14,10 +14,10 @@
   <% if @earned %>
     <p class="desc"><img src='/check.gif'/>
       <%= I18n.t('partials.badge_description.completed_requirements') %>
-      <%= I18n.t('partials.badge_description.badge_awarded', :awarded_at => @current_badge.issued.strftime("%d %b, %Y") if @current_badge.issued ) %>.
+      <%= I18n.t('partials.badge_description.badge_awarded', :awarded_at => @current_badge.issued.strftime("%d %b, %Y")) if @current_badge.issued %>.
     </p>
   <% else %>
-    <p class="desc"><img src='/redx.gif'/> <%= I18n.t("partials.badge_description.uncompleted_requirements" %></p>
+    <p class="desc"><img src='/redx.gif'/> <%= I18n.t("partials.badge_description.uncompleted_requirements") %></p>
   <% end %>
   <div style="clear: left;"></div>
 <% end %>
@@ -42,7 +42,7 @@
   <% end %>
   <a href="<%= settings['url'] %>"> <%= settings['name'] %></a>.
 
-  <%= I18n.t("partials.badge_description.hosted") <%= (org && org.host) || request.host %>.
+  <%= I18n.t("partials.badge_description.hosted") %> <%= (org && org.host) || request.host %>.
   <span style="clear: left;"></span>
 </p>
 

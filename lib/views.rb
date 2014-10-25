@@ -202,12 +202,12 @@ module Sinatra
           if @student
             erb :_badge_status, :layout => false
           else
-            return "<h3>You are not a student in this course, so you can't earn this badge</h3>"
+            return "<h3>#{I18n.t("errors.not_a_student")}</h3>"
           end
         elsif @badge_placement_config && @badge_placement_config.award_only?
           return ""
         else
-          return "<h3>Error retrieving badge status</h3>"
+          return "<h3>#{I18n.t("errors.badge_config")}</h3>"
         end
       end
     end

@@ -1,5 +1,7 @@
 en:
   errors:
+    badge_config: Error retrieving badge status
+    not_a_student: "You are not a student in this course, so you can't earn this badge"
     organization_not_found: Domain not properly configured. No Organization record matching the host %{domain}
   default_settings:
     badge_name: "Unnamed Badge"
@@ -40,16 +42,64 @@ en:
       you_needed: "To earn this badge you needed "
       wait_for_approval: All you need now is to wait for your instructor's manual approval.
       wait_for_review: All you need now is to wait for your instructor to review your evidence URL and the approve the badge.
-    evidence_url: ""
-    student_list: ""
+      not_earned_yet: "You haven't earned this badge yet"
+      how_to_earn_badge: "To earn this badge you need to earn %{required_credit}% credits. Credits are available for the following activities:"
+      score: "Final score of at least %{min_percent}%% (currently %{computed_final_score}%): %{credits_final_score}% credits"
+      complete_module: "Complete the module %{name}%"
+      complete: 'completed'
+      not_ completed: 'not completed'
+      credits: credits
+      master_this: "Master the outcome  %{name}%"
+      mastered: mastered
+      not_mastered: not mastered
+      final_score: "Final score of at least %{min_percent}%% (currently %{computed_final_score}%%)"
+      result: "To earn this badge you need %{min_percent}%%, but you only have %{computed_final_score }%% in this course right now."
+      see_all_badges: "See All Your Badges"
+    evidence_url:
+      achieve_this: "To earn this badge you need to achieve the following:"
+      label: "Evidence URL:"
+      url_required: "URL showing what qualifies you to earn this badge (required)"
+      url_optional: "URL showing evidence of work done for this badge (optional)"
+    student_list:
+      current_students: 'Current Students'
+      awarded_students: 'Awarded Students'
+      go: Go
+      clear: Clear
+      student: Student
+      earned: Earned
+      issued: Issued
   views:
     about: ""
-    badge_check: ""
-    badge_chooser: ""
-    badge_completion: ""
+    badge_check:
+      check_status: "Checking badge status..."
+    badge_chooser:
+      select_embed: "Select a Badge to Embed"
+      select_new: "Or create a new one."
+      unnamed_badge: "Unnamed Badge"
+      appr_hours: "Approx hours:"
+      badge_list: "Badge List"
+      badge_list_desc: "Insert a link to the listing of all badges for the current course."
+      create_new_badge: "Create a New Badge"
+      add_badge: "Add Badge"
+    badge_completion:
+      evidence: "Evidence of completion:"
+      evidence_link: "Link to evidence as approved by the learner and instructor"
+      evidence_link_learner: "Link to evidence as provided by the learner"
+      evidence_link_learner_hint: '(though not necessarily approved by the instructor)'
     config_tokens: ""
     config_xml: ""
-    course_badges: ""
+    course_badges:
+      title: "Badges for this Course"
+      earned_badges: "Earned Badges"
+      no_badges_earned: "No badges earned"
+      show_profile: "show on my Canvas profile"
+      see_all_badges: "See All Your Badges"
+      all_course_badges: "All Course Badges"
+      no_badges_configured: "No Badges Configured"
+      unnamed_badge: "Unnamed Badge"
+      appr_hours: "Approx hours:"
+      award_badge_link: "award a badge from another course"
+      award_other_badges: "Award Other Badges"
     error: ""
     index:
       hello: "Hello"
@@ -58,10 +108,44 @@ en:
     manage_badge: ""
     managed_badges: ""
     message: ""
-    public_badge_configs: ""
-    public_badges: ""
-    session_fixed: ""
-    session_lost: ""
-    stats: ""
-    user_badges: ""
->>>>>>> cad3abc... Added first translations
+    public_badge_configs:
+      unnamed_badge: "Unnamed Badge"
+    public_badges:
+      recent_awarded_badges: "Recently-Awarded Public Badges"
+      nothing_to_show: Nothing to Show
+      appr_hours: "Approx hours:"
+      issued: "Issued"
+      by: by
+      hosted_at: "Hosted at"
+    session_fixed:
+      title: Session Fixer
+      has_session: "Looks like the problem has been fixed! Please close this window, reload your web browser and try launching the resource again."
+      no_session: "Hm, there's still something wrong. You may have cookies disabled or there may be an additional problem. Please contact your account administrator or the site owner for troubleshooting."
+    session_lost:
+      title: Session Information Lost
+      text: "There was a problem retrieving your user information. Some web browsers are starting to take measures that cause this to happen unexpectedly. You can try clicking the following button to launch a popup that should fix the problem if it's a browser issue."
+      open_session: "Open Session Fixer in a New Window"
+    stats:
+      badging_stats: "Badging Stats"
+      authorized_badge_issuers: "Authorized Badge Issuers"
+      badge_configured: "Badges Configured"
+      see_earnable_badges: "see earnable public badges"
+      badge_placement: Badge Placements
+      badge_awarded: Badges Awarded
+      see_learner_badges: "see learner-shared badges"
+      canvas_domain: "Canvas Domains"
+      organizations:  Organizations
+      badge_site: "badge site"
+      contact_us: "Contact us"
+      contact_us_text: "to add your own badging site"
+    user_badges:
+      your_badges_at: Your Badges at
+      badges_for: Badges for
+      user: Utilisateur
+      at: at
+      no_data: No Data available
+      no_badges: No Badges Earned or Shared
+      show_profile: "show on my Canvas profile"
+      share_this: "Share this Page:"
+
+>>>>>>> 964e56b... Solved some bugs
