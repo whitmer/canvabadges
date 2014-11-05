@@ -43,22 +43,24 @@ fr:
         earned: "Ce badge vous a été decerné !"
         not_earned:
       you_have: "Vous avez "
-      you_needed: "Afin d'obtenir ce badge, vous deviez "
+      you_needed: "Afin d'obtenir ce badge, vous devez "
       wait_for_approval: "Il ne vous manque plus que la validation du badge par votre enseignant."
       wait_for_review: "Il ne vous manque plus que la revue manuelle par votre enseignant du lien de preuve."
-      how_to_earn_badge: "Pour obtenir ce badge, vous devez récolter %{required_credit} points. Ces points sont disponibles pour les activités suivantes :"
-      score: "Score final d'au moins %{min_percent}% (actuellement %{computed_final_score}%): %{credits_final_score} points"
-      complete_module: "Validez le module %{name}"
+      not_earned_yet: "Vous n'avez pas encore obtenu ce badge."
+      how_to_earn_badge: "Pour obtenir ce badge, vous devez récolter %{required_credit}% points. Ces points sont disponibles pour les activités suivantes :"
+      score: "Score final d'au moins %{min_percent}%% (actuellement %{computed_final_score}%): %{credits_final_score}% points"
+      complete_module: "Valiez le module %{name}%"
       complete: 'validé'
-      not_completed: 'pas encore validé'
+      not_ completed: 'pas encore validé'
       credits: credits
-      master_this: "Maîtrisez la compétence  %{name}"
+      master_this: "Maîtrisez la compétence  %{name}%"
       mastered: mastered
       not_mastered: not mastered
-      final_score: "Score final d'au moins %{min_percent}% (actuellement %{computed_final_score}%)"
-      result: "Pour obtenir ce badge, vous avez besoin de %{min_percent}%, mais vous n'avez pour l'instant que %{computed_final_score }% dans ce cours."
+      final_score: "Score final d'au moins %{min_percent}%% (actuellement %{computed_final_score}%%)"
+      result: "Pour obtenir ce badge, vous avez besoin de %{min_percent}%%, mais vous n'avez pour l'instant que %{computed_final_score }%% dans ce cours."
       see_all_badges: "Voir tous mes badges"
     evidence_url:
+      achieve_this: "Pour obtenir ce badge, vous devez satisfaires les pré-requis suivants :"
       label: "URL de preuve"
       url_required: "URL prouvant que vous méritez bien d'obtenir le badge (obligatoire)"
       url_optional: "URL prouvant que vous avez réalisé l'activité demandée (optionnel)"
