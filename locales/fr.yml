@@ -1,3 +1,160 @@
 fr:
   errors:
-    org_not_found: Le domaine n'est pas convenablement configuré. Il n'y a aucune organization qui corresponde à %{domain}
+    badge_config: "Une erreur est survenue lors de la tentative d'identification su statut du badge. Merci de raffraichir cette page."
+    badge_not_set: "Votre professeur n'a pas encore terminé la configuration de ce badge."
+    not_a_student: "Vous n'êtes pas étudiant(e) dans ce cours et ne pouvez donc pas obtenir ce badge."
+    organization_not_found: "Ce domaine n'a pas été correctement configuré. Aucun enregistrement d'organisation ne correspond au domaine %{domain}"
+    retrieving_student_scores: "Une erreur s'est produite lors de la récupération de vos notes. Merci de contacter un administrateur si le problème persiste."
+  default_settings:
+    badge_name: "Badge sans nom"
+  partials:
+    badge_description:
+      badge_awarded: ", et il a été decerné à %{awarded_at}"
+      completed_requirements: "Ce participant a complété les pré-requis pour obtenir ce badge."
+      hosted: "Hébergement sur"
+      issued_by:
+        is: "Ce badge est decerné par"
+        was: "Ce badge a été decerné par"
+      titles:
+        requirements: "Pré-requis de validation :"
+        completion_hours: "Durée approximative de réalisation : %{hours}"
+      uncompleted_requirements: "Cet utilisateur n'a pas encore validé les conditions requises pour obtenir ce badge."
+    badge_modules:
+      completion_required: "Modules à valider :"
+    badge_outcomes:
+      mastery_required: "Compétences à démontrer pour obtenir le badge :"
+    badge_settings: ""
+    badge_status:
+      achieve_this: "Pour obtenir ce badge, vous devez satisfaires les pré-requis suivants :"
+      all_badges: "Voir tous mes badges"
+      and_have: "et vous avez "
+      backpack_alt: "Ajouter ce badge à mon Backpack Mozilla"
+      completed: "a validé les modules requis."
+      current_score: "%{current_score}% dans ce cours actuellement "
+      earned_for: "decerné pour l'adresse e-mail : %{email}"
+      earned_somewhere_else: "Vous avez déjà obtenu ce badge à un autre endroit du cours."
+      needed_credits: "%{credits} points, ce que vous avez obtenu. "
+      needed_requirements: "pour valider les modules requis et maîtriser les compétences demandées"
+      needed_score: "un score final de %{final_score}%, et "
+      not_earned_yet: "Vous n'avez pas encore obtenu ce badge."
+      show_badge: "Afficher ce badge sur ma page de profil"
+      titles:
+        almost_earned: "Vous avez presque obtenu ce badge !"
+        earned: "Ce badge vous a été decerné !"
+        not_earned:
+      you_have: "Vous avez "
+      you_needed: "Afin d'obtenir ce badge, vous devez "
+      wait_for_approval: "Il ne vous manque plus que la validation du badge par votre enseignant."
+      wait_for_review: "Il ne vous manque plus que la revue manuelle par votre enseignant du lien de preuve."
+      how_to_earn_badge: "Pour obtenir ce badge, vous devez récolter %{required_credit} points. Ces points sont disponibles pour les activités suivantes :"
+      score: "Score final d'au moins %{min_percent}% (actuellement %{computed_final_score}%): %{credits_final_score} points"
+      complete_module: "Validez le module %{name}"
+      complete: 'validé'
+      not_completed: 'pas encore validé'
+      credits: credits
+      master_this: "Maîtrisez la compétence  %{name}"
+      mastered: mastered
+      not_mastered: not mastered
+      final_score: "Score final d'au moins %{min_percent}% (actuellement %{computed_final_score}%)"
+      result: "Pour obtenir ce badge, vous avez besoin de %{min_percent}%, mais vous n'avez pour l'instant que %{computed_final_score }% dans ce cours."
+      see_all_badges: "Voir tous mes badges"
+    evidence_url:
+      label: "URL de preuve"
+      url_required: "URL prouvant que vous méritez bien d'obtenir le badge (obligatoire)"
+      url_optional: "URL prouvant que vous avez réalisé l'activité demandée (optionnel)"
+    student_list:
+      current_students: 'Participants actuels'
+      awarded_students: 'Participants récompensés'
+      go: Go
+      clear: Effacer
+      student: Participant
+      earned: "Obtenu"
+      issued: "Décerné"
+  views:
+    about: ""
+    badge_check:
+      check_status: "Vérification du statut du badge en cours..."
+    badge_chooser:
+      select_embed: "Sélectionner un badge à intégrer"
+      select_new: "Ou créez-en un nouveau"
+      unnamed_badge: "Badge sans nom"
+      appr_hours: "Durée d'implication estimée"
+      badge_list: "Liste des badges"
+      badge_list_desc: "Insérez un lien vers un index des badges du cours."
+      create_new_badge: "Créer un nouveau badge"
+      add_badge: "Ajouter un badge"
+    badge_completion:
+      evidence: "Preuve de validation"
+      evidence_link: "Lien de confirmation par le participant et l'enseignant"
+      evidence_link_learner: "Lien de confirmation par le participant"
+      evidence_link_learner_hint: "'(pas forcément approuvé par l'enseignant"
+    config_tokens: ""
+    config_xml: ""
+    course_badges:
+      title: "Badges du cours"
+      earned_badges: "Badges obtenus"
+      no_badges_earned: "Aucun badge obtenu pour l'instant"
+      show_profile: "Voir sur mon profil"
+      see_all_badges: "Voir tous mes badges"
+      all_course_badges: "Tous les badges du cours"
+      no_badges_configured: "Aucun badge configuré"
+      unnamed_badge: "Badge sans nom"
+      appr_hours: "Durée d'implication estimée"
+      award_badge_link: "Decerner un badge depuis un autre cours"
+      award_other_badges: "Decerner d'autres badges"
+    error: ""
+    index:
+      hello: "Bonjour"
+    instructure_index: ""
+    layout:
+      about: About
+      stats: Stats
+    manage_badge:
+      manage_your_badges: "Gérer mes badges"
+      manage_hint: "ce qui signigie que vous pouvez supprimer les badges dont vous n'avez plus utilité..."
+      unnamed_badge: "Badge sans nom"
+      unlink_badge: "Déconnecter ce badge"
+      create_badge: "Créer un nouveau badge (non lié à un cours)"
+      add_badge: Add Badge
+      add_badge_hint: "... avec de nombreuses fonctionnalités supplémentaires"
+    managed_badges:
+    message: ""
+    public_badge_configs:
+      unnamed_badge: "Badge sans nom"
+    public_badges:
+      recent_awarded_badges: "Badges publics récemment decernés"
+      nothing_to_show: Nothing to Show
+      appr_hours: "Durée d'implication estimée :"
+      issued: "Descerné"
+      by: par
+      hosted_at: "Hébergé sur "
+    session_fixed:
+      title: Session Fixer
+      has_session: "Le problème a été résolu ! Merci de recharger cette page."
+      no_session: "Un problème est survenu. Vos cookies sont peut-être désactivés. Merci de contacter l'équipe technique sur le forum pour recevoir de l'assistance."
+    session_lost:
+      title: Informations de session perdues
+      text: "There was a problem retrieving your user information. Some web browsers are starting to take measures that cause this to happen unexpectedly. You can try clicking the following button to launch a popup that should fix the problem if it's a browser issue."
+      open_session: "Open Session Fixer in a New Window"
+    stats:
+      badging_stats: "Badging Stats"
+      authorized_badge_issuers: "Authorized Badge Issuers"
+      badge_configured: "Badges Configured"
+      see_earnable_badges: "see earnable public badges"
+      badge_placement: Badge Placements
+      badge_awarded: Badges Awarded
+      see_learner_badges: "see learner-shared badges"
+      canvas_domain: "Canvas Domains"
+      organizations:  Organizations
+      badge_site: "badge site"
+      contact_us: "Contact us"
+      contact_us_text: "to add your own badging site"
+    user_badges:
+      your_badges_at: Vos badges sur
+      badges_for: Les badges pour
+      user: Utilisateur
+      at: à
+      no_data: Aucune donnée disponible
+      no_badges: Aucun badge gagné ou partagé
+      show_profile: "Voir sur mon profil"
+      share_this: "Partager cette page :"

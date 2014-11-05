@@ -23,6 +23,7 @@ en:
       mastery_required: "Outcomes requiring mastery:"
     badge_settings: ""
     badge_status:
+      achieve_this: "To earn this badge you need to achieve the following:"
       all_badges: "See All Your Badges"
       and_have: "and you have "
       backpack_alt: "Add this badge to your Mozilla backpack"
@@ -56,7 +57,6 @@ en:
       result: "To earn this badge you need %{min_percent}%%, but you only have %{computed_final_score }%% in this course right now."
       see_all_badges: "See All Your Badges"
     evidence_url:
-      achieve_this: "To earn this badge you need to achieve the following:"
       label: "Evidence URL:"
       url_required: "URL showing what qualifies you to earn this badge (required)"
       url_optional: "URL showing evidence of work done for this badge (optional)"
