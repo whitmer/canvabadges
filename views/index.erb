@@ -81,8 +81,13 @@
       own badge issuing server, so the domain matches their school
       (i.e. badges.utah.edu instead of canvabadges.herokuapp.com).
       Good news! You can now do that with Canvabadges! Just
-      <a href="<%= BadgeHelper.issuer['owner_url'] %>">contact
-      the site's owner</a> about getting a custom domain configured.
+      <% if BadgeHelper.issuer['owner_url'] == "https://twitter.com/whitmer" %>
+        <a href="https://github.com/whitmer/canvabadges#getting-your-canvas-working-with-wwwcanvabadgesorg">follow
+        these directions</a> on getting a custom domain configured.
+      <% else %>
+        <a href="<%= BadgeHelper.issuer['owner_url'] %>">contact
+        the site's owner</a> about getting a custom domain configured.
+      <% end %>
       Or you can also run 
       <a href="https://github.com/whitmer/canvabadges">the code</a>
       yourself.
