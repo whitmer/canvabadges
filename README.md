@@ -116,6 +116,36 @@ ec.shared_secret = "<developer key secret>"
 ec.save
 ```
 
+### Getting Your Canvas Working with www.canvabadges.org
+This gets asked of me enough that I figured I should just write it down for everyone's
+benefit. If you are the owner of a Canvas instance and you don't want to run your own
+Canvabadges instance, you have a couple options for getting it to play nice with
+the www.canvabadges.org instance.
+
+1. Point a subdomain you own to canvabadges.org. You would create a DNS CNAME to do this.
+Since Canvabadges requires SSL you'll have to generate an SSL cert for your subdomain and
+share it with me (@whitmer). Canvabadges runs in heroku, and I have to configure it to
+pick up your subdomain, but that means I need the actual certs. This lets you "own"
+your badges long-term since you control the subdomain, but the cert thing is usually a
+show-stopper for most sysadmins (justifiably so).
+
+2. Settle for a branded subdirectory. You can own www.canvabadges.org/_something (where you
+pick "something") without getting too crazy. The badge certificates will stay on
+canvabadges.org so you won't control your own destiny, but if that's not a huge issue then
+all I need is:
+
+  - a developer key as specified in the Multitenancy section (not required if you're in Instructure's cloud)
+  - the domain of your Canvas instance
+  - a 90x90 px image for your organization
+  - a URL for your organization's home page
+
+  Once you're ready just ping me (@whitmer).
+
+3. Run your own instance of Canvabadges. It's a Sinatra app and not too complicated, you 
+should hopefully be able to get it up pretty easily. Then you can put it on whatever 
+domain/subdomain you like and you never have to tell me any of your secrets.
+
+
 ## TODO
 
 - Per-badge option to auto-publish
