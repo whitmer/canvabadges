@@ -564,14 +564,15 @@ class Badge
     image = self.badge_url
     if image && self.badge_config
       bc = self.badge_config
-      if image.match(/^data:/) 
-        image = "/badges/from_badge/#{self.id}/#{self.nonce}/badge.png"
-        image = "#{BadgeHelper.protocol}://" + host_with_port + image
-      elsif image != bc.settings["badge_url"]
+      if image != bc.settings['badge_url']
         # We must correct the image path before sending it to backpack
         self.badge_url = bc.settings["badge_url"]
         self.save
         image = self.badge_url
+      end
+      if image.match(/^data:/) 
+        image = "/badges/from_badge/#{self.id}/#{self.nonce}/badge.png"
+        image = "#{BadgeHelper.protocol}://" + host_with_port + image
       end
     end
 
