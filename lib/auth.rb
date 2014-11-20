@@ -25,6 +25,9 @@ module Sinatra
         end
         
         host ||= params['tool_consumer_instance_guid'].split(/\./)[1..-1].join(".") if params['tool_consumer_instance_guid'] && params['tool_consumer_instance_guid'].match(/\./)
+        if !host
+          halt 400, error("This app appears to have been misconfigured, please contact your instructor or administrator. App should receive custom_canvas_api_domain parameter but isn't.")
+        end
         domain = Domain.first_or_new(:host => host)
         domain.name = (params['tool_consumer_instance_name'] || "")[0, 30]
         domain.save

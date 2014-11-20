@@ -70,6 +70,14 @@ class Organization
     }
   end
   
+  def oss_config
+    ExternalConfig.all(:organization_id => self.id, :config_type => 'canvas_oss_oauth')[0]
+  end
+  
+  def lti_configs
+    ExternalConfig.all(:organization_id => self.id, :config_type => 'lti')
+  end
+  
   def default?
     settings['default'] == true
   end
@@ -92,6 +100,16 @@ class ExternalConfig
   property :organization_id, Integer
   property :value, String
   property :shared_secret, String, :length => 256
+  
+  def organization
+    org = self.organization_id && Organization.first(:organization_id => self.organization_id)
+    if !org
+      issuer = BadgeHelper.issuer
+      issuer_host = issuer['url'].split(/\/\//)[-1]
+      org = Organization.first(:host => issuer_host)
+    end
+    org
+  end
   
   def self.generate(name)
     conf = ExternalConfig.first_or_new(:config_type => 'lti', :app_name => name)

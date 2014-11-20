@@ -8,6 +8,10 @@
     <dl>
       <dt>Key:</dt><dd><%= @conf.value %></dd>
       <dt>Secret:</dt><dd><%= @conf.shared_secret %></dd>
+      <dt>Organization:</dt>
+      <dd>
+        <a href="<%= BadgeHelper.protocol + @conf.organization.host %>"><%= @conf.organization.settings['name'] %></a>
+      </dd>
     </dl>
     <ol id="instructions">
       <li>
@@ -30,28 +34,20 @@
       </li>
       <li>
         <em>NOTE FOR OPEN SOURCE USERS:</em> If you are running your own instance of
-        Canvas (i.e. not Canvas Cloud hosted by Instructure) then you'll need to contact
-        <a href="<%= BadgeHelper.issuer['owner_url'] %>">the Canvabadges admin</a> about 
-        an additional configuration step that's
-        necessary before everything will work.
+        Canvas (i.e. not Canvas Cloud hosted by Instructure) then there will possibly be 
+        a few more steps involved before your configuration will work correctly. 
+        <a href="https://github.com/whitmer/canvabadges#advanced-settings">Check out these
+        instructions for more details</a>.
       </li>
     </ol>
   </span>
   <span class="span6">
-    <iframe width="420" height="315" src="http://www.youtube.com/embed/N-utskPWtG0?rel=0" frameborder="0" allowfullscreen></iframe>
+    <iframe width="420" height="315" src="https://www.youtube.com/embed/I9ZJdh6_jLE?rel=0" frameborder="0" allowfullscreen></iframe>
   </span>
 </div>
   <hr/>
 <p>
-  Note about credits: there's a more advanced option in badge configuration
-  not showin in the screencast called "credits". Basically it allows multiple
-  paths for earning the badge. You can use credits to say you either need 90%
-  in the class (say, 9 credits) or you need to finish three of the four modules
-  (3 credits each) to earn the badge (9 credits needed to earn the badge). You 
-  can completely ignore this if you want :-).
-</p>
-<p>
-  This is a site that I put together in my free time
+  NOTE: This is a site that I put together in my free time
   to test out the idea badges inside of Canvas.
   If you copy the credentials above you're agreeing to
   use the site at your own risk. It most definitely will
