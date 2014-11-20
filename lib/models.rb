@@ -101,6 +101,10 @@ class ExternalConfig
   property :value, String
   property :shared_secret, String, :length => 256
   
+  def confirmation
+    hash = Digest::MD5.hexdigest(self.value + self.shared_secret)
+  end
+  
   def organization
     org = self.organization_id && Organization.first(:organization_id => self.organization_id)
     if !org

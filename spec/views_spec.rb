@@ -68,6 +68,30 @@ describe 'Badging Models' do
     end
   end  
   
+  describe "token details page" do
+    it "should fail gracefully if invalid parameters provided" do
+      get "/token?id=asdf"
+      last_response.should be_redirect
+      last_response.location.should == "http://example.org/"
+    end
+    
+    it "should fail gracefully if invalid confirmation" do
+      token = ExternalConfig.generate("cool one")
+      get "/token?id=#{token.id}&confirmation=qwert"
+      last_response.should be_redirect
+      last_response.location.should == "http://example.org/"
+    end
+    
+    it "should show token details if successfully found" do
+      token = ExternalConfig.generate("cool one")
+      token.confirmation.should_not == nil
+      get "/token?id=#{token.id}&confirmation=#{token.confirmation}"
+      last_response.should be_ok
+      last_response.body.should match(token.value)
+      last_response.body.should match(token.shared_secret)
+    end
+  end
+  
   describe "public badge page" do
     it "should fail gracefully if invalid nonce provided" do
       get "/badges/criteria/1/123"

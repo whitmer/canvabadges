@@ -31,7 +31,7 @@ describe 'Badging OAuth' do
       ExternalConfig.create(:config_type => 'canvas_oauth', :value => '456')
       IMS::LTI::ToolProvider.any_instance.stub(:valid_request?).and_return(true)
       IMS::LTI::ToolProvider.any_instance.stub(:roles).and_return(['student'])
-      post "/placement_launch", {'oauth_consumer_key' => '123', 'lis_person_contact_email_primary' => 'bob@example.com'}
+      post "/placement_launch", {'oauth_consumer_key' => '123', 'lis_person_contact_email_primary' => 'bob@example.com', 'custom_canvas_api_domain' => 'bob.net'}
       last_response.should_not be_ok
       assert_error_page("App must be launched with public permission settings.")
 

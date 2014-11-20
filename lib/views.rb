@@ -37,6 +37,17 @@ module Sinatra
         erb :stats
       end
       
+      app.get "/token" do
+        org_check
+        @conf = ExternalConfig.first(:config_type => 'lti', :id => params['id'])
+        @conf = nil if @conf && (!params['confirmation'] || @conf.confirmation != params['confirmation'])
+        if !@conf
+          redirect to("/")
+        else
+          erb :config_tokens
+        end
+      end
+      
       app.get "/badges/public" do
         @full_footer = true
         org_check

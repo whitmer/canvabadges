@@ -20,7 +20,7 @@ module Sinatra
         end
         secret = tool_config.shared_secret
         host = params['custom_canvas_api_domain']
-        if host && params['launch_presentation_return_url'].match(Regexp.new(host.sub(/\.instructure\.com/, ".(test|beta).instructure.com")))
+        if host && params['launch_presentation_return_url'] && params['launch_presentation_return_url'].match(Regexp.new(host.sub(/\.instructure\.com/, ".(test|beta).instructure.com")))
           host = params['launch_presentation_return_url'].split(/\//)[2]
         end
         
@@ -203,7 +203,9 @@ module Sinatra
         @org = Organization.first(:host => request.env['badges.original_domain'], :order => :id)
         @org ||= Organization.first(:old_host => request.env['badges.original_domain'], :order => :id)
         @conf = ExternalConfig.generate(screen_name)
-        erb :config_tokens
+        
+        hash = @conf.confirmation
+        redirect to("/token?id=#{@conf.id}&confirmation=#{hash}")
       end
       
       app.get "/session_fix" do

@@ -8,10 +8,12 @@
     <dl>
       <dt>Key:</dt><dd><%= @conf.value %></dd>
       <dt>Secret:</dt><dd><%= @conf.shared_secret %></dd>
+      <% if @conf.organization %>
       <dt>Organization:</dt>
       <dd>
         <a href="<%= BadgeHelper.protocol + @conf.organization.host %>"><%= @conf.organization.settings['name'] %></a>
       </dd>
+      <% end %>
     </dl>
     <ol id="instructions">
       <li>
