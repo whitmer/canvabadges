@@ -256,3 +256,34 @@ $(document).on('click', '.select_badge_config', function(event) {
 $(document).on('click', '#session_fixer', function(event) {
   window.open("/session_fix", "Session Fixer", "width=400,height=300,resizable=no,menubar=no,location=no,toolbar=no");
 });
+
+$(document).on('click', '.org_action', function(event) {
+  event.preventDefault();
+  $(".org_form").hide();
+  var id = $(this).attr('id');
+  $("#" + id + "_form").show();
+});
+$(document).on('change', '#oss_org', function(event) {
+  $(".oss_settings").toggle(!!$(this).attr('checked'));
+});
+$(document).on('submit', '.org_form', function(event) {
+  event.preventDefault();
+  var data = $(this).serializeArray();
+  $.ajax({
+    type: 'POST',
+    dataType: 'json',
+    url: $(this).attr('rel'),
+    data: data,
+    success: function() {
+      location.reload();
+    },
+    error: function(data) {
+      if(data && data.error) {
+        alert("request failed: " + data.error);
+      } else {
+        alert("request failed!");
+      }
+    }
+  });
+  
+});

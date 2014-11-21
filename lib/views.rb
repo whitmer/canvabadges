@@ -37,17 +37,6 @@ module Sinatra
         erb :stats
       end
       
-      app.get "/token" do
-        org_check
-        @conf = ExternalConfig.first(:config_type => 'lti', :id => params['id'])
-        @conf = nil if @conf && (!params['confirmation'] || @conf.confirmation != params['confirmation'])
-        if !@conf
-          redirect to("/")
-        else
-          erb :config_tokens
-        end
-      end
-      
       app.get "/badges/public" do
         @full_footer = true
         org_check
@@ -256,7 +245,10 @@ module Sinatra
         return_url = "#{protocol}://#{request.env['badges.original_domain']}/oauth_success"
         redirect to("#{protocol}://#{host}/login/oauth2/auth?client_id=#{oauth_config.value}&response_type=code&redirect_uri=#{CGI.escape(return_url)}")
       end 
-  
+    
+      def h(text)
+        Rack::Utils.escape_html(text)
+      end
     end
   end
   

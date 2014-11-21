@@ -18,7 +18,7 @@ def prefix_org
 end
 
 def example_org
-  @org ||= Organization.create(:host => "example.org", :settings => {'name' => 'Canvabadges'})
+  @org ||= Organization.create(:host => "example.org", :settings => {'name' => 'Canvabadges', 'default' => true})
 end
 
 def configured_school

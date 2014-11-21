@@ -18,6 +18,16 @@
         <td>Badges Awarded <a class="sub" href="<%= request.env['badges.path_prefix'] %>/badges/public/awarded<%= "?this_org_only=1" if @stats_org %>">see learner-shared badges</a></td>
         <td><%= comma @stats['badges'] %></td>
       </tr>
+      <tr>
+        <td>Last Badge Awarded</td>
+        <td>
+          <% if @stats['last_badge_at'] %>
+            <%= Time.parse(@stats['last_badge_at']).strftime("%d %b, %Y") %>
+          <% else %>
+            Unknown <!-- TODO: change this to "Never" after a while, say mid-2015... -->
+          <% end %>
+        </td>
+      </tr>
       <% unless @stats_org %>
         <tr>
           <td>Canvas Domains</td>

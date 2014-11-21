@@ -1,4 +1,4 @@
-<h2><a href="/"><img src="<%= @org.settings['image'] || "/organizations/default.png" %>" alt=""/></a> Credentials accepted!</h2>
+<h2><a href="/"><img src="<%= @org.settings['image'] || "/organizations/default.png" %>" alt=""/></a> Credentials ready!</h2>
 <div class="row">
   <span class="span6">
     <p>
@@ -11,10 +11,12 @@
       <% if @conf.organization %>
       <dt>Organization:</dt>
       <dd>
-        <a href="<%= BadgeHelper.protocol + @conf.organization.host %>"><%= @conf.organization.settings['name'] %></a>
+        <a href="<%= BadgeHelper.protocol %>://<%= @conf.organization.host %>"><%= @conf.organization.settings['name'] %></a>
       </dd>
       <% end %>
     </dl>
+    
+    <h3>Setup Instructions</h3>
     <ol id="instructions">
       <li>
         <a href="/canvabadges.xml">Copy this XML link</a> and pick "By URL" as 
@@ -42,6 +44,125 @@
         instructions for more details</a>.
       </li>
     </ol>
+    
+    <% if BadgeHelper.issuer['allow_subdirectories'] %>
+      <h3>Advanced Settings</h3>
+      <% if @conf.organization_id %>
+        <p>These credentials are connected to an organization:</p>
+        <p>
+          <img src="<%= @conf.organization.settings['image'] %>" style="height: 40px; padding-right: 10px;"/><a href="<%= BadgeHelper.protocol %>://<%= @conf.organization.host %>"><%= @conf.organization.settings['name'] %></a>
+          <% if @conf.organization_editor? %>
+            <dl>
+              <dt>Subdirectory:</dt>
+                <dd><%= @conf.organization.host %></dd>
+              <dt>Editor Join Code:</dt>
+                <dd><%= @conf.organization.editor_code %></dd>
+              <dt>User Join Code</dt>
+                <dd><%= @conf.organization.user_code %></dd>
+            </dl>
+          <% end %>
+        </p>
+        <% if @conf.organization_editor? %>
+          <a href="#" class="org_action" id="org_create">Edit Settings</a> | 
+        <% end %>
+        <a href="#" class="org_action" id="org_disconnect">Disconnect from <%= @conf.organization.settings['name'] %></a>
+      <% else %>
+        <p>If you are using Canvabadges as an individual instructor then you shouldn't mess with these
+        settings or you'll break stuff. If you're looking to create a sub-branded experience within your 
+        organization then this is where you should be looking :-).</p>
+        <p>
+          <a href="#" class="org_action" id="org_connect">Connect to an Organization</a> | 
+          <a href="#" class="org_action" id="org_create">Create an Organization</a>
+        </p>
+      <% end %>
+      <form id="org_disconnect_form" class="org_form" style="display: none;" rel="/token/disconnect?id=<%= @conf.id %>&confirmation=<%= @conf.confirmation %>">
+        <h3>Confirm Disconnect</h3>
+        <button type="submit" class="btn btn-primary">Yes, Disconnect from Organization</button>
+      </form>
+    
+      <form id="org_connect_form" class="org_form form-inline" style="display: none;" rel="/token/connect?id=<%= @conf.id %>&confirmation=<%= @conf.confirmation %>">
+        <h3>Connect to an Organization</h3>
+        <input type="text" name="code" placeholder="connection code" class="input-small span3">
+        <button type="submit" class="btn btn-primary">Connect</button>
+      </form>
+
+      <form id="org_create_form" class="org_form form-horizontal" style="display: none;" rel="/token/organization?id=<%= @conf.id %>&confirmation=<%= @conf.confirmation %>">
+        <h3>Organization Settings</h3>
+        <% org = @conf.organization %>
+        <div class="control-group">
+          <label class="control-label" for="org_name">Organization Name: </label>
+          <div class="controls">
+            <input type="text" name="name" placeholder="org name" value="<%= h((org && org.settings['name']) || "") %>"/>
+          </div>
+        </div>
+        <div class="control-group">
+          <label class="control-label" for="org_name">Home Page: </label>
+          <div class="controls">
+            <input type="text" name="url" placeholder="http://" value="<%= h((org && org.settings['url']) || "") %>"/>
+          </div>
+        </div>
+        <div class="control-group">
+          <label class="control-label" for="org_name">Logo URL: </label>
+          <div class="controls">
+            <input type="text" name="image" placeholder="https://" value="<%= h((org && org.settings['image']) || "") %>"/> (90x90 px, https required)
+          </div>
+        </div>
+        <div class="control-group">
+          <label class="control-label" for="org_name">Contact Email: </label>
+          <div class="controls">
+            <input type="text" name="email" placeholder="something@something.com" value="<%= h((org && org.settings['email']) || "") %>"/>
+          </div>
+        </div>
+        <% if !@conf.organization_id %>
+          <div class="control-group">
+            <label class="control-label" for="org_name">Subdirectory: </label>
+            <div class="controls">
+              canvabadges.org/_<input type="text" class="span2" name="subdirectory" placeholder="subdirectory" value="<%= h((org && org.settings['subdirectory']) || "") %>"/>
+            </div>
+          </div>
+        <% end %>
+        <div class="control-group advanced">
+          <label class="control-label">Open Source: </label>
+          <div class="controls">
+            <div class="input-append">
+              <label>
+                <input id="oss_org" type="checkbox" <%= 'checked' if org && org.settings['canvas_oss_oauth'] %> name="oss" value="1"/>
+                this is an open source instance of Canvas (not Canvas Cloud)
+              </label>
+            </div>
+          </div>
+        </div>
+        <div class="oss_settings" style="<%= 'display: none;' unless org && org.oss_config %>">
+          <div class="control-group">
+            <label class="control-label" for="org_name"></label>
+            <div class="controls">
+              Open source installs need to provide a developer key so Canvabadges can speak to
+              their Canvas instance API. To generate a developer key go to 
+              <code>https://yourcanvas/developer_keys</code> and create one. Use
+              <code><%= BadgeHelper.issuer['url'] %>/logo.png</code> as the developer key
+              image, and set the Redirect URI to 
+              <code><%= BadgeHelper.issuer['url'] %>/oauth_success</code>. Then enter the
+              two values generated for the developer key below.
+            </div>
+          </div>
+          <div class="control-group">
+            <label class="control-label" for="org_name">Developer Key: </label>
+            <div class="controls">
+              <input type="text" name="developer_key" placeholder="######" value="<%= h((org && org.settings['developer_key']) || "") %>"/>
+            </div>
+          </div>
+          <div class="control-group">
+            <label class="control-label" for="org_name">Developer Secret: </label>
+            <div class="controls">
+              <input type="text" name="developer_secret" placeholder="secret key" value="<%= h((org && org.settings['developer_secret']) || "") %>"/>
+            </div>
+          </div>
+        </div>
+        <div class="form-actions" style="border: 0; background: transparent;">
+          <button type="submit" class='btn btn-primary'>Update Organization</button>
+        </div>
+      </form>
+    <% end %>
   </span>
   <span class="span6">
     <iframe width="420" height="315" src="https://www.youtube.com/embed/I9ZJdh6_jLE?rel=0" frameborder="0" allowfullscreen></iframe>
