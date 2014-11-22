@@ -26,7 +26,7 @@ describe 'Badging Models' do
       example_org
       get "/"
       last_response.should be_ok
-      last_response.body.should match(/Canvabadges Badges/)
+      last_response.body.should match(/Canvabadges/)
     end
     
     it "should work with prefixed orgs" do

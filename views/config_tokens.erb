@@ -19,7 +19,8 @@
     <h3>Setup Instructions</h3>
     <ol id="instructions">
       <li>
-        <a href="/canvabadges.xml">Copy this XML link</a> and pick "By URL" as 
+        <a href="<%= BadgeHelper.protocol %>://<%= @conf.organization.host %>/canvabadges.xml">Copy this XML link</a>
+        and pick "By URL" as 
         the configuration type to add as a new external tool in Canvas (use the key
         and secret above for configuration)
       </li>
@@ -55,7 +56,7 @@
             <dl>
               <dt>Subdirectory:</dt>
                 <dd><%= @conf.organization.host %></dd>
-              <dt>Editor Join Code:</dt>
+              <dt>Admin Join Code:</dt>
                 <dd><%= @conf.organization.editor_code %></dd>
               <dt>User Join Code</dt>
                 <dd><%= @conf.organization.user_code %></dd>
