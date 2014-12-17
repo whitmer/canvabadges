@@ -89,7 +89,7 @@
 
       <form id="org_create_form" class="org_form form-horizontal" style="display: none;" rel="/token/organization?id=<%= @conf.id %>&confirmation=<%= @conf.confirmation %>">
         <h3>Organization Settings</h3>
-        <% org = @conf.organization %>
+        <% org = @conf.organization_id && @conf.organization %>
         <div class="control-group">
           <label class="control-label" for="org_name">Organization Name: </label>
           <div class="controls">
