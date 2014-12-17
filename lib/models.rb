@@ -70,6 +70,10 @@ class Organization
     }
   end
   
+  def approved?
+    self.settings && self.settings['approved']
+  end
+  
   def oss_config
     ExternalConfig.all(:organization_id => self.id, :config_type => 'canvas_oss_oauth')[0]
   end

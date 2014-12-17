@@ -37,7 +37,7 @@
           <td>
             Organizations
             <ul style="padding-top: 10px;">
-              <% Organization.all.each do |org| %>
+              <% Organization.all.select(&:approved?).each do |org| %>
                 <li>
                   <a href="<%= org.settings['url'] %>">
                     <img src="<%= org.settings['image'] || "/organizations/default.png" %>" alt="" style="height: 40px; padding-right: 10px;"/>
