@@ -3,7 +3,7 @@
 
 <div class="row">
 <div class="span10 offset1" style="padding-top: 15px;">
-  <% @badge_configs.each do |bc| %>
+  <% @badge_configs.compact.each do |bc| %>
     <div class="badge_config select_badge_config" data-id="<%= bc.reuse_code %>" style="cursor: pointer;">
       <% settings = bc.settings || {} %>
       <a href="#"><img src='<%= settings['badge_url'] %>' style='float: left; margin-right: 10px;' class='thumbnail'/></a>
