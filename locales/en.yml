@@ -1,0 +1,3 @@
+en:
+  errors:
+    org_not_found: Domain not properly configured. No Organization record matching the host %{domain}

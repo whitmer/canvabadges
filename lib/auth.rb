@@ -156,6 +156,7 @@ module Sinatra
           permission = session["permission_for_#{launch_course_id}"]
           name = session['name']
           email = session['email']
+          locale = session['locale']
 
           session.destroy
           session['user_id'] = user_config.user_id.to_s
@@ -163,6 +164,7 @@ module Sinatra
           session["permission_for_#{launch_course_id}"] = permission
           session['name'] = name
           session['email'] = email
+          session['locale'] = locale
 
           launch_redirect(launch_badge_placement_config_id, user_config.domain_id, user_config.user_id, params_stash)
         else

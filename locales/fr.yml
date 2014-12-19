@@ -1,0 +1,3 @@
+fr:
+  errors:
+    org_not_found: Le domaine n'est pas convenablement configuré. Il n'y a aucune organization qui corresponde à %{domain}

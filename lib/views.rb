@@ -5,6 +5,11 @@ module Sinatra
     def self.registered(app)
       app.helpers Views::Helpers
       
+      app.before do
+        session[:locale] = params[:locale] if params[:locale]
+        I18n.locale = session[:locale]
+      end
+
       app.get "/" do
         @full_footer = true
         org_check
@@ -212,7 +217,7 @@ module Sinatra
       def org_check
         @org = Organization.first(:host => request.env['badges.original_domain'], :order => :id)
         @org ||= Organization.first(:old_host => request.env['badges.original_domain'], :order => :id)
-        halt 404, error("Domain not properly configured. No Organization record matching the host #{request.env['badges.domain']}") unless @org
+        halt 404, error(I18n.t("errors.org_not_found", :domain => request.env['badges.domain'])) unless @org
         CanvasAPI.set_org(@org)
       end
       

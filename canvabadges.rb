@@ -1,4 +1,6 @@
 require 'sinatra/base'
+require 'i18n'
+require 'i18n/backend/fallbacks'
 require 'oauth'
 require 'json'
 require 'dm-core'
@@ -36,6 +38,7 @@ class Canvabadges < Sinatra::Base
   enable :sessions
   raise "session key required" if ENV['RACK_ENV'] == 'production' && !ENV['SESSION_KEY']
   set :session_secret, ENV['SESSION_KEY'] || "local_secret"
+  set :root, File.dirname(__FILE__)
 
   env = ENV['RACK_ENV'] || settings.environment
   DataMapper.setup(:default, (ENV["DATABASE_URL"] || "sqlite3:///#{Dir.pwd}/#{env}.sqlite3"))
@@ -44,6 +47,12 @@ class Canvabadges < Sinatra::Base
   configure :production do
     require 'rack-ssl-enforcer'
     use Rack::SslEnforcer
+  end
+
+  configure do
+    I18n::Backend::Simple.send(:include, I18n::Backend::Fallbacks)
+    I18n.load_path = Dir[File.join(settings.root, 'locales', '*.yml')]
+    I18n.backend.load_translations
   end
 end
 
