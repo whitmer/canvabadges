@@ -25,30 +25,18 @@ fr:
       mastery_required: "Compétences à démontrer pour obtenir le badge :"
     badge_settings: ""
     badge_status:
-<<<<<<< HEAD
       achieve_this: "Pour obtenir ce badge, vous devez satisfaires les pré-requis suivants :"
       all_badges: "Voir tous mes badges"
       and_have: "et vous avez "
       backpack_alt: "Ajouter ce badge à mon Backpack Mozilla"
       completed: "validé les modules requis."
-=======
-      all_badges: "Voir tous mes badges"
-      and_have: "et vous avez "
-      backpack_alt: "Ajouter ce badge à mon Backpack Mozilla"
-      completed: "a validé les modules requis."
->>>>>>> 9f81d52... Traduction
       current_score: "%{current_score}% dans ce cours actuellement "
       earned_for: "decerné pour l'adresse e-mail : %{email}"
       earned_somewhere_else: "Vous avez déjà obtenu ce badge à un autre endroit du cours."
       needed_credits: "%{credits} points, ce que vous avez obtenu. "
-<<<<<<< HEAD
       needed_requirements: "valider les modules requis et maîtriser les compétences demandées. "
       needed_score: "un score final de %{final_score}%, et "
       not_earned_yet: "Vous n'avez pas encore obtenu ce badge."
-=======
-      needed_requirements: "pour valider les modules requis et maîtriser les compétences demandées"
-      needed_score: "un score final de %{final_score}%, et "
->>>>>>> 9f81d52... Traduction
       show_badge: "Afficher ce badge sur ma page de profil"
       titles:
         almost_earned: "Vous avez presque obtenu ce badge !"

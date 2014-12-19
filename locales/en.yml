@@ -1,18 +1,18 @@
 en:
   errors:
-    badge_config: Error retrieving badge status
+    badge_config: "Error retrieving badge status"
     not_a_student: "You are not a student in this course, so you can't earn this badge"
-    organization_not_found: Domain not properly configured. No Organization record matching the host %{domain}
+    organization_not_found: "Domain not properly configured. No Organization record matching the host %{domain}"
   default_settings:
     badge_name: "Unnamed Badge"
   partials:
     badge_description:
       badge_awarded: ", and it was awarded %{awarded_at}"
       completed_requirements: "This user completed the requirements needed for this badge"
-      hosted: It is hosted at
+      hosted: "It is hosted at"
       issued_by:
-        is: This badge was issued by
-        was: This badge is issued by
+        is: "This badge was issued by"
+        was: "This badge is issued by"
       titles:
         requirements: "Requirements for completion:"
         completion_hours: "Approximate hours for completion: %{hours}"
@@ -27,32 +27,32 @@ en:
       all_badges: "See All Your Badges"
       and_have: "and you have "
       backpack_alt: "Add this badge to your Mozilla backpack"
-      completed: completed the required modules and mastered the required outcomes.
+      completed: "completed the required modules and mastered the required outcomes."
       current_score: "%{current_score}% in this course right now "
       earned_for: "earned for email: %{email}"
-      earned_somewhere_else: You earned this badge somewhere else than this spot in this course.
+      earned_somewhere_else: "You earned this badge somewhere else than this spot in this course."
       needed_credits: "%{credits} credits, which you've now done. "
       needed_requirements: "to complete the required modules and master the required outcomes. "
       needed_score: "a final score of %{final_score}%, and "
-      show_badge: show this badge on my Canvas profile
+      show_badge: "show this badge on my Canvas profile"
       titles:
-        almost_earned: You've almost earned this badge!
+        almost_earned: "You've almost earned this badge!"
         earned: "You've earned this badge!"
         not_earned:
       you_have: "You have "
       you_needed: "To earn this badge you needed "
-      wait_for_approval: All you need now is to wait for your instructor's manual approval.
-      wait_for_review: All you need now is to wait for your instructor to review your evidence URL and the approve the badge.
+      wait_for_approval: "All you need now is to wait for your instructor's manual approval."
+      wait_for_review: "All you need now is to wait for your instructor to review your evidence URL and the approve the badge."
       not_earned_yet: "You haven't earned this badge yet"
       how_to_earn_badge: "To earn this badge you need to earn %{required_credit}% credits. Credits are available for the following activities:"
       score: "Final score of at least %{min_percent}%% (currently %{computed_final_score}%): %{credits_final_score}% credits"
       complete_module: "Complete the module %{name}%"
       complete: 'completed'
       not_ completed: 'not completed'
-      credits: credits
+      credits: "credits"
       master_this: "Master the outcome  %{name}%"
-      mastered: mastered
-      not_mastered: not mastered
+      mastered: "mastered"
+      not_mastered: "not mastered"
       final_score: "Final score of at least %{min_percent}%% (currently %{computed_final_score}%%)"
       result: "To earn this badge you need %{min_percent}%%, but you only have %{computed_final_score }%% in this course right now."
       see_all_badges: "See All Your Badges"
@@ -63,11 +63,11 @@ en:
     student_list:
       current_students: 'Current Students'
       awarded_students: 'Awarded Students'
-      go: Go
-      clear: Clear
-      student: Student
-      earned: Earned
-      issued: Issued
+      go: "Go"
+      clear: "Clear"
+      student: "Student"
+      earned: "Earned"
+      issued: "Issued"
   views:
     about: ""
     badge_check:
@@ -112,17 +112,17 @@ en:
       unnamed_badge: "Unnamed Badge"
     public_badges:
       recent_awarded_badges: "Recently-Awarded Public Badges"
-      nothing_to_show: Nothing to Show
+      nothing_to_show: "Nothing to Show"
       appr_hours: "Approx hours:"
       issued: "Issued"
-      by: by
+      by: "by"
       hosted_at: "Hosted at"
     session_fixed:
-      title: Session Fixer
+      title: "Session Fixer"
       has_session: "Looks like the problem has been fixed! Please close this window, reload your web browser and try launching the resource again."
       no_session: "Hm, there's still something wrong. You may have cookies disabled or there may be an additional problem. Please contact your account administrator or the site owner for troubleshooting."
     session_lost:
-      title: Session Information Lost
+      title: "Session Information Lost"
       text: "There was a problem retrieving your user information. Some web browsers are starting to take measures that cause this to happen unexpectedly. You can try clicking the following button to launch a popup that should fix the problem if it's a browser issue."
       open_session: "Open Session Fixer in a New Window"
     stats:
@@ -130,22 +130,20 @@ en:
       authorized_badge_issuers: "Authorized Badge Issuers"
       badge_configured: "Badges Configured"
       see_earnable_badges: "see earnable public badges"
-      badge_placement: Badge Placements
-      badge_awarded: Badges Awarded
+      badge_placement: "Badge Placements"
+      badge_awarded: "Badges Awarded"
       see_learner_badges: "see learner-shared badges"
       canvas_domain: "Canvas Domains"
-      organizations:  Organizations
+      organizations:  "Organizations"
       badge_site: "badge site"
       contact_us: "Contact us"
       contact_us_text: "to add your own badging site"
     user_badges:
-      your_badges_at: Your Badges at
-      badges_for: Badges for
-      user: Utilisateur
-      at: at
-      no_data: No Data available
-      no_badges: No Badges Earned or Shared
+      your_badges_at: "Your Badges at"
+      badges_for: "Badges for"
+      user: "Utilisateur"
+      at: "at"
+      no_data: "No Data available"
+      no_badges: "No Badges Earned or Shared"
       show_profile: "show on my Canvas profile"
       share_this: "Share this Page:"
-
->>>>>>> 964e56b... Solved some bugs

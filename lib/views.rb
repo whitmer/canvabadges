@@ -7,7 +7,7 @@ module Sinatra
       
       app.before do
         session[:locale] = params[:locale] if params[:locale]
-        I18n.locale = session[:locale]
+        I18n.locale = session[:locale] || 'en'
       end
 
       app.get "/" do
