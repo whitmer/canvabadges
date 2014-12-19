@@ -45,7 +45,7 @@
                     <img src="<%= org.settings['image'] || "/organizations/default.png" %>" alt="" style="height: 40px; padding-right: 10px;"/>
                     <%= org.settings['name'] %></a> 
                   <a class="sub" href="<%= BadgeHelper.protocol %>://<%= org.host %>">badge site</a>
-                  <a class="sub" href="<%= BadgeHelper.protocol %>://<%= org.host %>/stats">stats</a>
+                  <a class="sub" href="<%= BadgeHelper.protocol %>://<%= org.host %>/stats?this_org_only=1">stats</a>
                 </li>
               <% end %>
               <li style="margin-top: 15px; font-size: 12px; list-style: none;">
