@@ -149,5 +149,8 @@ domain/subdomain you like and you never have to tell me any of your secrets.
 ## TODO
 
 - Per-badge option to auto-publish
+- Shared pool of badges for entire organization
+- API for querying for things like leaderboards
+- Way for admins to manually modify specific badge issuances
 
 [![Build Status](https://travis-ci.org/whitmer/canvabadges.png)](https://travis-ci.org/whitmer/canvabadges)
