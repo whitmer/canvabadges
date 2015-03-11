@@ -720,6 +720,9 @@ class Badge
         image = "/badges/from_badge/#{self.id}/#{self.nonce}/badge.png"
         image = "#{BadgeHelper.protocol}://" + host_with_port + image
       end
+      if image.match(/^\//)
+        image = "#{BadgeHelper.protocol}://#{host_with_port}" + image
+      end
     end
 
     {
