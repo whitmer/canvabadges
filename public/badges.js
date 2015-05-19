@@ -31,6 +31,10 @@ $(document).on('click', "#disable_badge", function() {
     }
   });
 });
+$(document).on('submit', "#evidence_url_form", function(event) {
+  $("#evidence_url").change();
+  event.preventDefault();
+});
 $(document).on('change', "#evidence_url", function() {
   var url = $(this).closest("form").attr('rel');
   $.ajax({
@@ -41,6 +45,7 @@ $(document).on('change', "#evidence_url", function() {
       evidence_url: $(this).val()
     },
     error: function() {
+      alert("evidence URL submission failed unexpectedly");
     }
   });
 });
