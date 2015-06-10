@@ -38,7 +38,7 @@
   <span style="clear: left;"></span>
 </p>
 
-<% if @stats %>
+<% if @stats && @stats['start'] && @stats['end'] %>
   <script type="text/javascript" src="https://www.google.com/jsapi"></script>
   <script type="text/javascript">
     google.load("visualization", "1", {packages:["corechart"]});
