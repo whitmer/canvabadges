@@ -73,7 +73,7 @@ module Sinatra
       app.get "/badges/criteria/:id/:nonce" do
         org_check
         @badge_config = BadgeConfig.first(:id => params['id'], :nonce => params['nonce'])
-        if !@badge_config
+        if !@badge_config || !@badge_config.public
           return error("Badge not found")
         end
         @badge = Badge.first(:nonce => params['user'])
