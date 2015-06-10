@@ -7,7 +7,14 @@
         <% settings = bc.settings || {} %>
         <% placements = bc.badge_placement_configs.select{|c| !c.award_only? } %>
         <% bpc = placements.last %>
-        <img src='<%= settings['badge_url'] %>' style='float: left; margin-right: 10px;' class='thumbnail'/>
+
+        <% badge_url = "#{BadgeHelper.protocol}://" + bc.organization.host + 
+                       "/badges/criteria/#{bc.id}/#{bc.nonce}" 
+        %>
+        <a href="<%= badge_url %>">
+          <img src='<%= settings['badge_url'] %>' style='float: left; margin-right: 10px;' class='thumbnail'/>
+        </a>
+        
         <h2>
         <% if bpc && bpc.settings && bpc.settings['course_url'] %>
           <a href="<%= bpc.settings['course_url'] %>"><%= settings['badge_name'] || "Unnamed Badge" %></a>
