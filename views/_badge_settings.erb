@@ -145,6 +145,15 @@
               List this badge in the organization's public badge directory
             </label>
           </div>
+          <% if @badge_placement_config.badge_config.public %>
+            <% bc = @badge_placement_config.badge_config %>
+            <% badge_url = "#{BadgeHelper.protocol}://" + bc.organization.host + 
+                           "/badges/criteria/#{bc.id}/#{bc.nonce}" 
+            %>
+            <div>
+              <a href="<%= badge_url %>" target="_blank">public link to badge details page</a>
+            </div>
+          <% end %>
         </div>
       </div>
       <div class="form-actions" style="border: 0; background: transparent;">
